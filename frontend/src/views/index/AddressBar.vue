@@ -39,8 +39,8 @@ onMounted(async () => {
         <n-card :bordered="false" embedded v-if="!settings.fetched">
             <n-skeleton style="height: 50vh" />
         </n-card>
-        <div v-else-if="settings.address">
-            <n-alert type="info" :show-icon="false" :bordered="false">
+        <div v-else-if="settings.address" class="immortal-address-wrapper">
+            <div class="immortal-address-card">
                 <AddressSelect>
                     <template #actions>
                         <n-button class="address-manage" size="small" tertiary type="primary"
@@ -50,7 +50,7 @@ onMounted(async () => {
                         </n-button>
                     </template>
                 </AddressSelect>
-            </n-alert>
+            </div>
         </div>
         <div v-else-if="isTelegram">
             <TelegramAddress />
@@ -61,7 +61,7 @@ onMounted(async () => {
             </n-card>
         </div>
         <div v-else class="center">
-            <n-card :bordered="false" embedded style="max-width: 600px;">
+            <n-card :bordered="false" embedded class="immortal-login-card">
                 <n-alert v-if="jwt" type="warning" :show-icon="false" :bordered="false" closable>
                     <span>{{ t('fetchAddressError') }}</span>
                 </n-alert>
@@ -87,6 +87,39 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.immortal-address-wrapper {
+    margin: 10px 0 16px 0;
+}
+
+.immortal-address-card {
+    padding: 12px 18px;
+    border-radius: 16px;
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-card-border);
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.immortal-address-card:hover {
+    border-color: var(--ice-accent);
+}
+
+.immortal-login-card {
+    max-width: 600px;
+    width: 100%;
+    border: 1px solid var(--glass-card-border);
+    background: var(--glass-card-bg);
+    background-image: var(--control-sheen);
+    box-shadow: var(--glass-shadow);
+    border-radius: 20px;
+}
+
+.immortal-login-card :deep(.n-card__content) {
+    padding: 24px;
+}
+
 .n-alert {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -105,9 +138,22 @@ onMounted(async () => {
     margin: 20px;
 }
 
+@media (max-width: 767px) {
+    .center {
+        margin: 16px 0;
+    }
+
+    .immortal-login-card :deep(.n-card__content) {
+        padding: 20px 16px;
+    }
+
+    .immortal-address-card {
+        padding: 14px;
+    }
+}
+
 .address-manage {
     flex: 0 0 auto;
     white-space: nowrap;
 }
-
 </style>

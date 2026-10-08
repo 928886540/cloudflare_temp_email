@@ -134,13 +134,13 @@ const handleSaveToS3 = async (filename, blob) => {
         ID: {{ mail.id }}
       </n-tag>
       <n-tag type="info">
-        {{ utcToLocalDate(mail.created_at, useUTCDate.value) }}
+        {{ utcToLocalDate(mail.created_at, useUTCDate) }}
       </n-tag>
       <n-tag type="info">
-        FROM: {{ mail.source }}
+        <n-ellipsis class="mail-address-meta">FROM: {{ mail.source }}</n-ellipsis>
       </n-tag>
       <n-tag v-if="showEMailTo" type="info">
-        TO: {{ mail.address }}
+        <n-ellipsis class="mail-address-meta">TO: {{ mail.address }}</n-ellipsis>
       </n-tag>
 
       <!-- 操作按钮 -->
@@ -268,7 +268,26 @@ const handleSaveToS3 = async (filename, blob) => {
 </template>
 
 <style scoped>
+.mail-content-renderer :deep(.n-space > div) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mail-content-renderer :deep(.n-tag) {
+  max-width: 100%;
+}
+
+.mail-content-renderer :deep(.n-tag__content) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mail-address-meta {
+  max-width: min(440px, calc(100vw - 120px), 100%);
+}
+
 .mail-content-renderer {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -280,8 +299,13 @@ const handleSaveToS3 = async (filename, blob) => {
 }
 
 .mail-content {
-  margin-top: 10px;
+  margin-top: 12px;
   flex: 1;
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--glass-shadow);
 }
 
 .mail-text {
@@ -289,13 +313,15 @@ const handleSaveToS3 = async (filename, blob) => {
   word-wrap: break-word;
   margin: 0;
   padding: 0;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: 14.5px;
+  line-height: 1.68;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
 }
 
 .dark-mode .mail-text {
-  color: #e0e0e0;
+  color: #f0f9ff;
 }
 
 .mail-iframe {

@@ -65,11 +65,13 @@ const bindAddress = async () => {
 const columns = [
     {
         title: t('address'),
-        key: "address"
+        key: "address",
+        minWidth: 240
     },
     {
         title: t('actions'),
         key: 'actions',
+        width: 220,
         render(row: any) {
             return h('div', [
                 h(NPopconfirm,
@@ -127,7 +129,7 @@ const columns = [
         <n-tabs type="segment" v-model:value="tabValue">
             <n-tab-pane name="address" :tab="t('address')">
                 <div class="address-table-scroll">
-                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded :scroll-x="500" />
                 </div>
             </n-tab-pane>
             <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">

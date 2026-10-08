@@ -71,6 +71,10 @@ export const MESSAGE_REGISTRY = {
       "en": "Your inbox is empty",
       "zh": "收件箱为空"
     },
+    "noMatchingMail": {
+      "en": "No matching emails on this page",
+      "zh": "当前页没有匹配的邮件"
+    },
     "forwardMail": {
       "en": "Forward",
       "zh": "转发"

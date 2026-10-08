@@ -2,7 +2,7 @@
 import { useMessage } from 'naive-ui'
 import { onMounted, ref } from "vue";
 import { useScopedI18n } from '@/i18n/app'
-import { KeyFilled } from '@vicons/material'
+import { KeyFilled, LogInOutlined, PersonAddOutlined } from '@vicons/material'
 
 import { api } from '../../api';
 import { useGlobalState } from '../../store'
@@ -51,7 +51,7 @@ const emailLogin = async () => {
         userJwt.value = res.jwt;
         location.reload();
     } catch (error) {
-        message.error(error.message || "login failed");
+        message.error(error.message || "登录失败");
         loginTurnstileRef.value?.refresh?.();
     }
 };
@@ -94,7 +94,7 @@ const sendVerificationCode = async () => {
             }, 1000);
         }
     } catch (error) {
-        message.error(error.message || "send verification code failed");
+        message.error(error.message || "发送验证码失败");
     }
     if (showModal.value) {
         resetTurnstileRef.value?.refresh?.();
@@ -130,7 +130,7 @@ const emailSignup = async () => {
         }
         showModal.value = false;
     } catch (error) {
-        message.error(error.message || "register failed");
+        message.error(error.message || "注册失败");
     }
 };
 
@@ -169,7 +169,7 @@ const oauth2Login = async (clientID) => {
         // redirect to oauth2 login page
         location.href = res.url;
     } catch (error) {
-        message.error(error.message || "login failed");
+        message.error(error.message || "登录失败");
     }
 };
 
@@ -180,8 +180,14 @@ onMounted(async () => {
 
 <template>
     <div class="center">
-        <n-tabs v-model:value="tabValue" size="large" v-if="userOpenSettings.fetched" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="t('login')">
+        <n-tabs v-model:value="tabValue" type="segment" size="medium" v-if="userOpenSettings.fetched" justify-content="space-evenly" class="immortal-segment-tabs">
+            <n-tab-pane name="signin">
+                <template #tab>
+                    <div class="immortal-tab-label">
+                        <n-icon :component="LogInOutlined" />
+                        <span>{{ t('login') }}</span>
+                    </div>
+                </template>
                 <n-form>
                     <n-form-item-row :label="t('email')" required>
                         <n-input v-model:value="user.email" />
@@ -213,7 +219,13 @@ onMounted(async () => {
                     </n-button>
                 </n-form>
             </n-tab-pane>
-            <n-tab-pane v-if="userOpenSettings.enable" name="signup" :tab="t('register')">
+            <n-tab-pane v-if="userOpenSettings.enable" name="signup">
+                <template #tab>
+                    <div class="immortal-tab-label">
+                        <n-icon :component="PersonAddOutlined" />
+                        <span>{{ t('register') }}</span>
+                    </div>
+                </template>
                 <n-form>
                     <n-form-item-row :label="t('email')" required>
                         <n-input v-model:value="user.email" />

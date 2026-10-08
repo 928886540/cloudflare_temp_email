@@ -296,7 +296,8 @@ onMounted(async () => {
       </div>
       <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
         <n-list hoverable clickable>
-          <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)">
+          <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
+            :class="[mailItemClass(row)]">
             <n-thing :title="row.subject">
               <template #description>
                 <n-tag type="info">
@@ -403,4 +404,6 @@ pre {
 .split-handle:hover .split-handle__grip {
   background-color: var(--n-resize-trigger-color-hover);
 }
+
+
 </style>

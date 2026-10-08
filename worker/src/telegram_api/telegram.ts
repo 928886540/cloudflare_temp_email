@@ -446,12 +446,36 @@ const parseMail = async (
         if (parsedText.length && parsedText.length > 1000) {
             parsedText = parsedEmail?.text.substring(0, 1000) + `\n\n...\n${msgs.TgMsgTooLongMsg}`;
         }
+        let dateStr = created_at;
+        if (created_at) {
+            try {
+                let s = String(created_at).trim();
+                if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s) && !s.includes("Z") && !s.includes("+")) {
+                    s = s.replace(" ", "T") + "Z";
+                }
+                const d = new Date(s);
+                if (!isNaN(d.getTime())) {
+                    dateStr = d.toLocaleString("zh-CN", {
+                        timeZone: "Asia/Shanghai",
+                        hour12: false,
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    }).replace(/\//g, "-") + " (GMT+8)";
+                }
+            } catch {
+                // Preserve the original timestamp when date formatting fails.
+            }
+        }
         return {
             isHtml: false,
             mail: formatAiExtractForTelegram(msgs, aiExtract)
                 + `From: ${parsedEmail?.sender || msgs.TgNoSenderMsg}\n`
                 + `To: ${address}\n`
-                + (created_at ? `Date: ${created_at}\n` : "")
+                + (dateStr ? `Date: ${dateStr}\n` : "")
                 + `Subject: ${parsedEmail?.subject}\n`
                 + `Content:\n${parsedText || msgs.TgParseFailedViewInAppMsg}`
         };

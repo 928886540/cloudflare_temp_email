@@ -2,7 +2,10 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useScopedI18n } from '@/i18n/app'
 import { useRouter } from 'vue-router'
-import { NewLabelOutlined, EmailOutlined, RedeemOutlined } from '@vicons/material'
+import {
+    NewLabelOutlined, EmailOutlined, RedeemOutlined,
+    HelpOutlineOutlined, InfoOutlined, AutoAwesomeOutlined
+} from '@vicons/material'
 
 import AdminContact from '../common/AdminContact.vue'
 import Turnstile from '../../components/Turnstile.vue'
@@ -137,7 +140,7 @@ const addressRegex = computed(() => {
         }
     } catch (error) {
         console.error(error);
-        message.error(`Invalid addressRegex: ${openSettings.value.addressRegex}`);
+        message.error(`前缀正则规则无效: ${openSettings.value.addressRegex}`);
     }
     return /[^a-z0-9]/g;
 });
@@ -256,12 +259,19 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div>
-        <n-alert v-if="userSettings.user_email" :show-icon="false" :bordered="false" closable>
-            <span>{{ t('bindUserInfo') }}</span>
-        </n-alert>
-        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" size="large" justify-content="space-evenly">
-            <n-tab-pane name="signin" :tab="loginAndBindTag">
+    <div class="immortal-login">
+        <div v-if="userSettings.user_email" class="immortal-user-banner">
+            <n-icon :component="InfoOutlined" class="banner-icon" />
+            <span class="banner-text">{{ t('bindUserInfo') }}</span>
+        </div>
+        <n-tabs v-if="openSettings.fetched" v-model:value="tabValue" type="segment" class="immortal-segment-tabs" size="medium" justify-content="space-evenly">
+            <n-tab-pane name="signin">
+                <template #tab>
+                    <div class="immortal-tab-label">
+                        <n-icon :component="EmailOutlined" />
+                        <span>{{ loginAndBindTag }}</span>
+                    </div>
+                </template>
                 <n-form>
                     <div v-if="loginMethod === 'password'">
                         <n-form-item-row :label="t('email')" required>
@@ -290,7 +300,7 @@ onMounted(async () => {
                         </n-button>
                     </div>
 
-                    <n-button @click="login" :loading="loading" type="primary" block secondary strong>
+                    <n-button @click="login" :loading="loading" type="primary" block strong class="immortal-primary-action">
                         <template #icon>
                             <n-icon :component="EmailOutlined" />
                         </template>
@@ -314,20 +324,38 @@ onMounted(async () => {
                     </div>
                 </n-form>
             </n-tab-pane>
-            <n-tab-pane v-if="showNewAddressTab" name="register" :tab="t('getNewEmail')">
+            <n-tab-pane v-if="showNewAddressTab" name="register">
+                <template #tab>
+                    <div class="immortal-tab-label">
+                        <n-icon :component="NewLabelOutlined" />
+                        <span>{{ t('getNewEmail') }}</span>
+                    </div>
+                </template>
                 <n-spin :show="generateNameLoading">
                     <n-form>
-                        <span>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip1") +
-                                addressRegex.source }}</p>
-                            <p v-if="!openSettings.disableCustomAddressName">{{ t("getNewEmailTip2") }}</p>
-                            <p>{{ t("getNewEmailTip3") }}</p>
-                        </span>
-                        <n-button v-if="!openSettings.disableCustomAddressName" @click="generateName"
-                            style="margin-bottom: 10px;">
-                            {{ t('generateName') }}
-                        </n-button>
-                        <n-input-group>
+                        <div class="immortal-tip-box">
+                            <div v-if="!openSettings.disableCustomAddressName" class="tip-line">
+                                <span class="tip-dot"></span>
+                                <span>{{ t("getNewEmailTip1") + addressRegex.source }}</span>
+                            </div>
+                            <div v-if="!openSettings.disableCustomAddressName" class="tip-line">
+                                <span class="tip-dot"></span>
+                                <span>{{ t("getNewEmailTip2") }}</span>
+                            </div>
+                            <div class="tip-line">
+                                <span class="tip-dot"></span>
+                                <span>{{ t("getNewEmailTip3") }}</span>
+                            </div>
+                        </div>
+                        <div v-if="!openSettings.disableCustomAddressName" style="margin-bottom: 12px; text-align: left;">
+                            <n-button @click="generateName" size="small" tertiary type="primary" class="random-name-btn">
+                                <template #icon>
+                                    <n-icon :component="AutoAwesomeOutlined" />
+                                </template>
+                                {{ t('generateName') }}
+                            </n-button>
+                        </div>
+                        <n-input-group class="new-address-inputs">
                             <n-input-group-label v-if="addressPrefix">
                                 {{ addressPrefix }}
                             </n-input-group-label>
@@ -357,7 +385,7 @@ onMounted(async () => {
                             </div>
                         </n-form-item-row>
                         <Turnstile v-model:value="cfToken" />
-                        <n-button type="primary" block secondary strong @click="newEmail" :loading="loading"
+                        <n-button type="primary" block strong @click="newEmail" :loading="loading" class="immortal-primary-action"
                             :disabled="subdomainMode === 'custom' && !customSubdomain.trim()">
                             <template #icon>
                                 <n-icon :component="NewLabelOutlined" />
@@ -378,10 +406,16 @@ onMounted(async () => {
                     </n-form>
                 </n-spin>
             </n-tab-pane>
-            <n-tab-pane name="help" :tab="t('help')">
-                <n-alert :show-icon="false" :bordered="false">
+            <n-tab-pane name="help">
+                <template #tab>
+                    <div class="immortal-tab-label">
+                        <n-icon :component="HelpOutlineOutlined" />
+                        <span>{{ t('help') === '帮助' ? '使用帮助' : t('help') }}</span>
+                    </div>
+                </template>
+                <div class="immortal-tip-box" style="margin-bottom: 14px;">
                     <span>{{ t('pleaseGetNewEmail') }}</span>
-                </n-alert>
+                </div>
                 <AdminContact />
             </n-tab-pane>
         </n-tabs>
@@ -398,6 +432,29 @@ onMounted(async () => {
 
 .n-form .n-button {
     margin-top: 10px;
+}
+
+.immortal-login :deep(.n-form-item-label) {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.immortal-login :deep(.n-input--textarea .n-input__textarea-el) {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.new-address-inputs {
+    margin-bottom: 16px;
+}
+
+.new-address-inputs > .n-input {
+    flex: 1 1 45%;
+}
+
+.new-address-inputs > .n-select {
+    flex: 1 1 55%;
 }
 
 .redeem-entry-section {

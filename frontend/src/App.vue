@@ -13,6 +13,7 @@ import { api } from './api'
 import { getNaiveLocaleConfig } from './i18n/naive-locale'
 import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/utils'
 import { APP_CONFIG } from './config'
+import { immortalDarkThemeOverrides, immortalLightThemeOverrides } from './theme/immortal'
 
 const {
   isDark, loading, useSideMargin, telegramApp, isTelegram
@@ -21,6 +22,7 @@ const adClient = APP_CONFIG.GOOGLE_AD_CLIENT;
 const adSlot = APP_CONFIG.GOOGLE_AD_SLOT;
 const { locale } = useI18n({ useScope: 'global' });
 const theme = computed(() => isDark.value ? darkTheme : null)
+const themeOverrides = computed(() => isDark.value ? immortalDarkThemeOverrides : immortalLightThemeOverrides)
 const localeConfig = computed(() => getNaiveLocaleConfig(isSupportedLocale(locale.value) ? locale.value : DEFAULT_LOCALE))
 const isMobile = useIsMobile()
 const showSideMargin = computed(() => !isMobile.value && useSideMargin.value);
@@ -88,7 +90,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme">
+  <div class="immortal-bg-stage" :class="[isDark ? 'immortal-dark' : 'immortal-light']">
+    <div class="immortal-particles"></div>
+  </div>
+  <n-config-provider :locale="localeConfig.locale" :date-locale="localeConfig.dateLocale" :theme="theme" :theme-overrides="themeOverrides">
     <n-global-style />
     <n-spin description="loading..." :show="loading">
       <n-notification-provider container-style="margin-top: 60px;">
@@ -101,7 +106,7 @@ onMounted(async () => {
               </div>
             </n-gi>
             <n-gi :span="!showSideMargin ? gridMaxCols : (gridMaxCols - 2)">
-              <div class="main">
+              <div class="main" :class="[isDark ? 'immortal-dark' : 'immortal-light']">
                 <n-space vertical>
                   <n-layout style="min-height: 80vh;">
                     <Header />
@@ -145,23 +150,28 @@ onMounted(async () => {
 
 <style scoped>
 .side {
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .main {
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
   text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
 }
 
 .n-grid {
-  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .n-gi {
-  height: 100%;
+  min-height: 100%;
 }
 
 .n-space {
-  height: 100%;
+  min-height: 100%;
 }
 </style>

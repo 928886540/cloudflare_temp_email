@@ -47,7 +47,7 @@ const changeMailAddress = async (address_id) => {
     try {
         const res = await api.fetch(`/user_api/bind_address_jwt/${address_id}`);
         if (!res.jwt) {
-            message.error("jwt not found");
+            message.error("未找到登录凭据，请重新登录");
             return;
         }
         jwt.value = res.jwt;
@@ -79,11 +79,11 @@ const unbindAddress = async (address_id) => {
 
 const transferAddress = async () => {
     if (!targetUserEmail.value) {
-        message.error("targetUserEmail is required");
+        message.error("请输入目标用户邮箱");
         return;
     }
     if (!currentAddressId.value) {
-        message.error("currentAddressId is required");
+        message.error("缺少当前邮箱 ID");
         return;
     }
     try {
@@ -148,11 +148,13 @@ const searchData = () => {
 const columns = [
     {
         title: t('emailAddress'),
-        key: "name"
+        key: "name",
+        minWidth: 200
     },
     {
         title: t('mail_count'),
         key: "mail_count",
+        width: 110,
         render(row) {
             return h(NBadge, {
                 value: row.mail_count,
@@ -165,6 +167,7 @@ const columns = [
     {
         title: t('send_count'),
         key: "send_count",
+        width: 110,
         render(row) {
             return h(NBadge, {
                 value: row.send_count,
@@ -177,6 +180,8 @@ const columns = [
     {
         title: t('actions'),
         key: 'actions',
+        width: 340,
+        fixed: 'right',
         render(row) {
             return h('div', [
                 h(NButton,
@@ -275,7 +280,7 @@ watch([page, pageSize], async () => {
                             {{ t('itemCount') }}: {{ itemCount }}
                         </template>
                     </n-pagination>
-                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+                    <n-data-table :columns="columns" :data="data" :bordered="false" embedded :scroll-x="780" />
                 </div>
             </n-tab-pane>
             <n-tab-pane name="create_or_bind" :tab="t('create_or_bind')">

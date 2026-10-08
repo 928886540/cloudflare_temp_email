@@ -33,11 +33,13 @@ const fetchData = async () => {
 const columns = [
     {
         title: t('emailAddress'),
-        key: "name"
+        key: "name",
+        minWidth: 220
     },
     {
         title: t('mail_count'),
         key: "mail_count",
+        width: 120,
         render(row) {
             return h(NBadge, {
                 value: row.mail_count,
@@ -50,6 +52,7 @@ const columns = [
     {
         title: t('send_count'),
         key: "send_count",
+        width: 120,
         render(row) {
             return h(NBadge, {
                 value: row.send_count,
@@ -68,7 +71,7 @@ onMounted(async () => {
 
 <template>
     <div class="address-table-scroll">
-        <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+        <n-data-table :columns="columns" :data="data" :bordered="false" embedded :scroll-x="480" />
     </div>
 </template>
 

@@ -10,14 +10,15 @@ const { t } = useScopedI18n('views.Footer')
 </script>
 
 <template>
-    <div>
+    <div class="immortal-footer">
         <n-divider class="footer-divider" />
-        <div style="text-align: center; padding: 20px">
-            <n-space justify="center">
+        <div style="text-align: center; padding: 18px 12px">
+            <n-space justify="center" align="center">
+                <span class="footer-brand">LeonMinGod · Immortal Mail</span>
                 <n-text depth="3">
-                    {{ t('copyright') }} © 2023-{{ new Date().getFullYear() }}
+                    © 2026
                 </n-text>
-                <n-text depth="3">
+                <n-text depth="3" v-if="openSettings.copyright">
                     <div v-html="DOMPurify.sanitize(openSettings.copyright)"></div>
                 </n-text>
             </n-space>
@@ -30,5 +31,13 @@ const { t } = useScopedI18n('views.Footer')
 .footer-divider {
     margin: 0;
     padding: 0 var(--x-padding);
+}
+
+.footer-brand {
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    color: var(--text-muted);
+    text-transform: uppercase;
 }
 </style>

@@ -30,7 +30,7 @@ const addressRegex = computed(() => {
         }
     } catch (error) {
         console.error(error);
-        message.error(`Invalid addressRegex: ${openSettings.value.addressRegex}`);
+        message.error(`前缀正则规则无效: ${openSettings.value.addressRegex}`);
     }
     return /[^a-z0-9]/g;
 });

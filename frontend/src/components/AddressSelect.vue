@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { useScopedI18n } from '@/i18n/app'
 import { useMessage } from 'naive-ui'
 import useClipboard from 'vue-clipboard3'
-import { Copy } from '@vicons/fa'
+import { Copy, Check } from '@vicons/fa'
 
 import { useGlobalState } from '../store'
 import { api } from '../api'
@@ -183,7 +183,7 @@ const onAddressChange = async (value) => {
         try {
             const res = await api.fetch(`/user_api/bind_address_jwt/${value.payload}`);
             if (!res?.jwt) {
-                message.error("jwt not found");
+                message.error("未找到登录凭据，请重新登录");
                 return;
             }
             jwt.value = res.jwt;
@@ -194,9 +194,13 @@ const onAddressChange = async (value) => {
     }
 }
 
+const isCopied = ref(false)
+
 const copy = async () => {
     try {
         await toClipboard(settings.value.address)
+        isCopied.value = true
+        setTimeout(() => { isCopied.value = false }, 1200)
         message.success(t('copied'));
     } catch (e) {
         message.error(e.message || "error");
@@ -218,8 +222,12 @@ watch([userJwt, isTelegram, () => settings.value.address], async () => {
             :loading="addressLoading" :placeholder="t('selectMailbox')" @update:value="onAddressChange"
             class="address-select" />
         <slot name="actions" />
-        <n-button v-if="showCopy" class="address-copy" @click="copy" :size="size" tertiary type="primary">
-            <n-icon :component="Copy" /> {{ t('copy') }}
+        <n-button v-if="showCopy" class="address-copy" :class="{ 'address-copy--copied': isCopied }"
+            @click="copy" :size="size" tertiary type="primary">
+            <template #icon>
+                <n-icon :component="isCopied ? Check : Copy" />
+            </template>
+            {{ isCopied ? t('copied') : t('copy') }}
         </n-button>
     </n-flex>
 </template>
@@ -227,17 +235,35 @@ watch([userJwt, isTelegram, () => settings.value.address], async () => {
 <style scoped>
 .address-row {
     width: 100%;
-    gap: 10px;
+    gap: 12px;
 }
 
 .address-select {
-    min-width: 220px;
-    max-width: 420px;
-    flex: 1 1 220px;
+    min-width: 240px;
+    max-width: 440px;
+    flex: 1 1 240px;
 }
 
 .address-copy {
     flex: 0 0 auto;
     white-space: nowrap;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.address-copy--copied {
+    color: var(--ice-accent) !important;
+    background-color: var(--tab-active-bg) !important;
+}
+
+@media (max-width: 767px) {
+    .address-select {
+        min-width: 0;
+        max-width: none;
+        flex-basis: 100%;
+    }
+
+    .address-row {
+        gap: 10px;
+    }
 }
 </style>

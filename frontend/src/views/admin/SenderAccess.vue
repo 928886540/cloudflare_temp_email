@@ -63,26 +63,31 @@ const fetchData = async () => {
 const columns = [
   {
     title: "ID",
-    key: "id"
+    key: "id",
+    width: 80
   },
   {
     title: t('address'),
-    key: "address"
+    key: "address",
+    minWidth: 200
   },
   {
     title: t('created_at'),
     key: "created_at",
+    width: 170,
     render(row) {
       return utcToLocalDate(row.created_at, useUTCDate.value);
     }
   },
   {
     title: t('balance'),
-    key: "balance"
+    key: "balance",
+    width: 100
   },
   {
     title: t('is_enabled'),
     key: "enabled",
+    width: 100,
     render(row) {
       return h('div', [
         h('span', row.enabled ? t('enable') : t('disable'))
@@ -92,6 +97,8 @@ const columns = [
   {
     title: t('action'),
     key: 'actions',
+    width: 130,
+    fixed: 'right',
     render(row) {
       return h('div', [
         h(NButton,
@@ -174,7 +181,7 @@ onMounted(async () => {
           </template>
         </n-pagination>
       </div>
-      <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+      <n-data-table :columns="columns" :data="data" :bordered="false" embedded :scroll-x="780" />
     </div>
   </div>
 </template>

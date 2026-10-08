@@ -21,18 +21,29 @@ export const getRouterPathWithLang = (path: string, lang: string) => {
 
 export const utcToLocalDate = (utcDate: string | null | undefined, useUTCDate: boolean) => {
     if (!utcDate) return '';
-    const utcDateString = `${utcDate} UTC`;
     if (useUTCDate) {
-        return utcDateString;
+        return `${utcDate} UTC`;
     }
     try {
-        const date = new Date(utcDateString);
-        // if invalid date string
-        if (isNaN(date.getTime())) return utcDateString;
-
-        return date.toLocaleString();
+        let str = String(utcDate).trim();
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(str) && !str.includes('Z') && !str.includes('+')) {
+            str = str.replace(' ', 'T') + 'Z';
+        }
+        const date = new Date(str);
+        if (!isNaN(date.getTime())) {
+            return date.toLocaleString('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                hour12: false,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(/\//g, '-');
+        }
     } catch (e) {
         console.error(e);
     }
-    return utcDateString;
+    return `${utcDate} (GMT+8)`;
 }

@@ -153,7 +153,7 @@ const presetDropdownOptions: DropdownOption[] = presets.map((preset, index) => (
 const handlePresetSelect = (key: number) => {
     const preset = presets[key]
     if (!preset) {
-        message.error('Invalid preset')
+        message.error('无效的预设模板')
         return
     }
     Object.assign(webhookSettings.value, preset.settings)

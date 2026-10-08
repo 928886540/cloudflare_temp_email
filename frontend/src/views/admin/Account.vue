@@ -6,7 +6,7 @@ import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../../store'
 import { api } from '../../api'
 import { hashPassword, utcToLocalDate } from '../../utils'
-import { NButton, NMenu } from 'naive-ui';
+import { NButton, NDropdown } from 'naive-ui';
 import { MenuFilled } from '@vicons/material'
 import AddressCredentialModal from '../../components/AddressCredentialModal.vue'
 
@@ -257,25 +257,30 @@ const handleSorterChange = (sorter) => {
 
 const columns = computed(() => [
     {
-        type: 'selection'
+        type: 'selection',
+        width: 44,
+        fixed: 'left'
     },
     {
         title: "ID",
         key: "id",
         sorter: true,
-        sortOrder: sortBy.value === 'id' ? sortOrder.value : false
+        sortOrder: sortBy.value === 'id' ? sortOrder.value : false,
+        width: 80
     },
     {
         title: t('emailAddress'),
         key: "name",
         sorter: true,
-        sortOrder: sortBy.value === 'name' ? sortOrder.value : false
+        sortOrder: sortBy.value === 'name' ? sortOrder.value : false,
+        minWidth: 220
     },
     {
         title: t('created_at'),
         key: "created_at",
         sorter: true,
         sortOrder: sortBy.value === 'created_at' ? sortOrder.value : false,
+        width: 170,
         render(row) {
             return utcToLocalDate(row.created_at, useUTCDate.value);
         }
@@ -285,6 +290,7 @@ const columns = computed(() => [
         key: "updated_at",
         sorter: true,
         sortOrder: sortBy.value === 'updated_at' ? sortOrder.value : false,
+        width: 170,
         render(row) {
             return utcToLocalDate(row.updated_at, useUTCDate.value);
         }
@@ -294,6 +300,7 @@ const columns = computed(() => [
         key: "source_meta",
         sorter: true,
         sortOrder: sortBy.value === 'source_meta' ? sortOrder.value : false,
+        width: 140,
         render(row) {
             const val = row.source_meta;
             if (!val) return '';
@@ -314,6 +321,7 @@ const columns = computed(() => [
         key: "mail_count",
         sorter: true,
         sortOrder: sortBy.value === 'mail_count' ? sortOrder.value : false,
+        width: 110,
         render(row) {
             return h(NButton,
                 {
@@ -342,6 +350,7 @@ const columns = computed(() => [
         key: "send_count",
         sorter: true,
         sortOrder: sortBy.value === 'send_count' ? sortOrder.value : false,
+        width: 110,
         render(row) {
             return h(NButton,
                 {
@@ -368,107 +377,79 @@ const columns = computed(() => [
     {
         title: t('actions'),
         key: 'actions',
+        width: 110,
+        fixed: 'right',
         render(row) {
-            return h('div', [
-                h(NMenu, {
-                    mode: "horizontal",
-                    options: [
-                        {
-                            label: t('actions'),
-                            icon: () => h(MenuFilled),
-                            key: "action",
-                            children: [
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => showCredential(row)
-                                        },
-                                        { default: () => t('showCredential') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                adminMailTabAddress.value = row.name;
-                                                adminTab.value = "mails";
-                                            }
-                                        },
-                                        { default: () => t('viewMails') }
-                                    ),
-                                    show: row.mail_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                adminSendBoxTabAddress.value = row.name;
-                                                adminTab.value = "sendBox";
-                                            }
-                                        },
-                                        { default: () => t('viewSendBox') }
-                                    ),
-                                    show: row.send_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curClearInboxAddressId.value = row.id;
-                                                showClearInbox.value = true;
-                                            }
-                                        },
-                                        { default: () => t('clearInbox') }
-                                    ),
-                                    show: row.mail_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curClearSentItemsAddressId.value = row.id;
-                                                showClearSentItems.value = true;
-                                            }
-                                        },
-                                        { default: () => t('clearSentItems') }
-                                    ),
-                                    show: row.send_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curResetPasswordAddressId.value = row.id;
-                                                showResetPassword.value = true;
-                                            }
-                                        },
-                                        { default: () => t('resetPassword') }
-                                    ),
-                                    show: openSettings.value?.enableAddressPassword
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curDeleteAddressId.value = row.id;
-                                                showDeleteAccount.value = true;
-                                            }
-                                        },
-                                        { default: () => t('delete') }
-                                    )
-                                }
-                            ]
-                        }
-                    ]
+            const options = [
+                {
+                    label: t('showCredential'),
+                    key: 'showCredential'
+                },
+                ...(row.mail_count > 0 ? [{
+                    label: t('viewMails'),
+                    key: 'viewMails'
+                }] : []),
+                ...(row.send_count > 0 ? [{
+                    label: t('viewSendBox'),
+                    key: 'viewSendBox'
+                }] : []),
+                ...(row.mail_count > 0 ? [{
+                    label: t('clearInbox'),
+                    key: 'clearInbox'
+                }] : []),
+                ...(row.send_count > 0 ? [{
+                    label: t('clearSentItems'),
+                    key: 'clearSentItems'
+                }] : []),
+                ...(openSettings.value?.enableAddressPassword ? [{
+                    label: t('resetPassword'),
+                    key: 'resetPassword'
+                }] : []),
+                {
+                    label: t('delete'),
+                    key: 'delete',
+                    props: {
+                        style: 'color: #ef4444;'
+                    }
+                }
+            ];
+            return h(NDropdown, {
+                trigger: 'click',
+                options: options,
+                onSelect: (key) => {
+                    if (key === 'showCredential') {
+                        showCredential(row);
+                    } else if (key === 'viewMails') {
+                        adminMailTabAddress.value = row.name;
+                        adminTab.value = "mails";
+                    } else if (key === 'viewSendBox') {
+                        adminSendBoxTabAddress.value = row.name;
+                        adminTab.value = "sendBox";
+                    } else if (key === 'clearInbox') {
+                        curClearInboxAddressId.value = row.id;
+                        showClearInbox.value = true;
+                    } else if (key === 'clearSentItems') {
+                        curClearSentItemsAddressId.value = row.id;
+                        showClearSentItems.value = true;
+                    } else if (key === 'resetPassword') {
+                        curResetPasswordAddressId.value = row.id;
+                        showResetPassword.value = true;
+                    } else if (key === 'delete') {
+                        curDeleteAddressId.value = row.id;
+                        showDeleteAccount.value = true;
+                    }
+                }
+            }, {
+                default: () => h(NButton, {
+                    size: 'small',
+                    secondary: true,
+                    type: 'primary',
+                    style: 'border-radius: 8px;'
+                }, {
+                    icon: () => h(MenuFilled),
+                    default: () => t('actions')
                 })
-            ])
+            });
         }
     }
 ])
@@ -569,7 +550,7 @@ onMounted(async () => {
                 </n-pagination>
             </div>
             <n-data-table v-model:checked-row-keys="checkedRowKeys" :columns="columns" :data="data" :bordered="false"
-                :row-key="row => row.id" remote @update:sorter="handleSorterChange" embedded />
+                :row-key="row => row.id" remote @update:sorter="handleSorterChange" embedded :scroll-x="1150" />
         </div>
 
         <!-- Multi-action progress modal -->

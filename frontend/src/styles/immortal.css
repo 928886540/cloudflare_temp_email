@@ -1,0 +1,560 @@
+/* LeonMinGod — Immortal Mail Design Tokens & Global Styles (Dark & Light) */
+
+/* 1. Light Mode (Default) — 霜天雪境 / 冰蓝仙晶 */
+:root {
+  --bg-page: #f0f7ff;
+  --bg-stage: #f0f7ff;
+  --bg-stage-gradient:
+    radial-gradient(ellipse at 50% -10%, rgba(186, 230, 253, 0.65) 0%, transparent 70%),
+    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.16) 0%, transparent 45%),
+    radial-gradient(circle at 15% 75%, rgba(125, 211, 252, 0.22) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 110%, #f8fafc 0%, transparent 80%);
+
+  --particle-opacity: 0.45;
+  --particle-dot-1: rgba(56, 189, 248, 0.38);
+  --particle-dot-2: rgba(2, 132, 199, 0.25);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+
+  --glass-card-bg: rgba(255, 255, 255, 0.85);
+  --glass-card-hover: rgba(240, 249, 255, 0.95);
+  --glass-card-border: rgba(2, 132, 199, 0.26);
+  --glass-shadow: 0 8px 30px rgba(186, 230, 253, 0.35), 0 2px 8px rgba(15, 23, 42, 0.04);
+
+  --ice-accent: #0284c7;
+  --ice-accent-hover: #0369a1;
+  --ice-glow: rgba(56, 189, 248, 0.25);
+
+  --tab-track-bg: rgba(224, 242, 254, 0.55);
+  --tab-track-border: rgba(186, 230, 253, 0.75);
+  --tab-item-color: #64748b;
+  --tab-item-hover-color: #0f172a;
+  --tab-active-bg: #ffffff;
+  --tab-active-color: #0284c7;
+  --tab-active-shadow: 0 2px 10px rgba(2, 132, 199, 0.18);
+
+  --brand-gradient: linear-gradient(135deg, #0369a1 0%, #0284c7 55%, #0ea5e9 100%);
+  --brand-badge-bg: rgba(224, 242, 254, 0.85);
+  --brand-badge-color: #0284c7;
+  --brand-badge-border: rgba(56, 189, 248, 0.4);
+
+  --tip-box-bg: rgba(240, 249, 255, 0.75);
+  --tip-box-border: rgba(186, 230, 253, 0.7);
+  --tip-box-text: #334155;
+}
+
+/* 2. Dark Mode — 深夜雪境 / 冰蓝灵气 */
+html.dark, .immortal-dark {
+  --bg-page: #030712;
+  --bg-stage: #030712;
+  --bg-stage-gradient:
+    radial-gradient(ellipse at 50% -10%, rgba(30, 58, 138, 0.35) 0%, transparent 70%),
+    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 15% 75%, rgba(14, 116, 144, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 110%, rgba(3, 7, 18, 0.95) 0%, transparent 80%);
+
+  --particle-opacity: 0.65;
+  --particle-dot-1: rgba(224, 242, 254, 0.65);
+  --particle-dot-2: rgba(125, 211, 252, 0.5);
+
+  --text-primary: #f0f9ff;
+  --text-secondary: #bae6fd;
+  --text-muted: #64748b;
+
+  --glass-card-bg: rgba(7, 21, 37, 0.68);
+  --glass-card-hover: rgba(11, 27, 45, 0.82);
+  --glass-card-border: rgba(125, 211, 252, 0.24);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+
+  --ice-accent: #38bdf8;
+  --ice-accent-hover: #7dd3fc;
+  --ice-glow: rgba(56, 189, 248, 0.35);
+
+  --tab-track-bg: rgba(7, 21, 37, 0.65);
+  --tab-track-border: rgba(125, 211, 252, 0.16);
+  --tab-item-color: #94a3b8;
+  --tab-item-hover-color: #f0f9ff;
+  --tab-active-bg: rgba(14, 38, 66, 0.88);
+  --tab-active-color: #38bdf8;
+  --tab-active-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+
+  --brand-gradient: linear-gradient(135deg, #ffffff 10%, #bae6fd 60%, #7dd3fc 100%);
+  --brand-badge-bg: rgba(12, 34, 58, 0.65);
+  --brand-badge-color: #7dd3fc;
+  --brand-badge-border: rgba(125, 211, 252, 0.25);
+
+  --tip-box-bg: rgba(7, 21, 37, 0.6);
+  --tip-box-border: rgba(125, 211, 252, 0.18);
+  --tip-box-text: #bae6fd;
+}
+
+html, body {
+  background-color: var(--bg-page) !important;
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Background Atmosphere */
+.immortal-bg-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--bg-stage);
+  background-image: var(--bg-stage-gradient);
+  overflow: hidden;
+  transition: background-color 0.4s ease;
+}
+
+/* Ethereal Stardust / Snow effect */
+.immortal-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 15% 20%, var(--particle-dot-1) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 65%, var(--particle-dot-2) 50%, transparent 100%),
+    radial-gradient(2px 2px at 60% 30%, var(--particle-dot-1) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 80% 75%, var(--particle-dot-2) 50%, transparent 100%),
+    radial-gradient(1px 1px at 90% 15%, var(--particle-dot-1) 50%, transparent 100%),
+    radial-gradient(2px 2px at 25% 85%, var(--particle-dot-2) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 10%, var(--particle-dot-1) 50%, transparent 100%),
+    radial-gradient(1px 1px at 70% 90%, var(--particle-dot-2) 50%, transparent 100%);
+  animation: snow-drift 24s linear infinite;
+  opacity: var(--particle-opacity);
+}
+
+.immortal-particles::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 45%, var(--particle-dot-2) 50%, transparent 100%),
+    radial-gradient(2px 2px at 50% 55%, var(--particle-dot-1) 50%, transparent 100%),
+    radial-gradient(1px 1px at 75% 40%, var(--particle-dot-2) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 90%, var(--particle-dot-1) 50%, transparent 100%);
+  animation: snow-drift-reverse 32s linear infinite;
+  opacity: calc(var(--particle-opacity) * 0.8);
+}
+
+@keyframes snow-drift {
+  0% { transform: translateY(-10%) translateX(0); }
+  50% { transform: translateY(5%) translateX(15px); }
+  100% { transform: translateY(20%) translateX(0); }
+}
+
+@keyframes snow-drift-reverse {
+  0% { transform: translateY(10%) translateX(0); }
+  50% { transform: translateY(-5%) translateX(-12px); }
+  100% { transform: translateY(-20%) translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .immortal-particles,
+  .immortal-particles::after {
+    animation: none !important;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.28);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ice-accent);
+}
+
+/* Glassmorphism Global Utilities */
+.glass-panel {
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-card-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  border-radius: 16px;
+}
+
+/* Brand Typography */
+.brand-title-text {
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Naive UI Card / Layout Overrides */
+.n-card {
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.n-layout {
+  background: transparent !important;
+}
+
+.n-layout-header {
+  background: transparent !important;
+}
+
+.n-list {
+  background: transparent !important;
+}
+
+/* Controls share the same frost-glass surfaces in both themes. */
+:root {
+  --control-highlight: rgba(255, 255, 255, 0.8);
+  --control-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.6), transparent);
+  --control-shadow: inset 0 1px 0 var(--control-highlight), 0 2px 5px rgba(15, 54, 80, 0.04);
+  --focus-ring: 0 0 0 3px rgba(2, 132, 199, 0.12);
+  --popup-bg: rgba(248, 252, 255, 0.97);
+  --selected-wash: linear-gradient(110deg, rgba(186, 230, 253, 0.45), rgba(255, 255, 255, 0.96));
+  --primary-fill: linear-gradient(160deg, #258eb6, #13678e);
+}
+
+html.dark, .immortal-dark {
+  --control-highlight: rgba(186, 230, 253, 0.12);
+  --control-sheen: linear-gradient(180deg, rgba(186, 230, 253, 0.06), transparent);
+  --control-shadow: inset 0 1px 0 var(--control-highlight), 0 2px 8px rgba(0, 0, 0, 0.12);
+  --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.14);
+  --popup-bg: rgba(10, 25, 43, 0.97);
+  --selected-wash: linear-gradient(110deg, rgba(23, 70, 100, 0.72), rgba(10, 26, 45, 0.9));
+  --primary-fill: linear-gradient(160deg, #1b526f, #10344e);
+  --text-muted: #8ba0b6;
+}
+
+/* Only horizontal card tabs scroll; segmented tabs keep native capsule geometry. */
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav-scroll-wrapper {
+  border: 0 !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav-scroll-content {
+  padding: 5px 2px 8px;
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-scroll-padding {
+  border: 0 !important;
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav__prefix,
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav__suffix,
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-pad,
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-tab-pad {
+  border: 0 !important;
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-tab {
+  box-sizing: border-box;
+  margin: 0;
+  border: 1px solid var(--tab-track-border) !important;
+  border-radius: 12px !important;
+  background: var(--tab-track-bg);
+  background-image: var(--control-sheen);
+  box-shadow: var(--control-shadow);
+  color: var(--tab-item-color);
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-tab:hover {
+  color: var(--tab-item-hover-color);
+  border-color: var(--glass-card-border) !important;
+  background-color: var(--glass-card-hover);
+}
+
+.n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-tab--active {
+  color: var(--tab-active-color);
+  border-color: var(--ice-accent) !important;
+  background: var(--selected-wash);
+  box-shadow: var(--control-shadow), 0 0 12px var(--ice-glow);
+}
+
+.n-tabs.n-tabs--segment-type > .n-tabs-nav > .n-tabs-rail {
+  box-sizing: border-box;
+  border-radius: 13px;
+  background: var(--tab-track-bg);
+  /* An inset stroke avoids changing the offsets measured by Naive UI. */
+  box-shadow: inset 0 0 0 1px var(--tab-track-border), var(--control-shadow);
+}
+
+.n-tabs.n-tabs--segment-type > .n-tabs-nav > .n-tabs-rail > .n-tabs-capsule {
+  border-radius: 10px;
+  background: var(--selected-wash);
+  box-shadow: inset 0 0 0 1px var(--glass-card-border), var(--control-shadow);
+}
+
+.n-tabs.n-tabs--segment-type > .n-tabs-nav > .n-tabs-rail > .n-tabs-tab-wrapper {
+  min-width: 0;
+}
+
+.n-tabs.n-tabs--segment-type > .n-tabs-nav > .n-tabs-rail > .n-tabs-tab-wrapper > .n-tabs-tab {
+  box-sizing: border-box;
+  min-width: 0;
+  border-radius: 10px;
+}
+
+.immortal-tab-label, .immortal-tab-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.immortal-tab-label .n-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+/* Glass buttons retain their semantic colors and native loading/disabled states. */
+.n-button {
+  box-sizing: border-box;
+  font-weight: 500;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.n-button:has(> .n-base-wave) {
+  background-image: var(--control-sheen);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent), var(--control-shadow);
+}
+
+.n-button--primary-type:has(> .n-button__border):not(.n-button--ghost):not(.n-button--dashed):not(.n-button--disabled) {
+  background-image: var(--primary-fill);
+}
+
+.n-button:not(.n-button--disabled):focus-visible {
+  outline: 2px solid var(--ice-accent);
+  outline-offset: 3px;
+}
+
+.n-button:not(.n-button--disabled):has(> .n-base-wave):hover {
+  box-shadow: var(--control-shadow), 0 3px 12px var(--ice-glow);
+}
+
+.n-button:not(.n-button--disabled):has(> .n-base-wave):active {
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.immortal-primary-action:not(.n-button--disabled) {
+  background-image: var(--primary-fill) !important;
+  box-shadow: inset 0 1px 0 rgba(224, 242, 254, 0.22), 0 4px 14px var(--ice-glow) !important;
+  letter-spacing: 0.04em;
+}
+
+.n-button--disabled {
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.n-input, .n-base-selection {
+  box-shadow: inset 0 1px 3px rgba(3, 24, 43, 0.05);
+}
+
+.n-form-item-label {
+  letter-spacing: 0.02em;
+}
+
+.n-form .n-input-group > .n-input,
+.n-form .n-input-group > .n-select {
+  min-width: 0;
+}
+
+.n-tag {
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.n-switch .n-switch__rail {
+  box-shadow: inset 0 0 0 1px var(--tab-track-border), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Hint panels and decorative details stay secondary to the form. */
+.immortal-user-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: var(--tip-box-bg);
+  border: 1px solid var(--tip-box-border);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.immortal-user-banner .banner-icon {
+  color: var(--ice-accent);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.immortal-tip-box {
+  background: var(--tip-box-bg);
+  border: 1px solid var(--tip-box-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--tip-box-text);
+}
+
+.immortal-tip-box .tip-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 3px 0;
+  overflow-wrap: anywhere;
+}
+
+.immortal-tip-box .tip-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ice-accent);
+  flex-shrink: 0;
+}
+
+/* Mail cards have one shared border definition, including the selected state. */
+.n-list .n-list-item {
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  padding: 15px 16px !important;
+  border: 1px solid var(--glass-card-border) !important;
+  border-radius: 13px !important;
+  background: var(--glass-card-bg);
+  background-image: var(--control-sheen);
+  box-shadow: var(--control-shadow);
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.n-list .n-list-item:hover {
+  background-color: var(--glass-card-hover);
+  border-color: var(--ice-accent) !important;
+}
+
+.n-list .n-list-item.mail-selected-item {
+  background: var(--selected-wash);
+  border-color: var(--ice-accent) !important;
+  box-shadow: inset 3px 0 0 var(--ice-accent), var(--control-shadow);
+}
+
+.n-list .n-list-item__divider {
+  display: none;
+}
+
+/* Teleported menus and dialogs inherit the theme from html.dark. */
+.n-dropdown-menu, .n-base-select-menu {
+  box-sizing: border-box;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 14px !important;
+  background: var(--popup-bg) !important;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--control-shadow), var(--glass-shadow);
+  padding: 5px !important;
+}
+
+.n-dropdown-option-body, .n-base-select-option {
+  border-radius: 9px;
+}
+
+.n-modal.n-card, .n-dialog {
+  box-sizing: border-box;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 48px);
+  border: 1px solid var(--glass-card-border);
+  border-radius: 20px;
+  background: var(--popup-bg);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--control-highlight);
+}
+
+.n-modal.n-card > .n-card__content {
+  overflow: auto;
+}
+
+.n-drawer.n-drawer--bottom-placement {
+  left: 10px !important;
+  right: 10px !important;
+  width: calc(100% - 20px) !important;
+  max-width: 860px;
+  margin: 0 auto;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  height: 82vh !important;
+  max-height: calc(100dvh - 36px);
+  border-radius: 20px;
+  border: 1px solid var(--glass-card-border);
+  background: var(--popup-bg);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--control-highlight);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.n-drawer.n-drawer--bottom-placement .n-drawer-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--tab-track-border);
+}
+
+.n-data-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.n-data-table .n-data-table-wrapper {
+  overflow-x: auto;
+}
+
+.n-data-table .n-data-table-th,
+.n-data-table .n-data-table-td,
+.n-data-table .n-button {
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .immortal-segment-tabs > .n-tabs-nav > .n-tabs-rail > .n-tabs-tab-wrapper > .n-tabs-tab {
+    padding: 9px 4px;
+    font-size: 12px;
+  }
+
+  .immortal-tab-label {
+    gap: 4px;
+  }
+
+  .immortal-tab-label .n-icon {
+    font-size: 14px;
+  }
+
+  .n-list .n-list-item {
+    padding: 14px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .n-button, .n-tabs-tab, .n-list-item, .n-tabs-capsule {
+    transition: none !important;
+  }
+}

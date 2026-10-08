@@ -91,7 +91,7 @@ const getOpenSettings = async (message, notification) => {
         const domains = Array.isArray(res["domains"]) ? res["domains"] : [];
         const domainLabels = res["domainLabels"] || [];
         if (domains.length < 1) {
-            message.error("No domains found, please check your worker settings");
+            message.error("未找到可用域名，请检查 Worker 配置");
         }
         Object.assign(openSettings.value, {
             ...res,

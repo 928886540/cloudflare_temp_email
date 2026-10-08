@@ -1,7 +1,7 @@
 <script setup>
 import { ref, h, onMounted, watch, computed } from 'vue';
 import { useScopedI18n } from '@/i18n/app'
-import { NMenu, NButton, NBadge, NTag } from 'naive-ui';
+import { NDropdown, NButton, NBadge, NTag } from 'naive-ui';
 import { MenuFilled } from '@vicons/material'
 
 import { useGlobalState } from '../../store'
@@ -147,15 +147,18 @@ const changeRole = async () => {
 const columns = [
     {
         title: "ID",
-        key: "id"
+        key: "id",
+        width: 80
     },
     {
         title: t('user_email'),
-        key: "user_email"
+        key: "user_email",
+        minWidth: 200
     },
     {
         title: t('role'),
         key: "role_text",
+        width: 120,
         render(row) {
             if (!row.role_text) return null;
             return h(NTag, {
@@ -169,6 +172,7 @@ const columns = [
     {
         title: t('address_count'),
         key: "address_count",
+        width: 120,
         render(row) {
             return h(NButton,
                 {
@@ -194,6 +198,7 @@ const columns = [
     {
         title: t('created_at'),
         key: "created_at",
+        width: 170,
         render(row) {
             return utcToLocalDate(row.created_at, useUTCDate.value);
         }
@@ -201,74 +206,63 @@ const columns = [
     {
         title: t('actions'),
         key: 'actions',
+        width: 110,
+        fixed: 'right',
         render(row) {
-            return h('div', [
-                h(NMenu, {
-                    mode: "horizontal",
-                    options: [
-                        {
-                            label: t('actions'),
-                            icon: () => h(MenuFilled),
-                            key: "action",
-                            children: [
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                showUserAddressManagement.value = true;
-                                            }
-                                        },
-                                        { default: () => t('userAddressManagement') }
-                                    ),
-                                    show: row.address_count > 0
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                curUserRole.value = row.role_text;
-                                                showChangeRole.value = true;
-                                            }
-                                        },
-                                        { default: () => t('changeRole') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                newResetPassword.value = '';
-                                                showResetPassword.value = true;
-                                            }
-                                        },
-                                        { default: () => t('resetPassword') }
-                                    ),
-                                },
-                                {
-                                    label: () => h(NButton,
-                                        {
-                                            text: true,
-                                            onClick: () => {
-                                                curUserId.value = row.id;
-                                                user.value.email = '';
-                                                user.value.password = '';
-                                                showDeleteUser.value = true;
-                                            }
-                                        },
-                                        { default: () => t('delete') }
-                                    )
-                                }
-                            ]
-                        }
-                    ]
+            const options = [
+                ...(row.address_count > 0 ? [{
+                    label: t('userAddressManagement'),
+                    key: 'userAddressManagement'
+                }] : []),
+                {
+                    label: t('changeRole'),
+                    key: 'changeRole'
+                },
+                {
+                    label: t('resetPassword'),
+                    key: 'resetPassword'
+                },
+                {
+                    label: t('delete'),
+                    key: 'delete',
+                    props: {
+                        style: 'color: #ef4444;'
+                    }
+                }
+            ];
+            return h(NDropdown, {
+                trigger: 'click',
+                options: options,
+                onSelect: (key) => {
+                    if (key === 'userAddressManagement') {
+                        curUserId.value = row.id;
+                        showUserAddressManagement.value = true;
+                    } else if (key === 'changeRole') {
+                        curUserId.value = row.id;
+                        curUserRole.value = row.role_text;
+                        showChangeRole.value = true;
+                    } else if (key === 'resetPassword') {
+                        curUserId.value = row.id;
+                        newResetPassword.value = '';
+                        showResetPassword.value = true;
+                    } else if (key === 'delete') {
+                        curUserId.value = row.id;
+                        user.value.email = '';
+                        user.value.password = '';
+                        showDeleteUser.value = true;
+                    }
+                }
+            }, {
+                default: () => h(NButton, {
+                    size: 'small',
+                    secondary: true,
+                    type: 'primary',
+                    style: 'border-radius: 8px;'
+                }, {
+                    icon: () => h(MenuFilled),
+                    default: () => t('actions')
                 })
-            ])
+            });
         }
     }
 ]
@@ -374,7 +368,7 @@ onMounted(async () => {
                     </template>
                 </n-pagination>
             </div>
-            <n-data-table :columns="columns" :data="data" :bordered="false" embedded />
+            <n-data-table :columns="columns" :data="data" :bordered="false" embedded :scroll-x="880" />
         </div>
     </div>
 </template>

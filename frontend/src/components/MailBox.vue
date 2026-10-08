@@ -3,7 +3,7 @@ import { watch, onMounted, ref, onBeforeUnmount, computed } from "vue";
 import { useMessage } from 'naive-ui'
 import { useScopedI18n } from '@/i18n/app'
 import { useGlobalState } from '../store'
-import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound } from '@vicons/material'
+import { CloudDownloadRound, ArrowBackIosNewFilled, ArrowForwardIosFilled, InboxRound, RefreshRound, SearchRound } from '@vicons/material'
 import { useIsMobile } from '../utils/composables'
 import { processItem } from '../utils/email-parser'
 import { utcToLocalDate } from '../utils';
@@ -251,7 +251,7 @@ const clickRow = (row) => {
 
 
 const mailItemClass = (row) => {
-  return curMail.value && row.id == curMail.value.id ? (isDark.value ? 'overlay overlay-dark-backgroud' : 'overlay overlay-light-backgroud') : '';
+  return curMail.value && row.id == curMail.value.id ? 'mail-selected-item' : '';
 };
 
 const deleteMail = async () => {
@@ -369,9 +369,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
+  <div class="immortal-mailbox">
     <div v-if="!isMobile" class="left">
-      <div style="margin-bottom: 10px;">
+      <div class="mailbox-toolbar">
         <n-space v-if="multiActionMode" align="center">
           <n-button @click="multiActionModeClick(false)" tertiary>
             {{ t('cancelMultiAction') }}
@@ -410,11 +410,14 @@ onBeforeUnmount(() => {
             </template>
           </n-switch>
           <n-button @click="backFirstPageAndRefresh" type="primary" tertiary>
+            <template #icon><n-icon :component="RefreshRound" /></template>
             {{ t('refresh') }}
           </n-button>
           <n-input v-if="showFilterInput" v-model:value="localFilterKeyword"
             :placeholder="t('keywordQueryTip')" style="width: 200px; display: flex; align-items: center;"
-            clearable />
+            clearable>
+            <template #prefix><n-icon :component="SearchRound" /></template>
+          </n-input>
         </n-space>
       </div>
       <n-split class="left" direction="horizontal" :max="0.75" :min="0" :resize-trigger-size="8"
@@ -425,36 +428,42 @@ onBeforeUnmount(() => {
           </div>
         </template>
         <template #1>
-          <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+          <div class="mail-list-scroll">
             <n-list hoverable clickable>
               <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
                 :class="[mailItemClass(row), { 'mail-list-unread': enableMailReadStatus && row.is_unread === 1 }]">
                 <template #prefix v-if="multiActionMode">
                   <n-checkbox v-model:checked="row.checked" />
                 </template>
-                <n-thing :title="row.subject">
+                <n-thing class="mail-list-thing">
+                  <template #header>
+                    <n-ellipsis class="mail-list-title">{{ row.subject }}</n-ellipsis>
+                  </template>
                   <template #description>
-                    <n-tag type="info">
-                      ID: {{ row.id }}
-                    </n-tag>
-                    <n-tag type="info">
-                      {{ utcToLocalDate(row.created_at, useUTCDate) }}
-                    </n-tag>
-                    <n-tag type="info">
-                      <n-ellipsis style="max-width: 240px;">
-                        {{ showEMailTo ? "FROM: " + row.source : row.source }}
-                      </n-ellipsis>
-                    </n-tag>
-                    <n-tag v-if="showEMailTo" type="info">
-                      <n-ellipsis style="max-width: 240px;">
-                        TO: {{ row.address }}
-                      </n-ellipsis>
-                    </n-tag>
-                    <AiExtractInfo :metadata="row.metadata" compact />
+                    <div class="mail-list-meta">
+                      <n-tag type="info">
+                        ID: {{ row.id }}
+                      </n-tag>
+                      <n-tag type="info">
+                        {{ utcToLocalDate(row.created_at, useUTCDate) }}
+                      </n-tag>
+                      <n-tag type="info">
+                        <n-ellipsis class="mail-list-meta-text">
+                          {{ showEMailTo ? "FROM: " + row.source : row.source }}
+                        </n-ellipsis>
+                      </n-tag>
+                      <n-tag v-if="showEMailTo" type="info">
+                        <n-ellipsis class="mail-list-meta-text">
+                          TO: {{ row.address }}
+                        </n-ellipsis>
+                      </n-tag>
+                      <AiExtractInfo :metadata="row.metadata" compact />
+                    </div>
                   </template>
                 </n-thing>
               </n-list-item>
             </n-list>
+            <n-empty v-if="data.length === 0" :description="localFilterKeyword.trim() ? t('noMatchingMail') : t('emptyInbox')" class="mail-list-empty" />
           </div>
         </template>
         <template #2>
@@ -495,10 +504,10 @@ onBeforeUnmount(() => {
               :enableMailReadStatus="enableMailReadStatus" :onUpdateMailReadStatus="toggleCurrentMailUnread"
               :onDelete="deleteMail" :onReply="replyMail" :onForward="forwardMail" :onSaveToS3="saveToS3Proxy" />
           </n-card>
-          <n-card :bordered="false" embedded class="mail-item" v-else>
+          <n-card :bordered="false" embedded class="mail-item mail-detail-empty" v-else>
             <n-result status="info" :title="count === 0 ? t('emptyInbox') : t('pleaseSelectMail')">
               <template #icon>
-                <n-icon :component="InboxRound" :size="100" />
+                <div class="mail-empty-icon"><n-icon :component="InboxRound" :size="48" /></div>
               </template>
             </n-result>
           </n-card>
@@ -545,10 +554,11 @@ onBeforeUnmount(() => {
             </n-thing>
           </n-list-item>
         </n-list>
+        <n-empty v-if="data.length === 0" :description="localFilterKeyword.trim() ? t('noMatchingMail') : t('emptyInbox')" class="mail-list-empty" />
       </div>
     </div>
     <div class="left" v-else>
-      <n-space justify="space-around" align="center" :wrap="false" style="display: flex; align-items: center;">
+      <n-space justify="space-between" align="center" class="mailbox-mobile-toolbar">
         <n-pagination v-model:page="page" v-model:page-size="pageSize" :item-count="count" simple size="small" />
         <n-switch v-model:value="autoRefresh" size="small" :round="false">
           <template #checked>
@@ -559,40 +569,49 @@ onBeforeUnmount(() => {
           </template>
         </n-switch>
         <n-button @click="backFirstPageAndRefresh" tertiary size="small" type="primary">
+          <template #icon><n-icon :component="RefreshRound" /></template>
           {{ t('refresh') }}
         </n-button>
       </n-space>
       <div v-if="showFilterInput" style="padding: 0 10px; margin-top: 8px; margin-bottom: 10px;">
         <n-input v-model:value="localFilterKeyword"
-          :placeholder="t('keywordQueryTip')" size="small" clearable />
+          :placeholder="t('keywordQueryTip')" size="small" clearable>
+          <template #prefix><n-icon :component="SearchRound" /></template>
+        </n-input>
       </div>
-      <div style="overflow: auto; min-height: 60vh; max-height: 100vh;">
+      <div class="mail-list-scroll">
         <n-list hoverable clickable>
           <n-list-item v-for="row in data" v-bind:key="row.id" @click="() => clickRow(row)"
-            :class="{ 'mail-list-unread': enableMailReadStatus && row.is_unread === 1 }">
-            <n-thing :title="row.subject">
+            :class="[mailItemClass(row), { 'mail-list-unread': enableMailReadStatus && row.is_unread === 1 }]">
+            <n-thing class="mail-list-thing">
+              <template #header>
+                <n-ellipsis class="mail-list-title">{{ row.subject }}</n-ellipsis>
+              </template>
               <template #description>
-                <n-tag type="info">
-                  ID: {{ row.id }}
-                </n-tag>
-                <n-tag type="info">
-                  {{ utcToLocalDate(row.created_at, useUTCDate) }}
-                </n-tag>
-                <n-tag type="info">
-                  <n-ellipsis style="max-width: 240px;">
-                    {{ showEMailTo ? "FROM: " + row.source : row.source }}
-                  </n-ellipsis>
-                </n-tag>
-                <n-tag v-if="showEMailTo" type="info">
-                  <n-ellipsis style="max-width: 240px;">
-                    TO: {{ row.address }}
-                  </n-ellipsis>
-                </n-tag>
-                <AiExtractInfo :metadata="row.metadata" compact />
+                <div class="mail-list-meta">
+                  <n-tag type="info">
+                    ID: {{ row.id }}
+                  </n-tag>
+                  <n-tag type="info">
+                    {{ utcToLocalDate(row.created_at, useUTCDate) }}
+                  </n-tag>
+                  <n-tag type="info">
+                    <n-ellipsis class="mail-list-meta-text">
+                      {{ showEMailTo ? "FROM: " + row.source : row.source }}
+                    </n-ellipsis>
+                  </n-tag>
+                  <n-tag v-if="showEMailTo" type="info">
+                    <n-ellipsis class="mail-list-meta-text">
+                      TO: {{ row.address }}
+                    </n-ellipsis>
+                  </n-tag>
+                  <AiExtractInfo :metadata="row.metadata" compact />
+                </div>
               </template>
             </n-thing>
           </n-list-item>
         </n-list>
+        <n-empty v-if="data.length === 0" :description="localFilterKeyword.trim() ? t('noMatchingMail') : t('emptyInbox')" class="mail-list-empty" />
       </div>
       <n-drawer v-model:show="curMail" width="100%" placement="bottom" :trap-focus="false" :block-scroll="false"
         style="height: 80vh;">
@@ -639,18 +658,50 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.overlay {
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
+.mailbox-toolbar {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--tab-track-border);
+  border-radius: 14px;
+  background: var(--tab-track-bg);
+  box-shadow: inset 0 1px 0 var(--control-highlight);
 }
 
-.overlay-dark-backgroud {
-  background-color: rgba(255, 255, 255, 0.1);
+.mailbox-mobile-toolbar {
+  padding: 10px;
+  border: 1px solid var(--tab-track-border);
+  border-radius: 12px;
+  background: var(--tab-track-bg);
 }
 
-.overlay-light-backgroud {
-  background-color: rgba(0, 0, 0, 0.1);
+.mail-list-empty {
+  padding: 60px 12px;
+}
+
+.mail-detail-empty {
+  min-height: 60vh;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 var(--control-highlight);
+}
+
+.mail-detail-empty :deep(.n-card__content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mail-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto;
+  border: 1px solid var(--glass-card-border);
+  border-radius: 24px;
+  color: var(--ice-accent);
+  background: var(--selected-wash);
+  box-shadow: var(--control-shadow), 0 0 28px var(--ice-glow);
 }
 
 .mail-item {
@@ -662,6 +713,7 @@ onBeforeUnmount(() => {
   overflow-x: hidden;
   min-height: 60vh;
   max-height: 100vh;
+  padding: 2px;
 }
 
 .mail-list-thing,
@@ -676,6 +728,11 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
+.mail-list-title {
+  display: block;
+  width: 100%;
+}
+
 .mail-list-thing :deep(.n-thing-main),
 .mail-list-thing :deep(.n-thing-header),
 .mail-list-thing :deep(.n-thing-header__title),
@@ -684,16 +741,32 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
+.mail-list-thing :deep(.n-thing-main),
+.mail-list-thing :deep(.n-thing-header__title) {
+  width: 100%;
+  overflow: hidden;
+}
+
 .mail-list-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
   max-width: 100%;
 }
 
 .mail-list-meta :deep(.n-tag) {
   max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: 11px;
+  height: 22px;
+}
+
+.mail-list-meta :deep(.n-tag__content) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mail-list-meta-text {
@@ -712,6 +785,7 @@ onBeforeUnmount(() => {
 
 .mail-list-unread :deep(.n-thing-header__title) {
   font-weight: 700;
+  color: var(--text-primary) !important;
 }
 
 .mail-list-unread :deep(.n-thing-header__title)::before {
@@ -720,7 +794,7 @@ onBeforeUnmount(() => {
   height: 7px;
   margin-right: 8px;
   border-radius: 50%;
-  background: #2080f0;
+  background: var(--ice-accent);
   content: '';
   vertical-align: middle;
 }

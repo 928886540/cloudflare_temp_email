@@ -3,7 +3,7 @@ import { ref, h, computed, onMounted } from 'vue'
 import { useScopedI18n } from '@/i18n/app'
 import { useHead } from '@unhead/vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { useIsMobile } from '../utils/composables'
+import { useMediaQuery } from '@vueuse/core'
 import {
     DarkModeFilled, LightModeFilled, MenuFilled,
     AdminPanelSettingsFilled, MonitorHeartFilled,
@@ -28,7 +28,7 @@ const {
 } = useGlobalState()
 const route = useRoute()
 const router = useRouter()
-const isMobile = useIsMobile()
+const isCompactHeader = useMediaQuery('(max-width: 1100px)')
 
 const showMobileMenu = ref(false)
 const menuValue = computed(() => {
@@ -212,9 +212,9 @@ const menuOptions = computed(() => [
 ]);
 
 useHead({
-    title: () => openSettings.value.title || t('title'),
+    title: () => openSettings.value.title || 'LeonMinGod — Immortal Mail',
     meta: [
-        { name: "description", content: openSettings.value.description || t('title') },
+        { name: "description", content: openSettings.value.description || 'LeonMinGod — Immortal Mail' },
     ]
 });
 
@@ -224,18 +224,16 @@ const logoClick = async () => {
         logoClickCount.value = 0;
         return;
     }
-    if (logoClickCount.value >= 5) {
+    if (logoClickCount.value >= 4) {
         logoClickCount.value = 0;
-        message.info("Change to admin Page");
+        message.info("进入管理员页面");
         loading.value = true;
         await router.push(getRouterPathWithLang('/admin', locale.value));
         loading.value = false;
-    } else {
-        logoClickCount.value++;
+        return;
     }
-    if (logoClickCount.value > 0) {
-        message.info(`Click ${5 - logoClickCount.value + 1} times to enter the admin page`);
-    }
+    logoClickCount.value++;
+    message.info("连续点击5次，进入管理员页面");
 }
 
 onMounted(async () => {
@@ -247,25 +245,28 @@ onMounted(async () => {
 
 <template>
     <div>
-        <n-page-header>
+        <n-page-header class="immortal-page-header">
             <template #title>
-                <h3>{{ openSettings.title || t('title') }}</h3>
+                <div class="brand-title-wrap">
+                    <span class="brand-title-main">LeonMinGod</span>
+                    <span class="brand-subtitle-badge">IMMORTAL MAIL</span>
+                </div>
             </template>
             <template #avatar>
-                <div @click="logoClick">
-                    <n-avatar style="margin-left: 10px;" src="/logo.png" />
+                <div class="brand-avatar-wrap" @click="logoClick" title="LeonMinGod">
+                    <n-avatar round :size="34" class="brand-avatar" src="/logo.png" />
                 </div>
             </template>
             <template #extra>
                 <n-space align="center" class="header-extra">
-                    <n-menu v-if="!isMobile" mode="horizontal" :options="menuOptions" responsive />
+                    <n-menu v-if="!isCompactHeader" mode="horizontal" :options="menuOptions" responsive />
                     <n-button v-else :text="true" @click="showMobileMenu = !showMobileMenu">
                         <template #icon>
                             <n-icon :component="MenuFilled" />
                         </template>
                         {{ t('menu') }}
                     </n-button>
-                    <n-dropdown v-if="!isMobile" :options="languageOptions" @select="changeLocale" trigger="click" class="header-locale-dropdown">
+                    <n-dropdown v-if="!isCompactHeader" :options="languageOptions" @select="changeLocale" trigger="click" class="header-locale-dropdown">
                         <n-button text size="small" class="header-locale-button" style="padding: 0 10px;">
                             <template #icon>
                                 <n-icon :component="Language" />
@@ -275,7 +276,7 @@ onMounted(async () => {
                         </n-button>
                     </n-dropdown>
                     <n-button
-                        v-if="!isMobile && showGithubForCurrentUser"
+                        v-if="!isCompactHeader && showGithubForCurrentUser"
                         text
                         size="small"
                         class="header-version-button"
@@ -460,20 +461,103 @@ onMounted(async () => {
     margin-top: 10px;
 }
 
+.immortal-page-header {
+    padding: 10px 18px;
+    border-radius: 16px;
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-card-border);
+    box-shadow: var(--glass-shadow);
+    margin: 8px 0 14px 0;
+}
+
+.brand-avatar-wrap {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand-avatar-wrap:hover {
+    transform: scale(1.05);
+}
+
+.brand-avatar {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    overflow: hidden;
+}
+
+.brand-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.brand-title-main {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+}
+
+.brand-subtitle-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    color: var(--brand-badge-color);
+    background: var(--brand-badge-bg);
+    border: 1px solid var(--brand-badge-border);
+    border-radius: 9999px;
+    padding: 2px 7px;
+    box-shadow: 0 0 8px var(--ice-glow);
+    white-space: nowrap;
+}
+
 @media (max-width: 640px) {
+    .immortal-page-header {
+        padding: 8px 12px;
+        margin: 6px 0 10px 0;
+    }
+
+    .brand-title-main {
+        font-size: 0.98rem;
+        letter-spacing: 0.08em;
+    }
+
+    .brand-subtitle-badge {
+        font-size: 0.52rem;
+        padding: 1px 5px;
+    }
+
     :deep(.n-page-header) {
-        padding: 10px 12px;
+        padding: 4px 6px;
     }
 
     :deep(.n-page-header__title) {
         min-width: 0;
     }
+}
 
-    :deep(.n-page-header__title h3) {
-        max-width: calc(100vw - 104px);
-        margin: 0;
-        font-size: clamp(16px, 5vw, 20px);
-        line-height: 1.2;
+@media (max-width: 374px) {
+    .brand-title-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .brand-title-main {
+        font-size: 0.9rem;
     }
 }
 
