@@ -15,6 +15,7 @@
 
 ### Bug Fixes
 
+- fix: |Frontend| Prevent text selection and browsing carets on buttons and navigation tabs so clicking controls no longer shows a blinking vertical line; retain editable inputs and keyboard focus feedback
 - fix: |Mail| Check the SMTP envelope sender and every From email address against sender blacklists; parse addresses independently so body parsing failures or multiple From addresses cannot skip matching; preserve envelope checks on address parsing errors
 - fix: |AI Extract| In `ai` mode, an address allowlist miss now skips only the Workers AI call and still falls back to local verification-code extraction
 

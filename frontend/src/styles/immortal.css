@@ -246,6 +246,13 @@ html.dark, .immortal-dark {
   --text-muted: #8ba0b6;
 }
 
+/* Control labels act as a single click target, including in caret browsing. */
+:is(button, .n-button, .n-tabs-tab, [role="button"], [role="tab"], .n-base-close) {
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
 /* Only horizontal card tabs scroll; segmented tabs keep native capsule geometry. */
 .n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav-scroll-wrapper {
   border: 0 !important;
