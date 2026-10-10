@@ -16,7 +16,7 @@
 ### Bug Fixes
 
 - fix: |Database| Fix admin config 404s caused by stale deployment bundles; always build the Worker from current source and repair unversioned databases before recording the schema version, preserving mail and accounts
-- fix: |Frontend| Load database status and capacity settings independently, add refresh/retry and migration loading states, hide usage when size is unknown, and soften admin navigation highlights
+- fix: |Frontend| Load database status and capacity settings independently, add refresh/retry and local loading states for database actions, hide usage when size is unknown, and soften admin navigation highlights
 - fix: |Frontend| Prevent text selection and browsing carets on buttons and navigation tabs so clicking controls no longer shows a blinking vertical line; retain editable inputs and keyboard focus feedback
 - fix: |Mail| Check the SMTP envelope sender and every From email address against sender blacklists; parse addresses independently so body parsing failures or multiple From addresses cannot skip matching; preserve envelope checks on address parsing errors
 - fix: |AI Extract| In `ai` mode, an address allowlist miss now skips only the Workers AI call and still falls back to local verification-code extraction

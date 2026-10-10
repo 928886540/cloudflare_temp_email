@@ -69,8 +69,8 @@ const fetchData = async () => {
     refreshing.value = true
     try {
         const [versionRes, configRes] = await Promise.allSettled([
-            api.fetch('/admin/db_version'),
-            api.fetch(`/admin/config/${D1_STORAGE_PLAN_CONFIG_KEY}`)
+            api.fetch('/admin/db_version', { showLoading: false }),
+            api.fetch(`/admin/config/${D1_STORAGE_PLAN_CONFIG_KEY}`, { showLoading: false })
         ]);
         versionError.value = versionRes.status === 'rejected'
         configError.value = configRes.status === 'rejected'
@@ -95,6 +95,7 @@ const savePlan = async (plan) => {
     try {
         await api.fetch('/admin/config', {
             method: 'POST',
+            showLoading: false,
             body: { key: D1_STORAGE_PLAN_CONFIG_KEY, value: plan }
         })
         savedPlan.value = plan
@@ -111,7 +112,8 @@ const initialization = async () => {
     updatingSchema.value = true
     try {
         await api.fetch('/admin/db_initialize', {
-            method: 'POST'
+            method: 'POST',
+            showLoading: false
         });
         await fetchData();
         message.success(t('initializationSuccess'));
@@ -126,7 +128,8 @@ const migration = async () => {
     updatingSchema.value = true
     try {
         await api.fetch('/admin/db_migration', {
-            method: 'POST'
+            method: 'POST',
+            showLoading: false
         });
         await fetchData();
         message.success(t('migrationSuccess'));
