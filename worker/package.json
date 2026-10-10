@@ -9,7 +9,8 @@
     "deploy": "npm run build && wrangler deploy dist_worker.js --minify",
     "start": "wrangler dev",
     "build": "node scripts/build-bundle.mjs",
-    "test:database": "node --test tests/database.test.mjs"
+    "test:database": "node --test tests/database.test.mjs",
+    "test:telegram": "node --test tests/telegram.test.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260911.1",

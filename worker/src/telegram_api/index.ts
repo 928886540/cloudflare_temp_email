@@ -21,6 +21,13 @@ api.use("/telegram/*", async (c, next) => {
     return await next();
 });
 
+// This check stays behind the Worker's admin auth, but works before setup.
+// Return presence flags only; never expose the bot token to the browser.
+api.get("/admin/telegram/configuration", (c) => c.json({
+    hasToken: !!c.env.TELEGRAM_BOT_TOKEN,
+    hasKV: !!c.env.KV,
+}));
+
 api.use("/admin/telegram/*", async (c, next) => {
     const msgs = i18n.getMessagesbyContext(c);
     if (!c.env.TELEGRAM_BOT_TOKEN) {

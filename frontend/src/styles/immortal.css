@@ -253,6 +253,14 @@ html.dark, .immortal-dark {
   caret-color: transparent;
 }
 
+/* Caret browsing can place the caret in the empty pad beside a tab.
+ * Cover the navigation container so pads and scroll wrappers inherit this. */
+.n-tabs-nav {
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
+
 /* Only horizontal card tabs scroll; segmented tabs keep native capsule geometry. */
 .n-tabs.n-tabs--card-type > .n-tabs-nav .n-tabs-nav-scroll-wrapper {
   border: 0 !important;

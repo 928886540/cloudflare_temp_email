@@ -2347,6 +2347,23 @@ export const MESSAGE_REGISTRY = {
       "en": "Success",
       "zh": "成功"
     },
+    "configurationRequiredTitle": {
+      "en": "Telegram is not configured",
+      "zh": "Telegram 尚未配置"
+    },
+    "optionalFeature": { "en": "Telegram notifications are optional. Your mailbox remains available.", "zh": "这是可选的邮件推送功能，当前邮箱收发不受影响。" },
+    "tokenRequired": { "en": "Missing bot token: create a bot with BotFather, then add TELEGRAM_BOT_TOKEN as a Secret in your Cloudflare Worker settings.", "zh": "缺少机器人令牌：通过 BotFather 创建机器人，将 Token 添加到 Cloudflare Worker 的变量与机密中，类型选择 Secret，名称为 TELEGRAM_BOT_TOKEN。" },
+    "kvRequired": { "en": "Missing storage binding: bind a KV namespace to your Worker with the binding name KV.", "zh": "缺少存储绑定：在 Worker 的绑定设置中添加 KV 命名空间，绑定名称填写 KV。" },
+    "setupThenRefresh": { "en": "After deploying these settings, recheck configuration here, then initialize the bot.", "zh": "配置并部署后点击“重新检查”，再初始化机器人。" },
+    "refreshConfiguration": { "en": "Recheck", "zh": "重新检查" },
+    "configurationFailed": { "en": "Could not load Telegram configuration. Recheck to retry; saving is unavailable until settings load.", "zh": "Telegram 配置读取失败，请点击“重新检查”重试。读取成功前无法保存。" },
+    "statusFailed": { "en": "Could not query Telegram. Check the bot token and connection, then retry.", "zh": "无法查询 Telegram 状态，请检查机器人令牌和网络连接后重试。" },
+    "initFailed": { "en": "Initialization failed. Check the bot token and webhook domain, then retry.", "zh": "初始化失败，请检查机器人令牌和回调域名后重试。" },
+    "saveFailed": { "en": "Settings were not saved. Check the KV binding and connection, then retry.", "zh": "设置未保存，请检查 KV 绑定和网络连接后重试。" },
+    "webhookReady": { "en": "Webhook configured", "zh": "回调已配置" },
+    "webhookMissing": { "en": "Webhook not initialized", "zh": "尚未初始化回调" },
+    "pendingUpdates": { "en": "Pending updates", "zh": "待处理消息" },
+    "lastError": { "en": "Last delivery error", "zh": "最近投递错误" },
     "telegramAllowList": {
       "en": "Telegram Allow List(Manually input telegram Chat ID)",
       "zh": "Telegram 白名单(手动输入 Chat ID, 回车增加)"

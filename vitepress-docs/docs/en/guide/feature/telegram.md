@@ -30,6 +30,8 @@ pnpm wrangler secret put TELEGRAM_BOT_TOKEN
 
 ## Bot
 
+- The admin page checks `GET /admin/telegram/configuration`, which requires admin authentication and returns only the `hasToken` and `hasKV` boolean flags. Missing configuration is shown inline; editing, initialization, and saving stay disabled until setup is complete, without triggering 400 errors on entry.
+- After deploying the configuration, click “Recheck” to reload it. Saving remains disabled when settings fail to load, preventing blank defaults from overwriting existing settings.
 - Can set whitelist users
 - Click `Initialize` to complete the configuration.
 - Click `View Status` to check the current configuration status.

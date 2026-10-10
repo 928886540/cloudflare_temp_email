@@ -30,6 +30,8 @@ pnpm wrangler secret put TELEGRAM_BOT_TOKEN
 
 ## Bot
 
+- 后台通过需要管理员权限的 `GET /admin/telegram/configuration` 检查 Token 和 KV 是否配置，仅返回 `hasToken`、`hasKV` 布尔值。未配置时显示具体缺项，禁用表单与初始化/保存按钮；不再进入页面就调用不可用的接口并弹出 400。
+- 配置并部署后点击“重新检查”重新加载。配置加载失败时保存按钮保持禁用，避免将空白默认值覆盖已有设置。
 - 可设置白名单用户
 - 点击`初始化`即可完成配置。
 - 点击`查看状态`，可以查看当前配置的状态。
