@@ -1,10 +1,7 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useScopedI18n } from '@/i18n/app'
-import { CleaningServicesFilled } from '@vicons/material'
-
 import { api } from '../../api'
-import { init } from 'vooks/lib/on-fonts-ready';
 
 const message = useMessage()
 const D1_STORAGE_PLAN_CONFIG_KEY = 'd1_storage_plan'
@@ -18,6 +15,11 @@ const dbVersionData = ref({
 const selectedPlan = ref(null)
 const savedPlan = ref(null)
 const savingPlan = ref(false)
+const refreshing = ref(false)
+const updatingSchema = ref(false)
+const versionLoaded = ref(false)
+const versionError = ref(false)
+const configError = ref(false)
 
 const planOptions = computed(() => [
     {
@@ -37,11 +39,12 @@ const selectedPlanDetails = computed(() => (
 ))
 
 const storagePercentage = computed(() => {
-    if (!selectedPlanDetails.value || dbVersionData.value.database_size === null) return 0
+    if (!selectedPlanDetails.value || versionError.value
+        || !Number.isFinite(dbVersionData.value.database_size)) return null
     return dbVersionData.value.database_size / selectedPlanDetails.value.databaseLimit * 100
 })
 
-const progressPercentage = computed(() => Math.min(storagePercentage.value, 100))
+const progressPercentage = computed(() => Math.min(storagePercentage.value ?? 0, 100))
 
 const progressStatus = computed(() => {
     if (storagePercentage.value >= 90) return 'error'
@@ -62,24 +65,32 @@ const formatBytes = (bytes) => {
 }
 
 const fetchData = async () => {
+    if (refreshing.value) return
+    refreshing.value = true
     try {
-        const [versionRes, configRes] = await Promise.all([
+        const [versionRes, configRes] = await Promise.allSettled([
             api.fetch('/admin/db_version'),
             api.fetch(`/admin/config/${D1_STORAGE_PLAN_CONFIG_KEY}`)
         ]);
-        if (versionRes) Object.assign(dbVersionData.value, versionRes);
-
-        const configuredPlan = configRes?.value
-        if (planOptions.value.some((plan) => plan.value === configuredPlan)) {
-            selectedPlan.value = configuredPlan
-            savedPlan.value = configuredPlan
+        versionError.value = versionRes.status === 'rejected'
+        configError.value = configRes.status === 'rejected'
+        if (!versionError.value) {
+            Object.assign(dbVersionData.value, versionRes.value)
+            versionLoaded.value = true
         }
-    } catch (error) {
-        message.error(error.message || "error");
+        if (!configError.value) {
+            const configuredPlan = configRes.value?.value
+            selectedPlan.value = planOptions.value.some(plan => plan.value === configuredPlan)
+                ? configuredPlan : null
+            savedPlan.value = selectedPlan.value
+        }
+    } finally {
+        refreshing.value = false
     }
 }
 
 const savePlan = async (plan) => {
+    if (savingPlan.value || plan === savedPlan.value) return
     savingPlan.value = true
     try {
         await api.fetch('/admin/config', {
@@ -97,6 +108,7 @@ const savePlan = async (plan) => {
 }
 
 const initialization = async () => {
+    updatingSchema.value = true
     try {
         await api.fetch('/admin/db_initialize', {
             method: 'POST'
@@ -105,10 +117,13 @@ const initialization = async () => {
         message.success(t('initializationSuccess'));
     } catch (error) {
         message.error(error.message || "error");
+    } finally {
+        updatingSchema.value = false
     }
 }
 
 const migration = async () => {
+    updatingSchema.value = true
     try {
         await api.fetch('/admin/db_migration', {
             method: 'POST'
@@ -117,6 +132,8 @@ const migration = async () => {
         message.success(t('migrationSuccess'));
     } catch (error) {
         message.error(error.message || "error");
+    } finally {
+        updatingSchema.value = false
     }
 }
 
@@ -129,24 +146,37 @@ onMounted(async () => {
 <template>
     <div class="center">
         <n-card :bordered="false" embedded>
-            <n-alert v-if="dbVersionData.need_initialization" type="warning" :show-icon="false" :bordered="false">
+            <div class="database-heading">
+                <h3>{{ t('database_status') }}</h3>
+                <n-button size="small" secondary :loading="refreshing" :disabled="updatingSchema || savingPlan" @click="fetchData">
+                    {{ t('refresh') }}
+                </n-button>
+            </div>
+            <n-alert v-if="versionError" type="error" :bordered="false">
+                {{ t('version_load_failed') }}
+            </n-alert>
+            <n-alert v-if="configError" type="warning" :bordered="false">
+                {{ t('plan_load_failed') }}
+            </n-alert>
+            <n-alert v-if="versionLoaded && !versionError && dbVersionData.need_initialization" type="warning" :show-icon="false" :bordered="false">
                 <span>{{ t('need_initialization_tip') }}</span>
-                <n-button @click="initialization" type="primary" secondary block :loading="loading">
+                <n-button @click="initialization" type="primary" secondary block :loading="updatingSchema" :disabled="refreshing">
                     {{ t('init') }}
                 </n-button>
             </n-alert>
-            <n-alert v-if="dbVersionData.need_migration" type="warning" :show-icon="false" :bordered="false">
+            <n-alert v-if="versionLoaded && !versionError && dbVersionData.need_migration" type="warning" :show-icon="false" :bordered="false">
                 <span>{{ t('need_migration_tip') }}</span>
-                <n-button @click="migration" type="primary" secondary block :loading="loading">
+                <n-button @click="migration" type="primary" secondary block :loading="updatingSchema" :disabled="refreshing">
                     {{ t('migration') }}
                 </n-button>
             </n-alert>
-            <n-alert type="info" :show-icon="false" :bordered="false">
-                <span>
-                    {{ t('current_db_version') }}: {{ dbVersionData.current_db_version || "unknown" }},
-                    {{ t('code_db_version') }}: {{ dbVersionData.code_db_version }}
-                </span>
-            </n-alert>
+            <div v-if="versionLoaded && !versionError" class="database-versions">
+                <span>{{ t('current_db_version') }} <strong>{{ dbVersionData.current_db_version || t('unversioned') }}</strong></span>
+                <span>{{ t('code_db_version') }} <strong>{{ dbVersionData.code_db_version }}</strong></span>
+                <n-tag v-if="!dbVersionData.need_initialization && !dbVersionData.need_migration" size="small" type="success" :bordered="false">
+                    {{ t('up_to_date') }}
+                </n-tag>
+            </div>
 
             <div class="storage-panel">
                 <div class="storage-heading">
@@ -160,7 +190,7 @@ onMounted(async () => {
                             v-model:value="selectedPlan"
                             :options="planOptions"
                             :placeholder="t('plan_placeholder')"
-                            :disabled="dbVersionData.need_initialization"
+                            :disabled="!versionLoaded || versionError || configError || dbVersionData.need_initialization || refreshing || updatingSchema || savingPlan"
                             :loading="savingPlan"
                             @update:value="savePlan"
                         />
@@ -171,7 +201,7 @@ onMounted(async () => {
                     <n-grid-item>
                         <div class="storage-stat">
                             <span>{{ t('current_database_size') }}</span>
-                            <strong>{{ formatBytes(dbVersionData.database_size) }}</strong>
+                            <strong>{{ versionError ? t('unavailable') : formatBytes(dbVersionData.database_size) }}</strong>
                         </div>
                     </n-grid-item>
                     <n-grid-item>
@@ -182,7 +212,7 @@ onMounted(async () => {
                     </n-grid-item>
                 </n-grid>
 
-                <div v-if="selectedPlanDetails" class="storage-progress">
+                <div v-if="storagePercentage !== null" class="storage-progress">
                     <div class="storage-progress-label">
                         <span>{{ t('storage_usage') }}</span>
                         <span>{{ storagePercentage.toFixed(2) }}%</span>
@@ -206,7 +236,36 @@ onMounted(async () => {
 
 <style scoped>
 .n-card {
+    width: 100%;
     max-width: 800px;
+}
+
+.database-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.database-heading h3 { margin: 0; }
+.database-heading .n-button { margin: 0; }
+
+.database-versions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.database-versions strong {
+    margin-left: 6px;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 .n-alert {

@@ -136,11 +136,26 @@ pnpm wrangler secret put TELEGRAM_BOT_TOKEN
 
 ## Deploy
 
+`pnpm build` uses the credential-free `wrangler.bundle.jsonc` to generate `dist_worker.js` from `src/worker.ts`. `pnpm run deploy` rebuilds first to prevent API 404s caused by deploying an old bundle with a newer frontend. Deployment still reads domains, D1, and asset bindings from your local `wrangler.toml`. Update the frontend and Worker together.
+
+When upgrading from the legacy wildcard-domain bundle, retain these settings under `[vars]` (replace the domain with your own):
+
+```toml
+ENABLE_CREATE_ADDRESS_SUBDOMAIN_MATCH = true
+RANDOM_SUBDOMAIN_DOMAINS = ["example.com"]
+```
+
+The first setting permits subdomain mailbox creation; the second enables random and custom subdomain controls for the listed roots. Receiving mail still requires the corresponding Cloudflare Email Routing setup.
+
 The first deployment will prompt you to create a project. For the `production` branch, enter `production`.
 
 ```bash
 pnpm run deploy
 ```
+
+After deployment, check the database page in the admin console. Existing tables without a version marker are reported as needing migration. Migration adds missing tables, columns, and indexes, then records the version only after success, preserving mail and accounts. Before upgrading, export a backup with `wrangler d1 export <database-name> --remote --output backup.sql` and store it privately.
+
+The capacity panel reports usage of the D1 database bound as `DB`. Select your actual Cloudflare plan to save the capacity limit used for the percentage display; this selection does not create a database or purchase a paid plan. Use “Refresh” to retry failed requests.
 
 After successful deployment, you can see the `worker` `url` in the routes, and the console will also output the `worker` `url`.
 

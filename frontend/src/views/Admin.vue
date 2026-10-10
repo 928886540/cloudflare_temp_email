@@ -119,7 +119,7 @@ onMounted(async () => {
         </n-button>
       </template>
     </n-modal>
-    <n-tabs v-if="showAdminPage" type="card" v-model:value="adminTab" :placement="globalTabplacement">
+    <n-tabs v-if="showAdminPage" type="card" v-model:value="adminTab" :placement="globalTabplacement" class="admin-navigation">
       <n-tab-pane name="qucickSetup" :tab="t('qucickSetup')">
         <n-tabs key="quick-setup-tabs" type="bar" justify-content="center" animated>
           <n-tab-pane name="database" :tab="t('database')">
@@ -251,6 +251,29 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.admin-navigation :deep(> .n-tabs-nav .n-tabs-tab:not(.n-tabs-tab--active)) {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent !important;
+}
+
+.admin-navigation :deep(> .n-tabs-nav .n-tabs-tab--active) {
+  box-shadow: var(--control-shadow);
+}
+
+.admin-navigation :deep(> .n-tabs-nav .n-tabs-tab:hover) {
+  background: var(--glass-card-hover);
+}
+
+.admin-navigation :deep(> .n-tabs-nav) {
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--tab-track-border);
+}
+
+.admin-navigation :deep(.n-tabs--bar-type > .n-tabs-nav) {
+  margin-bottom: 8px;
+}
+
 .n-pagination {
   margin-top: 10px;
   margin-bottom: 10px;

@@ -1983,6 +1983,30 @@ export const MESSAGE_REGISTRY = {
     }
   },
   "views.admin.DatabaseManager": {
+    "database_status": {
+      "en": "Database status",
+      "zh": "数据库状态"
+    },
+    "refresh": {
+      "en": "Refresh",
+      "zh": "刷新状态"
+    },
+    "up_to_date": {
+      "en": "Up to date",
+      "zh": "版本已就绪"
+    },
+    "unversioned": {
+      "en": "Not recorded",
+      "zh": "未记录"
+    },
+    "version_load_failed": {
+      "en": "Could not load database status. Refresh to retry.",
+      "zh": "数据库状态读取失败，请点击刷新状态重试。"
+    },
+    "plan_load_failed": {
+      "en": "Could not load the saved plan. Database status is shown separately; refresh to retry.",
+      "zh": "套餐设置读取失败，数据库状态仍可单独显示。请点击刷新状态重试。"
+    },
     "code_db_version": {
       "en": "Code Needed DB Version",
       "zh": "需要的数据库版本"
@@ -2009,7 +2033,7 @@ export const MESSAGE_REGISTRY = {
     },
     "migration": {
       "en": "Migrate Database",
-      "zh": "升级数据库 Schema"
+      "zh": "升级数据库"
     },
     "migrationSuccess": {
       "en": "Database migrated successfully",
@@ -2020,8 +2044,8 @@ export const MESSAGE_REGISTRY = {
       "zh": "需要初始化数据库，请初始化数据库"
     },
     "need_migration_tip": {
-      "en": "Database migration is required. Please migrate the database.",
-      "zh": "需要迁移数据库，请迁移数据库"
+      "en": "The database schema or version record needs updating. This adds missing schema elements and retains existing mail and accounts.",
+      "zh": "数据库结构或版本记录需要更新。升级会补齐缺失结构，并保留现有邮件和账号。"
     },
     "paid_plan": {
       "en": "Workers Paid",
@@ -2048,8 +2072,8 @@ export const MESSAGE_REGISTRY = {
       "zh": "将当前数据库大小与套餐容量上限进行对比"
     },
     "storage_tip": {
-      "en": "Usage is calculated from the current database size and the selected plan limit.",
-      "zh": "使用率按当前数据库大小与所选套餐的数据库容量上限计算。"
+      "en": "Select the plan already active in your Cloudflare account to calculate usage. This setting does not purchase or change your Cloudflare plan.",
+      "zh": "请选择 Cloudflare 账号实际使用的套餐，用于计算容量使用率。此设置不会购买或变更 Cloudflare 套餐。"
     },
     "storage_title": {
       "en": "D1 Storage Capacity",

@@ -136,11 +136,26 @@ pnpm wrangler secret put TELEGRAM_BOT_TOKEN
 
 ## 部署
 
+`pnpm build` 使用不含凭据的 `wrangler.bundle.jsonc` 从 `src/worker.ts` 生成 `dist_worker.js`；`pnpm run deploy` 会先重新构建，避免前端升级后仍部署旧包而出现接口 404。实际部署仍读取本地 `wrangler.toml` 的域名、D1 和资源绑定。不要只更新前端而保留旧的 Worker 包。
+
+如果从旧版泛子域部署包升级，请在 `[vars]` 保留以下设置（将域名替换为自己的根域）：
+
+```toml
+ENABLE_CREATE_ADDRESS_SUBDOMAIN_MATCH = true
+RANDOM_SUBDOMAIN_DOMAINS = ["example.com"]
+```
+
+前者允许创建子域邮箱；后者为指定根域启用界面中的随机及自定义子域功能。收件仍需要相应的 Cloudflare 邮件路由配置。
+
 第一次部署会提示创建项目, `production` 分支请填写 `production`
 
 ```bash
 pnpm run deploy
 ```
+
+部署后打开管理后台的数据库页检查版本。有表但没有版本记录的数据库会提示迁移；迁移会补齐缺失的表、字段和索引，成功后写入版本标记，不清空已有邮件或账号。升级前可用 `wrangler d1 export <数据库名称> --remote --output backup.sql` 备份，并妥善保存备份。
+
+容量面板显示绑定到 `DB` 的 D1 数据库占用。套餐下拉框只保存用于计算单库使用率的容量上限，请按实际 Cloudflare 套餐选择；它不会创建数据库或开通付费服务。接口失败时使用“刷新状态”重试。
 
 部署成功之后再路由中可以看到 `worker` 的 `url`，控制台也会输出 `worker` 的 `url`
 

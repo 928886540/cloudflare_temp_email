@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "wrangler dev",
     "lint": "eslint src",
-    "deploy": "wrangler deploy --minify",
+    "deploy": "npm run build && wrangler deploy dist_worker.js --minify",
     "start": "wrangler dev",
-    "build": "wrangler deploy --dry-run --outdir dist --minify"
+    "build": "node scripts/build-bundle.mjs",
+    "test:database": "node --test tests/database.test.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260911.1",
