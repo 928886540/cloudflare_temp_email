@@ -103,6 +103,22 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* The app is text-rich but only form controls should expose an insertion
+ * caret. This also covers browser caret browsing on ordinary labels and
+ * footer text while keeping inputs and editors fully editable. */
+body {
+  caret-color: transparent;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+.n-input input,
+.n-input textarea,
+.n-base-selection-input {
+  caret-color: auto;
+}
+
 /* Background Atmosphere */
 .immortal-bg-stage {
   position: fixed;
