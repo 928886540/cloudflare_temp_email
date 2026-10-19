@@ -15,6 +15,7 @@
 
 ### Bug Fixes
 
+- fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs
 - fix: |Database| Fix admin config 404s caused by stale deployment bundles; always build the Worker from current source and repair unversioned databases before recording the schema version, preserving mail and accounts
 - fix: |Frontend| Load database status and capacity settings independently, add refresh/retry and local loading states for database actions, hide usage when size is unknown, and soften admin navigation highlights
 - fix: |Frontend| Remove text carets from admin tab wrappers, empty gaps, and ordinary text; show a clear Telegram Bot/KV setup message when unconfigured and add local loading states for status, initialization, and save actions

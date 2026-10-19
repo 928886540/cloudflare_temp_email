@@ -50,6 +50,8 @@ Then go to the repository page `Settings` -> `Secrets and variables` -> `Actions
    | `PAGE_TOML`        | (Optional) Used only by the `Deploy Frontend with page function` workflow. Required when using page functions to forward backend requests. Please copy the content from `pages/wrangler.toml` and modify the `service` field to your worker backend name according to actual situation. This workflow builds the frontend in Pages mode and uses same-origin requests, so it does not read `FRONTEND_ENV` |
    | `TG_FRONTEND_NAME` | (Optional) The project name you created in Cloudflare Pages, same as `FRONTEND_NAME`. Fill this in if you need Telegram Mini App functionality                                  |
 
+Backend deployment validates `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, and `BACKEND_TOML` before installing dependencies and lists missing names. Secrets are not copied with a repository or upstream sync; configure Repository secrets in the current repository. Values configured only in another Environment or repository are unavailable to this workflow. If deployment still fails with all required secrets configured, set `DEBUG_MODE` to `true` and rerun for detailed logs. Failed or skipped `Upstream Sync` runs no longer trigger deployment; manual and tag deployments remain available.
+
 ### Deploy
 
 - Open the `Actions` page of the repository

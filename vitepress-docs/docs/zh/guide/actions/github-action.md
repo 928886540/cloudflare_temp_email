@@ -50,6 +50,8 @@
    | `PAGE_TOML`        | (可选) 仅供 `Deploy Frontend with page function` workflow 使用。通过 page functions 转发后端请求时需要配置，请复制 `pages/wrangler.toml` 的内容，并根据实际情况修改 `service` 字段为你的 worker 后端名称。这个 workflow 会以 Pages 模式构建前端并走同域请求，因此不会读取 `FRONTEND_ENV` |
    | `TG_FRONTEND_NAME` | (可选) 你在 Cloudflare Pages 创建的项目名称，同 `FRONTEND_NAME`，如果需要 Telegram Mini App 功能，请填写                                                                                  |
 
+后端部署会在安装依赖前检查 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN` 和 `BACKEND_TOML`，缺失时会列出名称。Secrets 不会随仓库复制或上游同步自动迁移；请在当前仓库配置为 Repository secrets。仅在其他 Environment 或仓库配置同名值无法供此 workflow 使用。若配置齐全后仍部署失败，可将 `DEBUG_MODE` 设置为 `true` 并重新运行查看详细日志。`Upstream Sync` 失败或跳过时不再自动部署；手动部署和标签部署仍可使用。
+
 ### 部署
 
 - 打开仓库的 `Actions` 页面
