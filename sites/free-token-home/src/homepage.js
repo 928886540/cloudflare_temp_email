@@ -28,13 +28,13 @@ export const styles = `
 .footer-meta { margin-top: 9px; color: #c9ddc3; font-size: 9px; opacity: .7; }
 #pointer-light { background: radial-gradient(circle,#fff 5%,#d9ffe0 26%,#83dba288 58%,transparent 75%); box-shadow: 0 0 10px #abedb399; }
 
-/* Landscape Circular Navigation & Typography */
+/* Landscape: 仙侠重环青玉璧导航 (温润青玉渐变、金丝同心内纹、水波倒影、仙符微光) */
 @media (min-width: 768px) and (orientation: landscape) {
   .cover img { object-position: 70% center; }
-  .interface { padding: 24px 38px 20px 38px; }
+  .interface { padding: 24px 38px 22px 38px; }
   .scene-controls { gap: 4px; padding: 3px 8px; border-radius: 30px; }
-  .scene-controls button { min-height: 38px; padding: 0 14px; color: #e2f2df; font-size: 13px; font-weight: 500; letter-spacing: .06em; gap: 8px; }
-  .scene-controls svg { width: 16px; height: 16px; stroke: #ebd8a0; stroke-width: 1.4; }
+  .scene-controls button { min-height: 36px; padding: 0 13px; color: #e2f2df; font-size: 13px; font-weight: 500; letter-spacing: .06em; gap: 8px; }
+  .scene-controls svg { width: 15px; height: 15px; stroke: #ebd8a0; stroke-width: 1.4; }
   .toggle-indicator { width: 7px; height: 7px; }
   .footer-meta { font-size: 13px; color: #d4ebd0; opacity: .88; letter-spacing: .08em; text-shadow: 0 2px 8px #020f0b; }
 
@@ -42,64 +42,91 @@ export const styles = `
   .entry-actions { position: absolute; inset: 0; pointer-events: none; }
   .entry-actions > a.jade-pill {
     position: absolute;
+    top: 72.5%;
     display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    width: clamp(92px, min(7.3vw, 14.5vmin), 136px);
-    height: clamp(92px, min(7.3vw, 14.5vmin), 136px);
+    gap: 7px;
+    width: clamp(86px, min(6.4vw, 13vmin), 116px);
+    height: clamp(86px, min(6.4vw, 13vmin), 116px);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     pointer-events: auto;
-    background: radial-gradient(circle at 35% 30%, rgba(26, 94, 69, 0.9) 0%, rgba(12, 58, 44, 0.94) 60%, rgba(5, 33, 25, 0.98) 100%);
-    border: 2px solid rgba(175, 235, 185, 0.55);
-    color: #f2faef;
-    font-size: clamp(13px, 1.45vmin, 15px);
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-shadow: 0 1px 6px #01130d, 0 0 12px #4ade8050;
-    box-shadow: 0 6px 24px #02140d70, 0 0 28px #48d28a38, inset 0 1px 3px #f5fff035, inset 0 0 16px #34d39925;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: transform .25s cubic-bezier(.2,.8,.3,1), border-color .25s, box-shadow .25s, background .25s;
+    /* 半透温润青玉渐变，保留玉质厚重感，隐约透出背后水波 */
+    background: radial-gradient(circle at 40% 32%, rgba(28, 88, 65, 0.74) 0%, rgba(13, 50, 38, 0.84) 65%, rgba(5, 26, 19, 0.94) 100%);
+    border: 1.5px solid rgba(190, 235, 195, 0.48);
+    color: #f3fbee;
+    font-family: "KaiTi", "STKaiti", "Songti SC", "Noto Serif SC", serif;
+    font-size: clamp(12.5px, 1.35vmin, 14.5px);
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-shadow: 0 1px 5px #02120b, 0 0 10px rgba(74, 222, 128, 0.45);
+    box-shadow: 0 6px 20px rgba(1, 15, 10, 0.65), 0 0 22px rgba(52, 211, 153, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.35), inset 0 0 14px rgba(74, 222, 128, 0.15);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: transform .28s cubic-bezier(.2,.8,.3,1), border-color .28s, box-shadow .28s, background .28s;
+  }
+  /* 内嵌同心金丝玉环 (古风重环玉璧质感) */
+  .entry-actions > a.jade-pill::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1px dashed rgba(200, 240, 205, 0.32);
+    pointer-events: none;
+    transition: border-color .25s, transform .25s;
   }
   .entry-actions > a.jade-pill svg {
-    width: clamp(22px, 2.8vmin, 28px);
-    height: clamp(22px, 2.8vmin, 28px);
-    stroke-width: 1.5;
-    stroke: #bbf7d0;
-    filter: drop-shadow(0 0 6px #4ade8060);
+    width: clamp(20px, 2.4vmin, 24px);
+    height: clamp(20px, 2.4vmin, 24px);
+    stroke-width: 1.35;
+    stroke: #c2f5d3;
+    filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.5));
+    transition: transform .25s;
   }
+  /* 进入灵境：微暖金碧配饰 */
   .entry-actions > a.enter {
-    left: 60.8%;
-    top: 72.1%;
-    border-color: rgba(235, 215, 155, 0.65);
-    background: radial-gradient(circle at 35% 30%, rgba(42, 98, 70, 0.92) 0%, rgba(18, 62, 46, 0.95) 60%, rgba(7, 35, 24, 0.98) 100%);
-    box-shadow: 0 6px 24px #02140d70, 0 0 28px #eab30835, inset 0 1px 3px #fef9c335, inset 0 0 16px #4ade8025;
+    left: 61.2%;
+    border-color: rgba(240, 218, 148, 0.58);
+    background: radial-gradient(circle at 40% 32%, rgba(42, 92, 66, 0.78) 0%, rgba(18, 54, 39, 0.86) 65%, rgba(7, 28, 20, 0.95) 100%);
+    box-shadow: 0 6px 20px rgba(1, 15, 10, 0.65), 0 0 22px rgba(234, 179, 8, 0.22), inset 0 1px 2px rgba(255, 250, 220, 0.4), inset 0 0 14px rgba(250, 204, 21, 0.12);
+  }
+  .entry-actions > a.enter::before {
+    border-color: rgba(250, 230, 165, 0.35);
   }
   .entry-actions > a.enter svg {
     stroke: #fef08a;
-    filter: drop-shadow(0 0 6px #facc1560);
+    filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.55));
   }
   .entry-actions > a.gift-link:not(.address-link) {
-    left: 69.9%;
-    top: 72.8%;
+    left: 71.0%;
   }
   .entry-actions > a.address-link {
-    left: 80.9%;
-    top: 74.3%;
+    left: 80.8%;
   }
+  /* 悬停动效：灵气升腾、金纹流转 */
   .entry-actions > a.jade-pill:hover {
-    transform: translate(-50%, -50%) translateY(-5px) scale(1.06);
-    border-color: #d1fae5;
-    background: radial-gradient(circle at 35% 28%, rgba(32, 115, 85, 0.95) 0%, rgba(16, 70, 55, 0.98) 60%, rgba(6, 39, 30, 1) 100%);
-    box-shadow: 0 10px 32px #02140d90, 0 0 38px #4ade8065, inset 0 1px 4px #ffffff55, inset 0 0 22px #4ade8040;
+    transform: translate(-50%, -50%) translateY(-4px) scale(1.05);
+    border-color: rgba(209, 250, 229, 0.85);
+    background: radial-gradient(circle at 40% 30%, rgba(36, 115, 84, 0.88) 0%, rgba(17, 68, 52, 0.94) 65%, rgba(6, 36, 26, 0.98) 100%);
+    box-shadow: 0 10px 28px rgba(1, 15, 10, 0.75), 0 0 32px rgba(74, 222, 128, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.55), inset 0 0 18px rgba(74, 222, 128, 0.3);
+  }
+  .entry-actions > a.jade-pill:hover::before {
+    border-color: rgba(220, 255, 230, 0.65);
+    border-style: solid;
+  }
+  .entry-actions > a.jade-pill:hover svg {
+    transform: scale(1.1);
   }
   .entry-actions > a.enter:hover {
-    border-color: #fef08a;
-    background: radial-gradient(circle at 35% 28%, rgba(48, 120, 88, 0.95) 0%, rgba(22, 75, 55, 0.98) 60%, rgba(8, 42, 29, 1) 100%);
-    box-shadow: 0 10px 32px #02140d90, 0 0 38px #facc1555, inset 0 1px 4px #ffffff55, inset 0 0 22px #4ade8040;
+    border-color: rgba(254, 240, 138, 0.88);
+    background: radial-gradient(circle at 40% 30%, rgba(54, 118, 86, 0.88) 0%, rgba(24, 72, 53, 0.94) 65%, rgba(8, 38, 27, 0.98) 100%);
+    box-shadow: 0 10px 28px rgba(1, 15, 10, 0.75), 0 0 32px rgba(250, 204, 21, 0.45), inset 0 1px 3px rgba(255, 255, 230, 0.6), inset 0 0 18px rgba(250, 204, 21, 0.25);
+  }
+  .entry-actions > a.enter:hover::before {
+    border-color: rgba(254, 240, 138, 0.7);
+    border-style: solid;
   }
 }
 

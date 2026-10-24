@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = '5e32ed4c-a405-4e69-872d-f88526cba7d9'
+EXPECTED_ENTRANCE_VERSION = 'd085bbb3-2616-477f-ae0a-fe3a06d8a3cd'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -62,6 +62,7 @@ def verify():
     assert status == 200 and b'id="oath-form"' in body
     assert b'/free-token/app.js' in body
     assert b'id="free-token-compact-layout"' in body and b'id="token-fluid"' in body
+    assert b'welcome-desktop-v1.webp' in body and b'welcome-mobile-v1.webp' in body
     status, headers, body = read_public('/free-token/effects-v1.js')
     assert status == 200 and b'createFluidBackground' in body and b'prefers-reduced-motion' in body
     for kind in ['mobile', 'desktop']:
@@ -72,7 +73,7 @@ def verify():
     status, headers, body = read_public('/')
     assert status == 200 and b'home-hero-mobile-v4.webp' in body and b'home-hero-desktop-v4.webp' in body
     assert body.count(b'class="gift-link address-link jade-pill"') == 1
-    assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body and b'border-radius: 50%' in body and b'60.8%' in body
+    assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body and b'border-radius: 50%' in body and b'61.2%' in body
     assert 'href="https://addr.leonmingod.com"'.encode() in body and '地址证明'.encode() in body
     assert b'https://mail.leonmingod.com' in body and b'href="/free-token/"' in body
     for kind in ['mobile', 'desktop']:
@@ -132,7 +133,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Landscape green circular navigation buttons and larger interface typography'},
+        'annotations': {'workers/message': 'Refine homepage jade seal buttons and claim page vertical layout with welcome poster background'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []
