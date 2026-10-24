@@ -12,9 +12,13 @@ import uuid
 ROOT = Path(__file__).resolve().parent
 ACCOUNT = os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()
 TOKEN = os.environ['CLOUDFLARE_API_TOKEN'].strip()
-WORKER = 'leonmingod-home'
+WORKER = 'leonmingod-free-token'
+ROOT_WORKER = 'leonmingod-home'
+ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '0a14864c-6cd7-408f-b15c-9e476f2eea5c'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
+ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
+ROUTES_API = f'/zones/{ZONE}/workers/routes'
 ORIGIN = 'https://leonmingod.com'
 
 
@@ -67,7 +71,7 @@ def verify():
         raise AssertionError('Claim endpoint must still reject GET')
     except urllib.error.HTTPError as error:
         assert error.code == 405
-    settings = api(API_PATH + '/settings')
+    settings = api(ROOT_API + '/settings')
     assert any(x.get('name') == 'FREE_TOKEN_CPA_KEY' and x.get('type') == 'secret_text'
                for x in settings.get('bindings', [])), 'Claim secret binding was not retained'
 
@@ -75,28 +79,25 @@ def verify():
 def main():
     if not ACCOUNT or not TOKEN:
         raise RuntimeError('Required Cloudflare secrets are missing')
-    deployments = api(API_PATH + '/deployments')['deployments']
+    deployments = api(ROOT_API + '/deployments')['deployments']
     active = deployments[0]['versions']
     if len(active) != 1 or active[0]['percentage'] != 100 or active[0]['version_id'] != EXPECTED_VERSION:
         raise RuntimeError('The live website changed since backup; review it before deploying')
-    settings = api(API_PATH + '/settings')
-    binding_types = sorted({x['type'] for x in settings.get('bindings', []) if x['type'] != 'assets'})
+    if any(x.get('id') == WORKER for x in api(f'/accounts/{ACCOUNT}/workers/scripts')):
+        raise RuntimeError('The entrance Worker already exists; review before replacing it')
+    patterns = [host + suffix for host in ['leonmingod.com', 'www.leonmingod.com']
+                for suffix in ['/free-token', '/free-token/*']]
+    if any(x.get('pattern') in patterns for x in api(ROUTES_API)):
+        raise RuntimeError('A dedicated Free Token route already exists; review before replacing it')
+    settings = api(ROOT_API + '/settings')
     metadata = {
         'main_module': 'src/index.js',
         'compatibility_date': settings['compatibility_date'],
         'compatibility_flags': settings.get('compatibility_flags', []),
-        'bindings': [{'name': 'ASSETS', 'type': 'assets'}],
-        'keep_bindings': binding_types,
-        'keep_assets': True,
-        'assets': {'config': {'run_worker_first': [
-            '/free-token', '/free-token/*', '/api/free-token/*',
-            '/image', '/img', '/bg', '/wallpaper.png',
-        ]}},
+        'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
+                      'environment': 'production'}],
         'annotations': {'workers/message': 'Free Token entrance with mobile and desktop posters'},
     }
-    for key in ['placement', 'logpush', 'tail_consumers', 'observability', 'limits']:
-        if settings.get(key) is not None:
-            metadata[key] = settings[key]
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []
     def part(name, content, mime, filename=None):
@@ -107,32 +108,37 @@ def main():
     part('metadata', json.dumps(metadata).encode(), 'application/json')
     for folder in ['src', 'assets']:
         for path in sorted((ROOT / folder).glob('*')):
+            if path.name == 'site-original.js':
+                continue
             name = path.relative_to(ROOT).as_posix()
             part(name, path.read_bytes(), 'application/javascript+module' if path.suffix == '.js' else 'application/octet-stream', name)
     parts.append(f'--{boundary}--\r\n'.encode())
     result = api(API_PATH, method='PUT', body=b''.join(parts), content_type='multipart/form-data; boundary=' + boundary)
     print('Worker uploaded:', json.dumps({k: result.get(k) for k in ['id', 'etag', 'deployment_id']}))
+    route_ids = []
     try:
-        for attempt in range(5):
+        for pattern in patterns:
+            route = api(ROUTES_API, method='POST', body={'pattern': pattern, 'script': WORKER})
+            route_ids.append(route['id'])
+        for attempt in range(8):
             try:
                 verify()
                 break
             except (AssertionError, urllib.error.URLError):
-                if attempt == 4:
+                if attempt == 7:
                     raise
-                time.sleep(2 ** attempt)
+                time.sleep(min(2 ** attempt, 8))
     except Exception:
-        print('Verification failed; restoring previous immutable Worker version')
-        api(API_PATH + '/deployments', method='POST', body={
-            'strategy': 'percentage',
-            'versions': [{'version_id': EXPECTED_VERSION, 'percentage': 100}],
-            'annotations': {'workers/message': 'Restore website after failed Free Token verification'},
-        })
+        print('Verification failed; removing only the newly created entrance routes and Worker')
+        for route_id in reversed(route_ids):
+            api(ROUTES_API + '/' + route_id, method='DELETE')
+        api(API_PATH, method='DELETE')
         raise
     live = api(API_PATH + '/deployments')['deployments'][0]
     print('VERIFIED_DEPLOYMENT=' + json.dumps({
         'id': live['id'], 'versions': live['versions'],
-        'url': ORIGIN + '/free-token/', 'rollback_version': EXPECTED_VERSION,
+        'url': ORIGIN + '/free-token/', 'original_version': EXPECTED_VERSION,
+        'worker': WORKER, 'route_ids': route_ids,
     }))
 
 

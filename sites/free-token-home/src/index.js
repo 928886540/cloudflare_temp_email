@@ -1,10 +1,8 @@
-import original from './site-original.js';
 import landing from './landing.js';
 import mobile from '../assets/welcome-mobile-v1.webp';
 import desktop from '../assets/welcome-desktop-v1.webp';
 
 export default {
-  ...original,
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const read = request.method === 'GET' || request.method === 'HEAD';
@@ -31,8 +29,8 @@ export default {
     }
     if (read && ['/free-token/claim', '/free-token/claim/'].includes(url.pathname)) {
       url.pathname = '/free-token/';
-      return original.fetch(new Request(url, request), env, ctx);
+      return env.SITE.fetch(new Request(url, request));
     }
-    return original.fetch(request, env, ctx);
+    return env.SITE.fetch(request);
   },
 };
