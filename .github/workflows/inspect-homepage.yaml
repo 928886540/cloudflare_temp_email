@@ -85,6 +85,8 @@ jobs:
           print("SETTINGS_KEYS=" + json.dumps(list(settings.keys())))
           deployment = get("/accounts/" + account + "/workers/scripts/leonmingod-home/deployments")
           print("HOME_DEPLOYMENTS=" + json.dumps(deployment))
+          entrance = get("/accounts/" + account + "/workers/scripts/leonmingod-free-token/deployments")
+          print("ENTRANCE_CURRENT=" + json.dumps(entrance.get("deployments", [{}])[0].get("versions", [])))
           recent = deployment.get("deployments", []) if isinstance(deployment, dict) else []
           if recent:
               version_id = recent[0]["versions"][0]["version_id"]
