@@ -1,0 +1,84 @@
+name: Stage new Render Free Token key
+on:
+  push:
+    branches: [codex/free-token-home-20261024]
+    paths: [.github/workflows/stage-render-free-token.yaml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Generate and stage new client key
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: python
+        run: |
+          import os, json, secrets, subprocess, urllib.request, urllib.error
+          from pathlib import Path
+          account = os.environ["CLOUDFLARE_ACCOUNT_ID"].strip()
+          cf_token = os.environ["CLOUDFLARE_API_TOKEN"].strip()
+          api_root = "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/leonmingod-home"
+          def api(suffix, method="GET", body=None):
+              data = None if body is None else json.dumps(body).encode()
+              req = urllib.request.Request(api_root + suffix, data=data, method=method,
+                  headers={"Authorization": "Bearer " + cf_token, "Content-Type": "application/json"})
+              try:
+                  with urllib.request.urlopen(req, timeout=45) as r: response = json.load(r)
+              except urllib.error.HTTPError as error:
+                  raise RuntimeError("Cloudflare HTTP " + str(error.code)) from None
+              if not response.get("success", True): raise RuntimeError("Cloudflare rejected the operation")
+              return response.get("result")
+          active = api("/deployments")["deployments"][0]["versions"]
+          if len(active) != 1 or active[0]["version_id"] != "0a14864c-6cd7-408f-b15c-9e476f2eea5c":
+              raise RuntimeError("Parent website changed since review; stop before changing secrets")
+          settings = api("/settings")
+          if any(b.get("name") == "FREE_TOKEN_RENDER_KEY" for b in settings.get("bindings", [])):
+              raise RuntimeError("A staged Render key already exists; do not overwrite it")
+          client_key = "sk-leon-free-" + secrets.token_urlsafe(32)
+          print("::add-mask::" + client_key)
+          Path("reader-public.pem").write_text("""
+          -----BEGIN CERTIFICATE-----
+          MIIDJTCCAg2gAwIBAgIUTL+Hmjmu3LqwlvFB61qp0OJ1qA4wDQYJKoZIhvcNAQEL
+          BQAwIjEgMB4GA1UEAwwXRnJlZS1Ub2tlbi1LZXktVHJhbnNmZXIwHhcNMjYxMDI0
+          MDQzNzI0WhcNMjYxMDI2MDQzNzI0WjAiMSAwHgYDVQQDDBdGcmVlLVRva2VuLUtl
+          eS1UcmFuc2ZlcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKct1B45
+          6/dAXpMIWewBGRuqhirgzRX2sH6Y7dodUBDDpG5Wn5imRSYd1Nixzc+YdylpjwHp
+          7OK0N1u2nPeY6ZIBtcso68rtiTCS8Ztc4mFfF87a2sUayP0x0inPAATtJyY1J2kJ
+          J0yFdSoMIw566CGxe//sPGrbbQYif9ERSeiBvz1cYr069+Ac3+HUGKiptO01audW
+          FUNq1IBn/SN5YAECxc6zTUHGcmHtpWwiHCp6MkTu5Xm6wee1L5NvOcGqxcy4fGJv
+          VwN+7Xr/SGP8bP+fWqPhoynW0kIZv9t60ILMzD2VlYV6mqJrBpQhn9bONxL0X4kT
+          Kk8cTgjEMJ56DFECAwEAAaNTMFEwHQYDVR0OBBYEFEVYc8pGAk+I8DOqj461Uv8k
+          GqkcMB8GA1UdIwQYMBaAFEVYc8pGAk+I8DOqj461Uv8kGqkcMA8GA1UdEwEB/wQF
+          MAMBAf8wDQYJKoZIhvcNAQELBQADggEBAF5X4c5nisHooRDrLKCZmJek3WT934db
+          xIbD6VM9OZ/8cJ1CXlv3KJrh4lGTw/3YsJS7zRlT2m7jySP7CiFnnqgJQbGGLy9A
+          LIfXbuWmjmwx1Rm+Vih8pDvxyfuP+z5c/NW9gDZklBieweUujQlkGEA8ykEljk2n
+          0GAbsDjoapANa7bTqvtrN6sWGlceOYGpaohUlkdhITb7dlz78jbFrYcxvEf2z+An
+          BqrYESVPhecIlOmIhrdbUwGBJ3z+XLGuhgOG0XE6rmjPSh/6oPXzsKVnobhGmen2
+          BtZzIW2vwheVXOwdqmGgNUzu0qeuh16fk+tpArIZiAQkKTxASprOCiM=
+          -----END CERTIFICATE-----
+          """.strip() + "\\n")
+          payload = json.dumps({"api_key": client_key, "base_url": "https://cpa-dhke.onrender.com/v1"})
+          protected = Path("payload.json")
+          protected.write_text(payload)
+          protected.chmod(0o600)
+          subprocess.run(["openssl", "cms", "-encrypt", "-binary", "-aes256",
+              "-in", str(protected), "-outform", "DER", "-out", "render-key.enc", "reader-public.pem"],
+              check=True)
+          protected.unlink()
+          api("/secrets", "PUT", {"name": "FREE_TOKEN_RENDER_KEY", "type": "secret_text", "text": client_key})
+          deployment = api("/deployments")["deployments"][0]
+          print("STAGED_RENDER_KEY=" + json.dumps({
+              "secret_name": "FREE_TOKEN_RENDER_KEY", "base_url": "https://cpa-dhke.onrender.com/v1",
+              "parent_version": deployment["versions"][0]["version_id"],
+              "public_claim_unchanged": True
+          }))
+      - name: Save encrypted client-key handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: encrypted-render-client-key
+          path: render-key.enc
+          retention-days: 2
