@@ -35,6 +35,26 @@ Cloudflare's injected analytics script; all four original images were retained. 
 integration version table below is historical. Consult this newer entrance snapshot and
 read actual live versions again before future changes.
 
+## Next task: landscape homepage navigation (requested, not implemented)
+
+After the page release, the user reported that the three homepage navigation links
+are too small at the bottom in landscape and supplied a screenshot with three red circles.
+The next session should implement and deploy this request; it is not completed work:
+
+- Target the homepage `https://leonmingod.com/`, editing `src/homepage.js` on the website branch.
+- Move the three links below the logo/slogan on the right, matching the marked circles.
+  Approximate centers in the 1920×909 reference are `(61%,72%)`, `(70%,73%)`, and `(81%,74%)`.
+  These are composition references, not fixed pixel coordinates.
+- Use green circular buttons approximately matching the marked 130–150px diameters at that
+  reference size, with readable icons/text. Preserve left-to-right order and destinations:
+  mailbox, Free Token entrance, Address Proof.
+- Increase other interface text appropriately, particularly effect controls and hints.
+  Preserve the current background and fluid effects.
+- Validate responsive landscape placement at 1920×909 and smaller phone landscape sizes,
+  avoiding overlap and clipping; also regress portrait, token entrance, and claim pages.
+- The user is opening a new session. Use both the annotated screenshot and this record,
+  then implement, verify in an actual browser, and deploy.
+
 ## Configuration source
 
 Render service `cpa` uses the private repository `928886540/cpa`, branch `main`, and

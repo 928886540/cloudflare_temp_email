@@ -29,7 +29,7 @@
 
 ### Improvements
 
-- docs: |Free Token operations| Record the fluid/compact claim release version, deployment evidence, and mobile viewport verification
+- docs: |Free Token operations| Record the fluid/compact claim release version, deployment evidence, mobile viewport verification, and pending landscape circular navigation
 - feat: |Free Token| Add homepage-style jade fluid effects to entrance and claim pages, strengthen token motion and glow, and narrow/compact the claim card so mobile confirmation fits the first viewport
 - docs: |Free Token operations| Record Cloudflare/Render resources, branches, versions, secret locations, acceptance evidence, and credential recovery, with an AGENTS.md entry for future sessions
 - feat: |Frontend| Refine frost-glass control borders, highlights, focus and selection states; unify buttons, mail cards and overlays; fix narrow-screen login tab overflow and improve address bar and login form spacing
