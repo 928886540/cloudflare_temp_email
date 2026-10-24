@@ -2,7 +2,8 @@ const svg = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>
 const mail = svg('<rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="m4.5 7 7.5 6 7.5-6"/>');
 const gift = svg('<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M3 7h18v4H3zM12 7v13M12 7H8a2.5 2.5 0 1 1 2.5-2.5L12 7Zm0 0h4a2.5 2.5 0 1 0-2.5-2.5L12 7Z"/>');
 const address = svg('<path d="M19 10c0 5-7 10-7 10S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/>');
-export const navigation = `<a class="enter jade-pill" href="https://mail.leonmingod.com" aria-label="进入 LeonMinGod 邮箱">${mail}<span>进入灵境</span></a><a class="gift-link jade-pill" href="/free-token/">${gift}<span>免费Token</span></a><a class="gift-link address-link jade-pill" href="https://addr.leonmingod.com" aria-label="地址证明">${address}<span>地址证明</span></a>`;
+const scale = svg('<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>');
+export const navigation = `<a class="enter jade-pill" href="https://mail.leonmingod.com" aria-label="进入 LeonMinGod 邮箱">${mail}<span>进入灵境</span></a><a class="gift-link jade-pill" href="/free-token/">${gift}<span>免费Token</span></a><a class="gift-link address-link jade-pill" href="https://addr.leonmingod.com" aria-label="地址证明">${address}<span>地址证明</span></a><a class="gift-link compare-link jade-pill" href="https://github.com/waw666waw666/awesome-ai-relay-and-cards" target="_blank" rel="noopener noreferrer" aria-label="货比三家">${scale}<span>货比三家</span></a>`;
 
 export const styles = `
 :root { background: #041a16; color: #e4efe2; }
@@ -16,7 +17,7 @@ export const styles = `
 .scene-controls svg { stroke: #dccb96; }
 .toggle-indicator { background: #9fe0b4; box-shadow: 0 0 8px #9fe0b466; }
 .entry { gap: 0; padding-bottom: 0; }
-.entry-actions { display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; width: auto; max-width: 100%; gap: 7px; }
+.entry-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; width: auto; max-width: 100%; gap: 6px; }
 .entry-actions > a.jade-pill { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; gap: 5px; width: auto; min-height: 36px; padding: 0 10px; border: 1px solid #c9e5be59; border-radius: 999px; background: linear-gradient(140deg,#12392a30,#061c1757); color: #f0efd2; font-family: "KaiTi","STKaiti","PingFang SC",serif; font-size: 12px; line-height: 1.4; font-weight: 400; letter-spacing: .035em; white-space: nowrap; text-shadow: 0 1px 5px #05150f80; box-shadow: 0 2px 12px #01110a18,inset 0 1px 0 #f3f9dd12; backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px); transition: background .2s,border-color .2s,transform .2s; }
 .entry-actions > a.enter { border-color: #e6d5a47d; background: linear-gradient(140deg,#3d57322e,#0b2a1f60); }
 .entry-actions > a.jade-pill svg { width: 14px; height: 14px; flex: 0 0 auto; fill: none; stroke: #d8e7bd; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
@@ -122,7 +123,7 @@ export const styles = `
   
   /* 进入灵境：晶莹金琥珀琉璃感 */
   .entry-actions > a.enter {
-    left: 61.2%;
+    left: 58.0%;
     border-color: rgba(255, 238, 175, 0.8);
     background: radial-gradient(circle at 50% 120%, rgba(55, 45, 18, 0.42) 0%, rgba(85, 70, 26, 0.22) 50%, rgba(145, 115, 38, 0.12) 100%),
                 linear-gradient(145deg, rgba(255, 250, 225, 0.4) 0%, rgba(250, 228, 145, 0.16) 35%, rgba(65, 50, 16, 0.32) 100%);
@@ -141,8 +142,9 @@ export const styles = `
     filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.85));
   }
   
-  .entry-actions > a.gift-link:not(.address-link) { left: 71.0%; }
-  .entry-actions > a.address-link { left: 80.8%; }
+  .entry-actions > a.gift-link:not(.address-link):not(.compare-link) { left: 67.5%; }
+  .entry-actions > a.address-link { left: 77.0%; }
+  .entry-actions > a.compare-link { left: 86.5%; }
   
   /* 悬停动效：灵气升华、水光潋滟 */
   .entry-actions > a.jade-pill:hover {
@@ -181,8 +183,8 @@ export const styles = `
   .interface { padding: max(14px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(15px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
   .scene-controls { gap: 1px; padding: 1px 3px; }
   .scene-controls button { min-height: 28px; padding: 0 7px; font-size: 9.5px; }
-  .entry-actions { gap: 6px; }
-  .entry-actions > a.jade-pill { min-height: 35px; padding: 0 9px; font-size: 12px; }
+  .entry-actions { gap: 5px; }
+  .entry-actions > a.jade-pill { min-height: 34px; padding: 0 8px; font-size: 11.5px; }
   .vignette { background: linear-gradient(#031a1530,transparent 14%,transparent 78%,#031a1570); }
   .footer-meta { font-size: 10px; margin-top: 8px; }
 }
