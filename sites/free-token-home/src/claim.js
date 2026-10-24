@@ -20,29 +20,21 @@ ${effectsStyles}
   }
 }
 
-body { scroll-padding-bottom: 16px; margin: 0; }
-.topbar { z-index: 2; width: min(840px,calc(100% - 48px)); margin: auto; padding: 16px 0 10px; }
-.topbar .back {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 11px;
-  border-radius: 99px;
-  background: rgba(7, 21, 34, 0.68);
-  border: 1px solid rgba(181, 217, 197, 0.28);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #e2eeea;
-  text-decoration: none;
-  font-size: 12px;
-  transition: background .2s, border-color .2s;
+/* 移除顶部导航、品牌小尾巴等边角料，保持全景仙境视野 */
+.topbar, .page-foot {
+  display: none !important;
 }
-.topbar .back:hover {
-  background: rgba(14, 38, 48, 0.85);
-  border-color: rgba(181, 217, 197, 0.55);
-}
-.topbar .brand { text-shadow: 0 1px 8px #02070c, 0 0 12px #041216; }
 
-main { z-index: 2; width: min(840px,calc(100% - 48px)); margin: 10px auto 0; padding-bottom: 16px; }
+body {
+  scroll-padding-bottom: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+.invitation, dialog {
+  cursor: default;
+}
+
+main { z-index: 2; width: min(840px,calc(100% - 32px)); margin: auto; padding: 0; }
 .invitation { grid-template-columns: .85fr 1.15fr; min-height: 500px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: rgba(181, 217, 197, 0.24); }
 .gift-art { padding: 30px 18px 24px; }
 .token-visual, .gift-art img { width: 210px; height: 310px; }
@@ -60,7 +52,7 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 .page-foot { margin-top: 16px; }
 .modal { max-height: calc(100dvh - 32px); }
 
-/* 横屏桌面：下移到视野中央舒适区，不再贴紧顶栏 */
+/* 横屏桌面：完美置中，舒适沉浸 */
 @media (min-width: 768px) and (orientation: landscape) {
   html, body {
     min-height: 100vh;
@@ -70,25 +62,31 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     box-sizing: border-box;
-    padding: max(28px, 4.5vh) 0 max(36px, 5vh);
-  }
-  .topbar {
-    width: min(860px, calc(100% - 48px));
-    margin: 0 auto;
-    padding: 0 0 14px;
+    padding: 0;
   }
   main {
     width: min(860px, calc(100% - 48px));
-    margin: 0 auto;
+    margin: auto;
     padding-bottom: 0;
   }
 }
 
-/* 竖屏手机：高度有限，靠上紧凑布局，保证首屏操作通畅 */
+/* 竖屏手机：高度有限，居中布局，保证首屏操作通畅 */
 @media (max-width: 740px) {
-  .topbar { width: min(340px,calc(100% - 40px)); padding: 12px 0 6px; }
-  main { width: min(340px,calc(100% - 40px)); margin-top: 6px; }
+  html, body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 0;
+  }
+  main { width: min(340px,calc(100% - 32px)); margin: auto; }
   .invitation { min-height: auto; }
   .gift-art { min-height: 96px; padding: 8px 22px; }
   .token-visual { width: 86px; height: 88px; }
@@ -137,12 +135,44 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 }
 `;
 
+export const exitScript = `<script>
+document.addEventListener('DOMContentLoaded', function() {
+  function exitToOrigin() {
+    if (window.history.length > 1 && document.referrer && document.referrer.includes(location.hostname)) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  }
+
+  // 点击空白区域（卡片外任意位置）退出
+  document.addEventListener('click', function(e) {
+    var openDialog = document.querySelector('dialog[open]');
+    if (openDialog) {
+      var rect = openDialog.getBoundingClientRect();
+      var inDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!inDialog) openDialog.close();
+      return;
+    }
+    if (e.target.closest('.invitation')) return;
+    exitToOrigin();
+  });
+
+  // 按 Escape 键退出
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
+      exitToOrigin();
+    }
+  });
+});
+</script>`;
+
 export function renderClaim(response) {
   const updated = new HTMLRewriter()
     .on('title', { element: element => element.setInnerContent('LeonMinGod · 仙玉令牌领取 | 贵宾密钥') })
     .on('link[rel="icon"]', { element: element => element.setAttribute('href', '/assets/logo.svg') })
     .on('head', { element: element => element.append(
-      `<style id="free-token-compact-layout">${claimStyles}</style>${effectsScripts}`, { html: true }) })
+      `<style id="free-token-compact-layout">${claimStyles}</style>${effectsScripts}${exitScript}`, { html: true }) })
     .on('body', { element: element => element.prepend(effectsMarkup, { html: true }) })
     .transform(response);
   const headers = new Headers(updated.headers);

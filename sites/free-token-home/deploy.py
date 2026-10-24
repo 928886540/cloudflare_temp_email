@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = '4227aa15-80f8-4034-9de7-c82f3907a1e9'
+EXPECTED_ENTRANCE_VERSION = 'c271d0fb-50f5-4b13-86e7-025b93653c54'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -64,6 +64,8 @@ def verify():
     assert b'/free-token/app.js' in body
     assert b'id="free-token-compact-layout"' in body and b'id="token-fluid"' in body
     assert b'welcome-desktop-v1.webp' in body and b'welcome-mobile-v1.webp' in body
+    assert b'.topbar, .page-foot' in body and b'display: none !important;' in body
+    assert b'exitToOrigin' in body
     status, headers, body = read_public('/free-token/effects-v1.js')
     assert status == 200 and b'createFluidBackground' in body and b'prefers-reduced-motion' in body
     for kind in ['mobile', 'desktop']:
