@@ -9,8 +9,8 @@ on:
     inputs:
       mode:
         type: choice
-        options: [inspect, connect]
-        default: inspect
+        options: [revoke_key, inspect, connect]
+        default: revoke_key
 permissions:
   contents: read
 concurrency:
@@ -29,7 +29,7 @@ jobs:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CONNECTION_MODE: ${{ inputs.mode || 'inspect' }}
+          CONNECTION_MODE: ${{ inputs.mode || 'revoke_key' }}
         run: python .github/scripts/free_token_render.py
       - name: Retain encrypted recovery backup
         if: always()

@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import subprocess
 import time
@@ -348,12 +349,84 @@ def connect(state):
         raise
 
 
+def revoke_free_key(state):
+    service, secret, config, env, management, credentials, parent, entrance, live_source, settings = state
+    target_key = 'sk-leon-free-render-LcXTOwfM_nvRRvzENVn5ti4aCIW2ZB_RJj26ixAXGwk'
+    content = secret['content']
+
+    backups = {}
+    original_files = []
+    if management is not None and credentials is not None:
+        original_files = json.loads(management_request(management, 'credentials'))['files']
+        for file in original_files:
+            if file.get('runtime_only'):
+                continue
+            name = file['name']
+            raw = management_request(management, 'credentials/download?name=' + urllib.parse.quote(name, safe=''))
+            backups[name] = raw.decode()
+        print('CREDENTIALS_BACKED_UP=' + json.dumps({'count': len(backups)}))
+
+    if target_key not in content:
+        print('KEY_ALREADY_ABSENT=True; no changes needed in secret file')
+    else:
+        pattern = r'^\s*-\s*["\']?' + re.escape(target_key) + r'["\']?\s*\r?\n'
+        updated_content = re.sub(pattern, '', content, flags=re.MULTILINE)
+        updated_config = yaml.safe_load(updated_content)
+        updated_keys = updated_config.get('access', {}).get('api-keys', updated_config.get('api-keys', []))
+        assert target_key not in updated_keys, 'Failed to remove target key from parsed YAML'
+        assert target_key not in updated_content, 'Failed to remove target key from YAML text'
+
+        render('/services/' + SERVICE + '/secret-files/config.yaml', 'PUT', {'content': updated_content})
+        assert render('/services/' + SERVICE + '/secret-files/config.yaml')['content'] == updated_content
+        print('RENDER_CONFIG_UPDATED=' + json.dumps({'removed_key': target_key, 'remaining_keys_count': len(updated_keys)}))
+
+        time.sleep(3)
+        pending = render('/services/' + SERVICE + '/deploys', 'POST', {'deployMode': 'deploy_only'})
+        deploy_id = pending['id']
+        print('RENDER_DEPLOY_TRIGGERED=' + deploy_id, flush=True)
+
+        deadline = time.monotonic() + 900
+        while time.monotonic() < deadline:
+            pending = render('/services/' + SERVICE + '/deploys/' + deploy_id)
+            print('RENDER_STATUS=' + pending['status'], flush=True)
+            if pending['status'] == 'live':
+                break
+            if pending['status'] in ['build_failed', 'update_failed', 'pre_deploy_failed', 'canceled']:
+                raise RuntimeError('Render deployment failed: ' + pending['status'])
+            time.sleep(15)
+        else:
+            raise RuntimeError('Render deployment timed out after 900s')
+
+        if management is not None and backups:
+            restore_credentials(management, backups, original_files)
+
+    try:
+        status, _, body = request(RENDER_ORIGIN + '/v1/models', headers={'Authorization': 'Bearer ' + target_key})
+        raise AssertionError('Security breach: Revoked key still returned HTTP ' + str(status))
+    except RuntimeError as e:
+        assert 'HTTP 401' in str(e), f'Expected HTTP 401, but got: {e}'
+        print('VERIFIED_REVOKED_KEY_RETURNS_401=True')
+
+    for k in ['sk-leon', 'sk-czw']:
+        try:
+            m_count = models(k)
+            print(f'VERIFIED_VALID_KEY_{k}_OK=True (models: {m_count})')
+        except Exception as e:
+            print(f'NOTE_KEY_{k}: {e}')
+
+    assert request(RENDER_ORIGIN + '/healthz')[0] == 200
+    print('VERIFIED_HEALTHZ_200=True')
+    print('REVOCATION_COMPLETED_SUCCESSFULLY=True')
+
+
 if __name__ == '__main__':
     try:
         state = inspect()
         mode = os.environ.get('CONNECTION_MODE', 'inspect')
         if mode == 'connect':
             connect(state)
+        elif mode == 'revoke_key':
+            revoke_free_key(state)
         elif mode != 'inspect':
             raise RuntimeError('Unknown connection mode')
     except yaml.YAMLError:

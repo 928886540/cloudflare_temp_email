@@ -36,9 +36,99 @@ body {
 
 main { z-index: 2; width: min(840px,calc(100% - 32px)); margin: auto; padding: 0; }
 .invitation { grid-template-columns: .85fr 1.15fr; min-height: 500px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: rgba(181, 217, 197, 0.24); }
-.gift-art { padding: 30px 18px 24px; }
-.token-visual, .gift-art img { width: 210px; height: 310px; }
-.art-orbit { width: 250px; height: 250px; }
+.gift-art { padding: 30px 18px 24px; position: relative; overflow: visible; }
+
+/* 令牌容器与神圣仙芒 */
+.token-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 210px;
+  height: 310px;
+  cursor: pointer;
+}
+
+/* 令牌背景神圣灵光晕（常态柔和，hover炽盛） */
+.token-visual::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167, 243, 208, 0.35) 0%, rgba(74, 222, 128, 0.2) 35%, rgba(250, 204, 21, 0.12) 60%, transparent 75%);
+  filter: blur(14px);
+  pointer-events: none;
+  opacity: .75;
+  transition: opacity .4s ease, transform .4s ease, filter .4s ease;
+}
+
+.gift-art img {
+  position: relative;
+  display: block;
+  width: 210px;
+  height: 310px;
+  max-width: 100%;
+  object-fit: contain;
+  /* 默认周身温润青金灵光 */
+  filter: drop-shadow(0 0 10px rgba(110, 255, 190, 0.55)) drop-shadow(0 0 25px rgba(74, 222, 128, 0.35)) drop-shadow(0 15px 25px rgba(0, 15, 10, 0.7));
+  transition: filter .35s cubic-bezier(.2,.8,.25,1), transform .35s cubic-bezier(.2,.8,.25,1);
+  will-change: transform, filter;
+  animation: token-breathe 4s ease-in-out infinite;
+}
+
+@keyframes token-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* 轨道灵光环 */
+.art-orbit {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border: 1.5px solid rgba(175, 235, 195, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.25), inset 0 0 20px rgba(250, 204, 21, 0.15);
+  transition: all .35s cubic-bezier(.2,.8,.25,1);
+  pointer-events: none;
+}
+
+/* 【核心增强】鼠标移到令牌上时，周身神圣金绿神光暴涨！ */
+.gift-art:hover .token-visual::before,
+.token-visual:hover::before {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.25);
+  filter: blur(20px) brightness(1.4);
+  background: radial-gradient(circle, rgba(220, 255, 235, 0.65) 0%, rgba(110, 255, 190, 0.45) 30%, rgba(250, 204, 21, 0.35) 55%, transparent 75%);
+}
+
+.gift-art:hover .art-orbit,
+.token-visual:hover .art-orbit {
+  transform: translate(-50%, -50%) scale(1.14);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 35px rgba(110, 255, 190, 0.75), 0 0 70px rgba(250, 204, 21, 0.55), inset 0 0 30px rgba(74, 222, 128, 0.45);
+}
+
+.gift-art:hover img,
+.token-visual:hover img {
+  animation-play-state: paused;
+  transform: scale(1.07) translateY(-6px);
+  /* 超强璀璨神圣光晕：白炽心、青玉灵芒、金光外绽、深邃光辉多重叠加 */
+  filter: 
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 20px rgba(130, 255, 200, 0.95))
+    drop-shadow(0 0 40px rgba(74, 222, 128, 0.85))
+    drop-shadow(0 0 70px rgba(250, 204, 21, 0.7))
+    drop-shadow(0 0 110px rgba(52, 211, 153, 0.5));
+}
+
 .ritual { padding: 36px 36px 28px; }
 .eyebrow { margin-bottom: 16px; }
 h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
@@ -90,6 +180,7 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
   .invitation { min-height: auto; }
   .gift-art { min-height: 96px; padding: 8px 22px; }
   .token-visual { width: 86px; height: 88px; }
+  .token-visual::before { width: 110px; height: 110px; }
   .gift-art img { width: 60px; height: 88px; }
   .art-orbit { width: 104px; height: 104px; }
   .art-caption { font-size: 13px; letter-spacing: .18em; }
@@ -145,6 +236,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // 自动选中输入框 (Autofocus + Focus)
+  function focusOathInput() {
+    var input = document.getElementById('oath-input');
+    if (input) {
+      input.focus();
+      input.select?.();
+    }
+  }
+  focusOathInput();
+  setTimeout(focusOathInput, 60);
+  setTimeout(focusOathInput, 250);
+
   // 点击空白区域（卡片外任意位置）退出
   document.addEventListener('click', function(e) {
     var openDialog = document.querySelector('dialog[open]');
@@ -171,6 +274,7 @@ export function renderClaim(response) {
   const updated = new HTMLRewriter()
     .on('title', { element: element => element.setInnerContent('LeonMinGod · 仙玉令牌领取 | 贵宾密钥') })
     .on('link[rel="icon"]', { element: element => element.setAttribute('href', '/assets/logo.svg') })
+    .on('#oath-input', { element: element => element.setAttribute('autofocus', '') })
     .on('head', { element: element => element.append(
       `<style id="free-token-compact-layout">${claimStyles}</style>${effectsScripts}${exitScript}`, { html: true }) })
     .on('body', { element: element => element.prepend(effectsMarkup, { html: true }) })
