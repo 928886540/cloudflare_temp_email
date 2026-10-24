@@ -28,7 +28,7 @@ export const styles = `
 .footer-meta { margin-top: 9px; color: #c9ddc3; font-size: 9px; opacity: .7; }
 #pointer-light { background: radial-gradient(circle,#fff 5%,#d9ffe0 26%,#83dba288 58%,transparent 75%); box-shadow: 0 0 10px #abedb399; }
 
-/* Landscape: 仙侠重环青玉璧导航 (温润青玉渐变、金丝同心内纹、水波倒影、仙符微光) */
+/* Landscape: 玲珑晶莹剔透 · 仙家水魄琉璃璧导航 */
 @media (min-width: 768px) and (orientation: landscape) {
   .cover img { object-position: 70% center; }
   .interface { padding: 24px 38px 22px 38px; }
@@ -47,86 +47,132 @@ export const styles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    width: clamp(86px, min(6.4vw, 13vmin), 116px);
-    height: clamp(86px, min(6.4vw, 13vmin), 116px);
+    gap: 6px;
+    width: clamp(86px, min(6.5vw, 13vmin), 116px);
+    height: clamp(86px, min(6.5vw, 13vmin), 116px);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     pointer-events: auto;
-    /* 半透温润青玉渐变，保留玉质厚重感，隐约透出背后水波 */
-    background: radial-gradient(circle at 40% 32%, rgba(28, 88, 65, 0.74) 0%, rgba(13, 50, 38, 0.84) 65%, rgba(5, 26, 19, 0.94) 100%);
-    border: 1.5px solid rgba(190, 235, 195, 0.48);
-    color: #f3fbee;
-    font-family: "KaiTi", "STKaiti", "Songti SC", "Noto Serif SC", serif;
+    
+    /* 晶莹剔透的冰种琉璃水体：通透度极高，背后湖水与微澜澄澈可见 */
+    background: radial-gradient(circle at 50% 120%, rgba(12, 55, 42, 0.42) 0%, rgba(24, 92, 70, 0.22) 50%, rgba(65, 175, 125, 0.12) 100%),
+                linear-gradient(145deg, rgba(235, 255, 245, 0.38) 0%, rgba(150, 245, 205, 0.15) 35%, rgba(16, 68, 52, 0.32) 100%);
+    
+    /* 玲珑晶莹折射外圈：白金微光细边 */
+    border: 1.5px solid rgba(225, 255, 240, 0.72);
+    
+    color: #ffffff;
+    font-family: "KaiTi", "STKaiti", "Songti SC", serif;
     font-size: clamp(12.5px, 1.35vmin, 14.5px);
     font-weight: 500;
     letter-spacing: .08em;
-    text-shadow: 0 1px 5px #02120b, 0 0 10px rgba(74, 222, 128, 0.45);
-    box-shadow: 0 6px 20px rgba(1, 15, 10, 0.65), 0 0 22px rgba(52, 211, 153, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.35), inset 0 0 14px rgba(74, 222, 128, 0.15);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    text-shadow: 0 1px 4px rgba(0, 18, 10, 0.95), 0 0 10px rgba(110, 255, 190, 0.65);
+    
+    /* 核心水魄晶莹感：顶部白光折射 + 底部水润绿光反射 + 整体外散剔透微晕 */
+    box-shadow: 
+      0 8px 24px rgba(1, 15, 10, 0.48),
+      0 0 22px rgba(74, 222, 128, 0.25),
+      inset 0 2px 2px rgba(255, 255, 255, 0.85),
+      inset 0 -2px 5px rgba(52, 211, 153, 0.32),
+      inset 0 0 16px rgba(167, 243, 208, 0.2);
+      
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
     transition: transform .28s cubic-bezier(.2,.8,.3,1), border-color .28s, box-shadow .28s, background .28s;
+    overflow: hidden;
   }
-  /* 内嵌同心金丝玉环 (古风重环玉璧质感) */
+  
+  /* 顶部细腻弧面月牙高光 (Crescent Specular Highlight) */
   .entry-actions > a.jade-pill::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 15%;
+    width: 70%;
+    height: 38%;
+    border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.12) 70%, transparent 100%);
+    pointer-events: none;
+    filter: blur(.5px);
+  }
+  
+  /* 内嵌细金丝同心仙纹 (古风同心环) */
+  .entry-actions > a.jade-pill::after {
     content: "";
     position: absolute;
     inset: 5px;
     border-radius: 50%;
-    border: 1px dashed rgba(200, 240, 205, 0.32);
+    border: 1px dashed rgba(220, 255, 235, 0.45);
     pointer-events: none;
     transition: border-color .25s, transform .25s;
   }
+  
   .entry-actions > a.jade-pill svg {
     width: clamp(20px, 2.4vmin, 24px);
     height: clamp(20px, 2.4vmin, 24px);
-    stroke-width: 1.35;
-    stroke: #c2f5d3;
-    filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.5));
+    stroke-width: 1.4;
+    stroke: #e6fff2;
+    filter: drop-shadow(0 0 6px rgba(110, 255, 185, 0.75));
     transition: transform .25s;
+    z-index: 2;
   }
-  /* 进入灵境：微暖金碧配饰 */
+  .entry-actions > a.jade-pill span {
+    z-index: 2;
+  }
+  
+  /* 进入灵境：晶莹金琥珀琉璃感 */
   .entry-actions > a.enter {
     left: 61.2%;
-    border-color: rgba(240, 218, 148, 0.58);
-    background: radial-gradient(circle at 40% 32%, rgba(42, 92, 66, 0.78) 0%, rgba(18, 54, 39, 0.86) 65%, rgba(7, 28, 20, 0.95) 100%);
-    box-shadow: 0 6px 20px rgba(1, 15, 10, 0.65), 0 0 22px rgba(234, 179, 8, 0.22), inset 0 1px 2px rgba(255, 250, 220, 0.4), inset 0 0 14px rgba(250, 204, 21, 0.12);
+    border-color: rgba(255, 238, 175, 0.8);
+    background: radial-gradient(circle at 50% 120%, rgba(55, 45, 18, 0.42) 0%, rgba(85, 70, 26, 0.22) 50%, rgba(145, 115, 38, 0.12) 100%),
+                linear-gradient(145deg, rgba(255, 250, 225, 0.4) 0%, rgba(250, 228, 145, 0.16) 35%, rgba(65, 50, 16, 0.32) 100%);
+    box-shadow: 
+      0 8px 24px rgba(1, 15, 10, 0.48),
+      0 0 22px rgba(250, 204, 21, 0.28),
+      inset 0 2px 2px rgba(255, 255, 255, 0.9),
+      inset 0 -2px 5px rgba(234, 179, 8, 0.32),
+      inset 0 0 16px rgba(254, 240, 138, 0.2);
   }
-  .entry-actions > a.enter::before {
-    border-color: rgba(250, 230, 165, 0.35);
+  .entry-actions > a.enter::after {
+    border-color: rgba(255, 238, 175, 0.48);
   }
   .entry-actions > a.enter svg {
-    stroke: #fef08a;
-    filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.55));
+    stroke: #fffbeb;
+    filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.85));
   }
-  .entry-actions > a.gift-link:not(.address-link) {
-    left: 71.0%;
-  }
-  .entry-actions > a.address-link {
-    left: 80.8%;
-  }
-  /* 悬停动效：灵气升腾、金纹流转 */
+  
+  .entry-actions > a.gift-link:not(.address-link) { left: 71.0%; }
+  .entry-actions > a.address-link { left: 80.8%; }
+  
+  /* 悬停动效：灵气升华、水光潋滟 */
   .entry-actions > a.jade-pill:hover {
-    transform: translate(-50%, -50%) translateY(-4px) scale(1.05);
-    border-color: rgba(209, 250, 229, 0.85);
-    background: radial-gradient(circle at 40% 30%, rgba(36, 115, 84, 0.88) 0%, rgba(17, 68, 52, 0.94) 65%, rgba(6, 36, 26, 0.98) 100%);
-    box-shadow: 0 10px 28px rgba(1, 15, 10, 0.75), 0 0 32px rgba(74, 222, 128, 0.5), inset 0 1px 3px rgba(255, 255, 255, 0.55), inset 0 0 18px rgba(74, 222, 128, 0.3);
+    transform: translate(-50%, -50%) translateY(-5px) scale(1.06);
+    border-color: #ffffff;
+    box-shadow: 
+      0 12px 32px rgba(1, 15, 10, 0.6),
+      0 0 32px rgba(74, 222, 128, 0.6),
+      inset 0 2px 3px rgba(255, 255, 255, 1),
+      inset 0 -2px 6px rgba(52, 211, 153, 0.5),
+      inset 0 0 22px rgba(167, 243, 208, 0.38);
   }
   .entry-actions > a.jade-pill:hover::before {
-    border-color: rgba(220, 255, 230, 0.65);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.2) 70%, transparent 100%);
+  }
+  .entry-actions > a.jade-pill:hover::after {
+    border-color: rgba(255, 255, 255, 0.8);
     border-style: solid;
   }
   .entry-actions > a.jade-pill:hover svg {
-    transform: scale(1.1);
+    transform: scale(1.12);
   }
   .entry-actions > a.enter:hover {
-    border-color: rgba(254, 240, 138, 0.88);
-    background: radial-gradient(circle at 40% 30%, rgba(54, 118, 86, 0.88) 0%, rgba(24, 72, 53, 0.94) 65%, rgba(8, 38, 27, 0.98) 100%);
-    box-shadow: 0 10px 28px rgba(1, 15, 10, 0.75), 0 0 32px rgba(250, 204, 21, 0.45), inset 0 1px 3px rgba(255, 255, 230, 0.6), inset 0 0 18px rgba(250, 204, 21, 0.25);
-  }
-  .entry-actions > a.enter:hover::before {
-    border-color: rgba(254, 240, 138, 0.7);
-    border-style: solid;
+    border-color: #fffbeb;
+    box-shadow: 
+      0 12px 32px rgba(1, 15, 10, 0.6),
+      0 0 32px rgba(250, 204, 21, 0.6),
+      inset 0 2px 3px rgba(255, 255, 255, 1),
+      inset 0 -2px 6px rgba(234, 179, 8, 0.5),
+      inset 0 0 22px rgba(254, 240, 138, 0.42);
   }
 }
 

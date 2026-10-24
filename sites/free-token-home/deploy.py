@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = 'd085bbb3-2616-477f-ae0a-fe3a06d8a3cd'
+EXPECTED_ENTRANCE_VERSION = 'c246e5f6-7473-4a74-b904-57bf19dd07f3'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -57,6 +57,7 @@ def verify():
     assert b'data-layout="fullscreen-token"' in body and b'id="token-entry"' in body
     assert b'id="token-fluid"' in body and b'/free-token/effects-v1.js' in body
     assert b'class="token-aura"' in body and b'translate(1px,-7px)' in body
+    assert b'user-drag: none' in body and b'draggable="false"' in body
     assert b'class="actions"' not in body and b'object-fit: contain' not in body
     status, headers, body = read_public('/free-token/claim/')
     assert status == 200 and b'id="oath-form"' in body
@@ -74,6 +75,7 @@ def verify():
     assert status == 200 and b'home-hero-mobile-v4.webp' in body and b'home-hero-desktop-v4.webp' in body
     assert body.count(b'class="gift-link address-link jade-pill"') == 1
     assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body and b'border-radius: 50%' in body and b'61.2%' in body
+    assert b'linear-gradient(180deg, rgba(255, 255, 255' in body
     assert 'href="https://addr.leonmingod.com"'.encode() in body and '地址证明'.encode() in body
     assert b'https://mail.leonmingod.com' in body and b'href="/free-token/"' in body
     for kind in ['mobile', 'desktop']:
@@ -133,7 +135,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Refine homepage jade seal buttons and claim page vertical layout with welcome poster background'},
+        'annotations': {'workers/message': 'Crystalline water-jade buttons and disable image drag on entrance page'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []

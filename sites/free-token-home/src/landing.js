@@ -9,12 +9,23 @@ export default `<!doctype html>
   <meta name="description" content="免费 Token · Leon🌙 的见面礼，叫对了就送。">
   <title>免费 Token · LeonMinGod</title>
   <link rel="icon" href="/favicon.png">
+  <script>window.addEventListener('dragstart',function(e){e.preventDefault();});</script>
   ${effectsScripts}
   <style>
     ${effectsStyles}
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #050d1b; color: #fff0cf; }
     body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+    img, picture, .poster, .token-picture, .token-art, .token-motion, .scene, .welcome {
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
     .welcome { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; touch-action: none; }
     .scene {
       --token-clip: polygon(40.808% 45.933%,40.701% 45.156%,42.295% 44.916%,43.252% 45.813%,45.165% 45.813%,46.227% 44.856%,47.609% 44.916%,48.353% 45.574%,47.503% 46.292%,45.590% 46.890%,46.971% 48.146%,48.140% 48.983%,48.884% 50.419%,49.309% 51.675%,48.884% 53.768%,48.672% 55.742%,49.309% 56.818%,48.140% 58.553%,44.952% 59.450%,42.614% 60.287%,38.470% 61.543%,35.707% 60.526%,32.200% 59.569%,29.543% 58.194%,29.118% 56.878%,30.181% 54.665%,30.499% 52.632%,30.925% 50.718%,31.243% 49.282%,33.156% 48.146%,35.813% 47.428%,38.151% 46.890%);
@@ -27,7 +38,7 @@ export default `<!doctype html>
       aspect-ratio: 941 / 1672;
       transform: translate(-50%, -50%);
     }
-    .poster, .poster img, .token-picture, .token-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .poster, .poster img, .token-picture, .token-art { position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
     .poster img { object-fit: cover; }
     .token-entry { position: absolute; z-index: 3; left: var(--token-left); top: var(--token-top); width: var(--token-width); height: var(--token-height); min-width: 44px; min-height: 44px; border-radius: 42%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .token-entry:focus-visible { outline: 2px solid #f5e1aa; outline-offset: 5px; }
@@ -67,14 +78,14 @@ export default `<!doctype html>
     <div class="scene">
       <picture class="poster">
         <source media="(orientation: landscape)" srcset="/free-token/welcome-desktop-v1.webp" width="1824" height="862">
-        <img src="/free-token/welcome-mobile-v1.webp" width="941" height="1672" alt="LeonMinGod 免费 Token 海报：雪夜仙子递出青玉令牌。白嫖 Token？先叫声义父。Leon🌙 的见面礼，叫对了就送。" fetchpriority="high" decoding="async">
+        <img src="/free-token/welcome-mobile-v1.webp" width="941" height="1672" alt="LeonMinGod 免费 Token 海报：雪夜仙子递出青玉令牌。白嫖 Token？先叫声义父。Leon🌙 的见面礼，叫对了就送。" fetchpriority="high" decoding="async" draggable="false">
       </picture>
       <a id="token-entry" class="token-entry" href="/free-token/claim/" aria-label="点击令牌，进入免费 Token" aria-describedby="token-hint"><span class="sr-only">进入免费 Token</span></a>
       <div class="token-aura" aria-hidden="true"></div>
       <div class="token-motion" aria-hidden="true">
         <picture class="token-picture">
           <source media="(orientation: landscape)" srcset="/free-token/welcome-desktop-v1.webp" width="1824" height="862">
-          <img class="token-art" src="/free-token/welcome-mobile-v1.webp" width="941" height="1672" alt="" decoding="async">
+          <img class="token-art" src="/free-token/welcome-mobile-v1.webp" width="941" height="1672" alt="" decoding="async" draggable="false">
         </picture>
       </div>
       <p id="token-hint" class="token-hint">轻触令牌 · 进入</p>
@@ -83,4 +94,3 @@ export default `<!doctype html>
   </main>
 </body>
 </html>`;
-
