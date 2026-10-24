@@ -1,5 +1,37 @@
 # Free Token integration with Render
 
+## Mobile fluid performance fix
+
+Deployed at 2026-10-25 01:18 Asia/Shanghai. Code commit `89de9160c60e63f6a3c937d15e461dcd79155cfa`;
+entrance version `2abf9c44-faf5-4f98-80fa-e383108cca07`, parent still `8aa85754-acf1-498e-91ad-78117e40f8e5`.
+[Deployment and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40115492703) passed.
+Live entrance, claim HTML, and v2 scripts match the tested preview; the homepage matches its pre-deployment state.
+
+Touch devices use dye resolution 256, simulation resolution 64, six pressure iterations,
+a 30 FPS ceiling, and a pixel ratio cap of one. Lower-power devices use 192 / 48 / 4
+with a 24 FPS ceiling. Mobile rendering pauses after 2.5 seconds idle and resumes on
+touch; screen/keyboard resize bursts are debounced for 150ms. Mobile token and claim
+card glows remain, while costly multilayer shadows, blur, and live backdrop blur are
+removed. Desktop quality and hover effects remain.
+
+The dedicated `/free-token/fluid-v2.js` engine is served from `assets/token-fluid-v2.txt`,
+retaining its MIT license. It adds frame/pixel budgets and prevents the original engine
+from overriding explicit mobile dye settings back to 512. Page control uses the new
+`/free-token/effects-v2.js` URL; the homepage `/vendor/fluid.js` is unchanged.
+Checks cover DPR=3 normal/low-power touch profiles, desktop, actual WebGL drawing
+rate limits, idle pause, resize batching, token navigation, and confirmation inputs.
+Browser emulation is not a physical-device measurement on the user's iPhone.
+
+The fix preserves subsequent repository changes including four homepage links, branding,
+centered claim cards, and exit behavior. It does not change Render configuration or keys.
+
+`https://leonmingod.com/api/free-token/claim` retains its existing confirmation request.
+Successful responses return `baseUrl: https://cpa-dhke.onrender.com/v1` and the same client
+key registered with Render CPA. The main Worker stores it as `FREE_TOKEN_RENDER_KEY`;
+the original `FREE_TOKEN_CPA_KEY` remains in place. Homepage artwork, pill navigation,
+the fullscreen Free Token layout, and token interactions are preserved.
+
+
 `https://leonmingod.com/api/free-token/claim` retains its existing confirmation request.
 Successful responses return `baseUrl: https://cpa-dhke.onrender.com/v1` and the same client
 key registered with Render CPA. The main Worker stores it as `FREE_TOKEN_RENDER_KEY`;
@@ -35,11 +67,13 @@ Cloudflare's injected analytics script; all four original images were retained. 
 integration version table below is historical. Consult this newer entrance snapshot and
 read actual live versions again before future changes.
 
-## Next task: landscape homepage navigation (requested, not implemented)
+## Historical landscape navigation request (subsequently adjusted)
 
 After the page release, the user reported that the three homepage navigation links
 are too small at the bottom in landscape and supplied a screenshot with three red circles.
-The next session should implement and deploy this request; it is not completed work:
+Subsequent branch commits added four circular navigation links, branding, and centered claim cards.
+This historical section is not a current pending task; read the latest `src/homepage.js`
+and live page before making further changes. The original request was:
 
 - Target the homepage `https://leonmingod.com/`, editing `src/homepage.js` on the website branch.
 - Move the three links below the logo/slogan on the right, matching the marked circles.

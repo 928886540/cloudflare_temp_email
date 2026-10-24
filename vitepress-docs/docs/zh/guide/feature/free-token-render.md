@@ -1,5 +1,31 @@
 # 免费 Token 的 Render 对接
 
+## 手机流光性能修复
+
+已于北京时间 2026-10-25 01:18 发布。代码提交 `89de9160c60e63f6a3c937d15e461dcd79155cfa`；
+入口版本 `2abf9c44-faf5-4f98-80fa-e383108cca07`，主站仍为 `8aa85754-acf1-498e-91ad-78117e40f8e5`。
+[发布与线上验证](https://github.com/928886540/cloudflare_temp_email/actions/runs/40115492703)通过；
+线上入口、领取页和 v2 脚本与已测试预览一致，首页保持发布前内容。
+
+触屏设备改为轻量渲染：流体纹理 256、模拟网格 64、压力迭代 6、最高 30 帧、画布像素比上限 1；
+低配置设备进一步降至 192 / 48 / 4、最高 24 帧。手机闲置 2.5 秒后暂停，恢复触摸时重新启动；
+屏幕/键盘引发的连续 resize 在 150ms 后合并处理。手机令牌和领取卡片保留光晕，移除多层大范围
+drop-shadow、模糊及背景实时模糊；桌面保留原画质和悬停效果。
+
+专用引擎 `/free-token/fluid-v2.js` 从 `assets/token-fluid-v2.txt` 提供，保留原 MIT 许可，
+增加帧率/像素比预算，并修正原引擎会把显式手机纹理设置强制升回 512 的逻辑。
+页面控制脚本升级到 `/free-token/effects-v2.js`；首页的 `/vendor/fluid.js` 未改。
+验证覆盖 DPR=3 的普通/低配置触屏模式、桌面模式、实际 WebGL 绘制频率上限、闲置暂停、
+resize 合并、令牌点击和确认表单。浏览器模拟验证不代表已在用户的 iPhone 上做过真机测量。
+
+此修复保留仓库后续新增的四入口、品牌 Logo、领取卡片居中与退出行为，不修改 Render 配置或 Key。
+
+`https://leonmingod.com/api/free-token/claim` 仍接受原有的确认请求，成功后返回
+`baseUrl: https://cpa-dhke.onrender.com/v1` 和在 Render CPA 注册的同一把客户端 Key。
+客户端 Key 存在主站 Worker 的 `FREE_TOKEN_RENDER_KEY` Secret 中；原 `FREE_TOKEN_CPA_KEY`
+继续保留。首页图片、胶囊导航、免费 Token 满屏布局和令牌点击动效不受影响。
+
+
 `https://leonmingod.com/api/free-token/claim` 仍接受原有的确认请求，成功后返回
 `baseUrl: https://cpa-dhke.onrender.com/v1` 和在 Render CPA 注册的同一把客户端 Key。
 客户端 Key 存在主站 Worker 的 `FREE_TOKEN_RENDER_KEY` Secret 中；原 `FREE_TOKEN_CPA_KEY`
@@ -30,10 +56,12 @@ Chromium 渲染检查覆盖 320×480、375×548、393×664、430×740、1440×90
 线上页面与预览内容一致（比对时排除 Cloudflare 自动注入的统计脚本），四张原图保留。
 下方 05:08 的对接版本表是历史验收快照；后续修改入口前以此节的新版本为参考并重新读线上。
 
-## 下一步：横屏主页导航（用户已要求，尚未实施）
+## 横屏主页导航历史请求（后续分支已调整）
 
 用户在本次页面发布后指出，主站横屏底部的三个入口过小，提供了画有三个红圈的位置参考。
-下一会话需直接完成以下改动并发布，不能将本待办误认为已经实现：
+以下是当时的请求记录。后续分支已加入圆形四按钮导航、品牌 Logo 和居中领取卡片；
+不要把此历史段落当作当前未完成任务。后续修改应先读取最新 `src/homepage.js` 与线上页面。
+当时的具体要求为：
 
 - 页面为主站 `https://leonmingod.com/`，修改网站工作分支的 `src/homepage.js` 导航布局。
 - 三个入口移到画面右侧 Logo/题字下方的红圈位置。1920×909 参考图的圆心约为
