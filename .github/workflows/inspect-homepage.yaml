@@ -59,3 +59,32 @@ jobs:
               zone_id = zone["id"]
               routes = get("/zones/" + zone_id + "/workers/routes")
               print("ZONE_ROUTES=" + json.dumps(routes))
+          from pathlib import Path
+          out = Path("homepage-backup")
+          out.mkdir()
+          request = urllib.request.Request(
+              "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/leonmingod-home/content",
+              headers={"Authorization": "Bearer " + token})
+          with urllib.request.urlopen(request, timeout=30) as response:
+              (out / "worker-content.bin").write_bytes(response.read())
+              (out / "content-headers.json").write_text(json.dumps({
+                  "content_type": response.headers.get("Content-Type"),
+                  "entrypoint": response.headers.get("cf-entrypoint")
+              }))
+          settings = get("/accounts/" + account + "/workers/scripts/leonmingod-home/settings")
+          safe_settings = {
+              k: settings.get(k) for k in
+              ["compatibility_date", "compatibility_flags", "main_module", "body_part", "assets", "usage_model"]
+          }
+          safe_settings["bindings"] = [
+              {k: b.get(k) for k in ["name", "type"]}
+              for b in settings.get("bindings", [])
+          ]
+          (out / "settings.json").write_text(json.dumps(safe_settings))
+          print("HOME_SETTINGS=" + json.dumps(safe_settings))
+      - name: Save existing homepage source
+        uses: actions/upload-artifact@v4
+        with:
+          name: homepage-source
+          path: homepage-backup/
+          retention-days: 7
