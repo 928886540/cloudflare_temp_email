@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = 'c271d0fb-50f5-4b13-86e7-025b93653c54'
+EXPECTED_ENTRANCE_VERSION = 'd02bbf0a-ef83-4191-b62e-4b5481de1c47'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -66,6 +66,7 @@ def verify():
     assert b'welcome-desktop-v1.webp' in body and b'welcome-mobile-v1.webp' in body
     assert b'.topbar, .page-foot' in body and b'display: none !important;' in body
     assert b'exitToOrigin' in body
+    assert b'autofocus' in body and b'token-breathe' in body
     status, headers, body = read_public('/free-token/effects-v1.js')
     assert status == 200 and b'createFluidBackground' in body and b'prefers-reduced-motion' in body
     for kind in ['mobile', 'desktop']:
@@ -139,7 +140,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Crystalline water-jade buttons and disable image drag on entrance page'},
+        'annotations': {'workers/message': 'Supercharged token glow on hover and autofocus oath input on claim page'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []

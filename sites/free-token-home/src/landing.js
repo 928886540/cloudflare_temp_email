@@ -45,7 +45,21 @@ export default `<!doctype html>
     .token-aura { position: absolute; z-index: 1; left: var(--token-left); top: var(--token-top); width: var(--token-width); height: var(--token-height); pointer-events: none; border-radius: 48%; background: radial-gradient(ellipse,#efffd55c 0%,#91ffdb47 28%,#e9d3992e 48%,transparent 72%); filter: blur(12px); mix-blend-mode: screen; animation: token-glow 3.8s ease-in-out infinite; }
     .token-motion { position: absolute; inset: 0; z-index: 2; pointer-events: none; transform-origin: var(--token-origin); transform: scale(1.09); filter: drop-shadow(0 0 7px #b5ffe9c7) drop-shadow(0 0 20px #86efd68c) drop-shadow(0 0 34px #f1d1966b); animation: token-float 3.8s ease-in-out infinite; will-change: transform; }
     .token-art { object-fit: cover; clip-path: var(--token-clip); }
-    .token-entry:hover ~ .token-motion, .token-entry:focus-visible ~ .token-motion { filter: drop-shadow(0 0 10px #d5fff0ed) drop-shadow(0 0 26px #adffe0b3) drop-shadow(0 0 42px #ffe2a480); }
+    .token-entry:hover ~ .token-motion, .token-entry:focus-visible ~ .token-motion {
+      transform: scale(1.13) translate(1px, -4px);
+      filter: 
+        drop-shadow(0 0 10px #ffffff)
+        drop-shadow(0 0 24px #98ffd9)
+        drop-shadow(0 0 48px #4ade80)
+        drop-shadow(0 0 80px #facc15)
+        drop-shadow(0 0 120px #22c55e);
+    }
+    .token-entry:hover ~ .token-aura {
+      opacity: 1 !important;
+      transform: scale(1.35) !important;
+      filter: blur(18px) brightness(1.7);
+      background: radial-gradient(ellipse, rgba(239, 255, 213, 0.9) 0%, rgba(145, 255, 219, 0.75) 35%, rgba(250, 204, 21, 0.55) 55%, transparent 75%);
+    }
     .token-entry:active ~ .token-motion { animation-play-state: paused; }
     .token-hint { position: absolute; z-index: 2; left: var(--hint-left); top: var(--hint-top); margin: 0; padding: 4px 9px; transform: translateX(-50%); border-radius: 99px; background: #06151f5c; color: #f8e6ba; font-size: 11px; line-height: 1.4; letter-spacing: .08em; white-space: nowrap; text-shadow: 0 1px 5px #02070c; pointer-events: none; }
     .back { position: fixed; z-index: 5; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid #d0e3ee30; border-radius: 99px; background: #07152270; color: #e0eaf2; font-size: 12px; line-height: 1.4; text-decoration: none; backdrop-filter: blur(8px); }
