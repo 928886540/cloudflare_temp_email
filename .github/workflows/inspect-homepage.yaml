@@ -82,6 +82,20 @@ jobs:
           ]
           (out / "settings.json").write_text(json.dumps(safe_settings))
           print("HOME_SETTINGS=" + json.dumps(safe_settings))
+          print("SETTINGS_KEYS=" + json.dumps(list(settings.keys())))
+          deployment = get("/accounts/" + account + "/workers/scripts/leonmingod-home/deployments")
+          print("HOME_DEPLOYMENTS=" + json.dumps(deployment))
+          recent = deployment.get("deployments", []) if isinstance(deployment, dict) else []
+          if recent:
+              version_id = recent[0]["versions"][0]["version_id"]
+              version = get("/accounts/" + account + "/workers/scripts/leonmingod-home/versions/" + version_id)
+              resources = version.get("resources", {})
+              print("VERSION_KEYS=" + json.dumps(list(version.keys())))
+              print("RESOURCE_KEYS=" + json.dumps(list(resources.keys())))
+              print("SCRIPT_CONFIG=" + json.dumps(resources.get("script")))
+              print("ASSET_CONFIG=" + json.dumps(resources.get("assets")))
+              print("ASSET_ROUTER=" + json.dumps(resources.get("asset_router")))
+
       - name: Save existing homepage source
         uses: actions/upload-artifact@v4
         with:
