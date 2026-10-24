@@ -16,6 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '0a14864c-6cd7-408f-b15c-9e476f2eea5c'
+EXPECTED_ENTRANCE_VERSION = 'bd5549a8-a862-4a72-bd99-fb524a79ec44'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -63,6 +64,9 @@ def verify():
         assert hashlib.sha256(body).digest() == hashlib.sha256((ROOT / 'assets' / name).read_bytes()).digest()
     status, headers, body = read_public('/')
     assert status == 200 and b'hero-mobile-v3.png' in body and b'hero-desktop-v3.png' in body
+    assert body.count(b'class="gift-link address-link"') == 1
+    assert 'href="https://addr.leonmingod.com"'.encode() in body and '地址证明'.encode() in body
+    assert b'https://mail.leonmingod.com' in body and b'href="/free-token/"' in body
     status, headers, body = read_public('/free-token/app.js?v=1')
     assert status == 200 and b'/api/free-token/claim' in body
     req = urllib.request.Request(ORIGIN + '/api/free-token/claim', headers={'User-Agent': 'Mozilla/5.0'})
@@ -83,12 +87,14 @@ def main():
     active = deployments[0]['versions']
     if len(active) != 1 or active[0]['percentage'] != 100 or active[0]['version_id'] != EXPECTED_VERSION:
         raise RuntimeError('The live website changed since backup; review it before deploying')
-    if any(x.get('id') == WORKER for x in api(f'/accounts/{ACCOUNT}/workers/scripts')):
-        raise RuntimeError('The entrance Worker already exists; review before replacing it')
+    entrance_versions = api(API_PATH + '/deployments')['deployments'][0]['versions']
+    if len(entrance_versions) != 1 or entrance_versions[0]['percentage'] != 100 or entrance_versions[0]['version_id'] != EXPECTED_ENTRANCE_VERSION:
+        raise RuntimeError('The entrance Worker changed since review; do not overwrite it')
     patterns = [host + suffix for host in ['leonmingod.com', 'www.leonmingod.com']
-                for suffix in ['/free-token', '/free-token/*']]
-    if any(x.get('pattern') in patterns for x in api(ROUTES_API)):
-        raise RuntimeError('A dedicated Free Token route already exists; review before replacing it')
+                for suffix in ['/', '/index.html', '/free-token', '/free-token/*']]
+    existing_routes = {x['pattern']: x for x in api(ROUTES_API)}
+    if any(pattern in existing_routes and existing_routes[pattern].get('script') != WORKER for pattern in patterns):
+        raise RuntimeError('A requested route belongs to another Worker; review before replacing it')
     settings = api(ROOT_API + '/settings')
     metadata = {
         'main_module': 'src/index.js',
@@ -96,7 +102,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Free Token entrance with mobile and desktop posters'},
+        'annotations': {'workers/message': 'Add Address Proof link to the homepage navigation'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []
@@ -118,6 +124,8 @@ def main():
     route_ids = []
     try:
         for pattern in patterns:
+            if pattern in existing_routes:
+                continue
             route = api(ROUTES_API, method='POST', body={'pattern': pattern, 'script': WORKER})
             route_ids.append(route['id'])
         for attempt in range(8):
@@ -129,10 +137,14 @@ def main():
                     raise
                 time.sleep(min(2 ** attempt, 8))
     except Exception:
-        print('Verification failed; removing only the newly created entrance routes and Worker')
+        print('Verification failed; restoring previous entrance version and removing new routes')
         for route_id in reversed(route_ids):
             api(ROUTES_API + '/' + route_id, method='DELETE')
-        api(API_PATH, method='DELETE')
+        api(API_PATH + '/deployments', method='POST', body={
+            'strategy': 'percentage',
+            'versions': [{'version_id': EXPECTED_ENTRANCE_VERSION, 'percentage': 100}],
+            'annotations': {'workers/message': 'Restore entrance after failed navigation verification'},
+        })
         raise
     live = api(API_PATH + '/deployments')['deployments'][0]
     print('VERIFIED_DEPLOYMENT=' + json.dumps({
