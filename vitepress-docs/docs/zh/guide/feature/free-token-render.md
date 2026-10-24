@@ -1,5 +1,20 @@
 # 免费 Token 的 Render 对接
 
+## 手机流光性能修复
+
+触屏设备改为轻量渲染：流体纹理 256、模拟网格 64、压力迭代 6、最高 30 帧、画布像素比上限 1；
+低配置设备进一步降至 192 / 48 / 4、最高 24 帧。手机闲置 2.5 秒后暂停，恢复触摸时重新启动；
+屏幕/键盘引发的连续 resize 在 150ms 后合并处理。手机令牌和领取卡片保留光晕，移除多层大范围
+drop-shadow、模糊及背景实时模糊；桌面保留原画质和悬停效果。
+
+专用引擎 `/free-token/fluid-v2.js` 从 `assets/token-fluid-v2.txt` 提供，保留原 MIT 许可，
+增加帧率/像素比预算，并修正原引擎会把显式手机纹理设置强制升回 512 的逻辑。
+页面控制脚本升级到 `/free-token/effects-v2.js`；首页的 `/vendor/fluid.js` 未改。
+验证覆盖 DPR=3 的普通/低配置触屏模式、桌面模式、实际 WebGL 绘制频率上限、闲置暂停、
+resize 合并、令牌点击和确认表单。浏览器模拟验证不代表已在用户的 iPhone 上做过真机测量。
+
+此修复保留仓库后续新增的四入口、品牌 Logo、领取卡片居中与退出行为，不修改 Render 配置或 Key。
+
 `https://leonmingod.com/api/free-token/claim` 仍接受原有的确认请求，成功后返回
 `baseUrl: https://cpa-dhke.onrender.com/v1` 和在 Render CPA 注册的同一把客户端 Key。
 客户端 Key 存在主站 Worker 的 `FREE_TOKEN_RENDER_KEY` Secret 中；原 `FREE_TOKEN_CPA_KEY`

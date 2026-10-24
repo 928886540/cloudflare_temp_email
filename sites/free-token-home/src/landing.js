@@ -82,6 +82,11 @@ export default `<!doctype html>
       }
       .token-hint { font-size: 12px; }
     }
+    @media (pointer: coarse) {
+      .token-motion, .token-entry:hover ~ .token-motion, .token-entry:focus-visible ~ .token-motion { filter: none !important; }
+      .token-aura, .token-entry:hover ~ .token-aura { filter: none !important; mix-blend-mode: normal; background: radial-gradient(ellipse,#edffdba8 0%,#91ffdb70 26%,#e9d39942 48%,transparent 72%); will-change: transform, opacity; }
+      .back { backdrop-filter: none; }
+    }
     @media (prefers-reduced-motion: reduce) { .token-motion, .token-aura { animation: none; will-change: auto; } }
   </style>
 </head>

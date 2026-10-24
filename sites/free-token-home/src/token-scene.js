@@ -4,10 +4,11 @@ export const effectsStyles = `
 [data-motion="idle"] #token-fluid { opacity: .2; }
 [data-motion="reduced"] #token-fluid, [data-motion="unavailable"] #token-fluid { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { #token-fluid, #token-pointer-light { display: none; } }
+@media (pointer: coarse) { #token-fluid { filter: none; } }
 `;
 
 export const effectsMarkup = '<canvas id="token-fluid" aria-hidden="true"></canvas><span id="token-pointer-light" aria-hidden="true"></span>';
-export const effectsScripts = '<script src="/vendor/fluid.js" defer></script><script src="/free-token/effects-v1.js" defer></script>';
+export const effectsScripts = '<script src="/free-token/fluid-v2.js" defer></script><script src="/free-token/effects-v2.js" defer></script>';
 
 function tokenScene() {
   'use strict';
@@ -15,6 +16,16 @@ function tokenScene() {
   const light = document.getElementById('token-pointer-light');
   if (!canvas || !light) return;
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = matchMedia('(pointer: coarse)').matches;
+  const lowPower = mobile && ((navigator.hardwareConcurrency || 8) <= 4 ||
+    (navigator.deviceMemory && navigator.deviceMemory <= 4));
+  const budget = mobile ? {
+    SIM_RESOLUTION: lowPower ? 48 : 64,
+    DYE_RESOLUTION: lowPower ? 192 : 256,
+    PRESSURE_ITERATIONS: lowPower ? 4 : 6,
+    MAX_FPS: lowPower ? 24 : 30, MAX_DPR: 1, SHADING: false, START_SPLATS: 2,
+  } : { SIM_RESOLUTION: 128, DYE_RESOLUTION: 768, PRESSURE_ITERATIONS: 16, MAX_FPS: 60, MAX_DPR: 1.5 };
+  canvas.dataset.quality = mobile ? 'mobile' : 'desktop';
   const pointers = new Set();
   const timers = new Set();
   let engine;
@@ -24,6 +35,8 @@ function tokenScene() {
   let idleTimer;
   let hovering = false;
   let introduced = false;
+  let resizeTimer;
+  let lastMove = -Infinity;
 
   function interactive(target) {
     return target instanceof Element && Boolean(target.closest('a, button, input, textarea, select, label, dialog'));
@@ -40,7 +53,7 @@ function tokenScene() {
       try {
         engine = window.createFluidBackground(canvas, {
           TRANSPARENT: true, SUNRAYS: false, BLOOM: false,
-          DYE_RESOLUTION: 768, PRESSURE_ITERATIONS: 16,
+          ...budget,
           DENSITY_DISSIPATION: 1.8, VELOCITY_DISSIPATION: .85,
           CURL: 26, SPLAT_RADIUS: .13, SPLAT_FORCE: 3600,
           PALETTE: [[.08,1.45,.75], [.24,1.25,.82], [1.25,1.15,.35], [.55,1.55,1.05], [.75,1.25,.68]],
@@ -68,7 +81,7 @@ function tokenScene() {
   function activity() {
     if (idle) { idle = false; sync(); }
     clearTimeout(idleTimer);
-    if (running) idleTimer = setTimeout(() => { idle = true; sync(); }, 12000);
+    if (running) idleTimer = setTimeout(() => { idle = true; sync(); }, mobile ? 2500 : 12000);
   }
   function showLight(event) {
     light.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
@@ -86,6 +99,8 @@ function tokenScene() {
   }, { passive: true });
   window.addEventListener('pointermove', event => {
     if (motion.matches || unavailable) return;
+    if (mobile && event.timeStamp - lastMove < 1000 / budget.MAX_FPS) return;
+    lastMove = event.timeStamp;
     if (pointers.has(event.pointerId)) {
       activity();
       if (running) {
@@ -112,14 +127,17 @@ function tokenScene() {
   window.addEventListener('pointerup', endPointer, { passive: true });
   window.addEventListener('pointercancel', endPointer, { passive: true });
   window.addEventListener('blur', clearPointers);
-  window.addEventListener('resize', () => engine?.resize(), { passive: true });
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => engine?.resize(), 150);
+  }, { passive: true });
   function resume() {
     idle = false;
     sync();
     activity();
     if (!introduced && running) {
       introduced = true;
-      [[.18,.56], [.77,.72], [.32,.83]].forEach(([x, y], index) => {
+      (mobile ? [[.18,.56]] : [[.18,.56], [.77,.72], [.32,.83]]).forEach(([x, y], index) => {
         const timer = setTimeout(() => {
           timers.delete(timer);
           if (!running) return;

@@ -8,6 +8,7 @@ import logo from '../assets/logo.svg';
 import { renderHomepage } from './homepage.js';
 import tokenScene from './token-scene.js';
 import { renderClaim } from './claim.js';
+import tokenFluid from '../assets/token-fluid-v2.txt';
 
 export default {
   async fetch(request, env, ctx) {
@@ -25,7 +26,14 @@ export default {
         'X-Content-Type-Options': 'nosniff',
       } });
     }
-    if (read && url.pathname === '/free-token/effects-v1.js') {
+    if (read && url.pathname === '/free-token/fluid-v2.js') {
+      return new Response(request.method === 'HEAD' ? null : tokenFluid, { headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+      } });
+    }
+    if (read && ['/free-token/effects-v1.js', '/free-token/effects-v2.js'].includes(url.pathname)) {
       return new Response(request.method === 'HEAD' ? null : tokenScene, { headers: {
         'Content-Type': 'application/javascript; charset=utf-8',
         'Cache-Control': 'public, max-age=31536000, immutable',

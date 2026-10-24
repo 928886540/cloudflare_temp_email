@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = 'd02bbf0a-ef83-4191-b62e-4b5481de1c47'
+EXPECTED_ENTRANCE_VERSION = 'c346c3ef-6811-42b9-ae51-b03e680ac789'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -55,7 +55,8 @@ def verify():
     assert status == 200 and b'welcome-mobile-v1.webp' in body
     assert b'welcome-desktop-v1.webp' in body and b'/free-token/claim/' in body
     assert b'data-layout="fullscreen-token"' in body and b'id="token-entry"' in body
-    assert b'id="token-fluid"' in body and b'/free-token/effects-v1.js' in body
+    assert b'id="token-fluid"' in body and b'/free-token/effects-v2.js' in body
+    assert b'/free-token/fluid-v2.js' in body and b'@media (pointer: coarse)' in body
     assert b'class="token-aura"' in body and b'translate(1px,-7px)' in body
     assert b'user-drag: none' in body and b'draggable="false"' in body
     assert b'class="actions"' not in body and b'object-fit: contain' not in body
@@ -67,8 +68,11 @@ def verify():
     assert b'.topbar, .page-foot' in body and b'display: none !important;' in body
     assert b'exitToOrigin' in body
     assert b'autofocus' in body and b'token-breathe' in body
-    status, headers, body = read_public('/free-token/effects-v1.js')
+    status, headers, body = read_public('/free-token/effects-v2.js')
     assert status == 200 and b'createFluidBackground' in body and b'prefers-reduced-motion' in body
+    assert b'MAX_FPS' in body and b'2500' in body
+    status, headers, body = read_public('/free-token/fluid-v2.js')
+    assert status == 200 and body == (ROOT / 'assets/token-fluid-v2.txt').read_bytes()
     for kind in ['mobile', 'desktop']:
         name = f'welcome-{kind}-v1.webp'
         status, headers, body = read_public('/free-token/' + name)
@@ -140,7 +144,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Supercharged token glow on hover and autofocus oath input on claim page'},
+        'annotations': {'workers/message': 'Reduce mobile fluid GPU load, frame rate, and full-poster filter costs'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []

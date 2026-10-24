@@ -22,6 +22,7 @@ jobs:
           node --check sites/free-token-home/src/index.js
           node --check sites/free-token-home/src/landing.js
           node --check sites/free-token-home/src/token-scene.js
+          node --check < sites/free-token-home/assets/token-fluid-v2.txt
           node --check sites/free-token-home/src/claim.js
           node --check sites/free-token-home/src/site-original.js
           node --check sites/free-token-home/src/homepage.js

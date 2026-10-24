@@ -270,13 +270,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>`;
 
+const mobileClaimStyles = `
+@media (pointer: coarse) {
+  .invitation { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: #0a1d20ed; }
+  .gift-art img, .gift-art:hover img, .token-visual:hover img { filter: none; will-change: transform; }
+  .token-visual::before, .gift-art:hover .token-visual::before, .token-visual:hover::before { filter: none; }
+}
+`;
+
 export function renderClaim(response) {
   const updated = new HTMLRewriter()
     .on('title', { element: element => element.setInnerContent('LeonMinGod · 仙玉令牌领取 | 贵宾密钥') })
     .on('link[rel="icon"]', { element: element => element.setAttribute('href', '/assets/logo.svg') })
     .on('#oath-input', { element: element => element.setAttribute('autofocus', '') })
     .on('head', { element: element => element.append(
-      `<style id="free-token-compact-layout">${claimStyles}</style>${effectsScripts}${exitScript}`, { html: true }) })
+      `<style id="free-token-compact-layout">${claimStyles}${mobileClaimStyles}</style>${effectsScripts}${exitScript}`, { html: true }) })
     .on('body', { element: element => element.prepend(effectsMarkup, { html: true }) })
     .transform(response);
   const headers = new Headers(updated.headers);

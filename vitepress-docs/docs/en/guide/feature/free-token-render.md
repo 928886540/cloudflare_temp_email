@@ -1,5 +1,25 @@
 # Free Token integration with Render
 
+## Mobile fluid performance fix
+
+Touch devices use dye resolution 256, simulation resolution 64, six pressure iterations,
+a 30 FPS ceiling, and a pixel ratio cap of one. Lower-power devices use 192 / 48 / 4
+with a 24 FPS ceiling. Mobile rendering pauses after 2.5 seconds idle and resumes on
+touch; screen/keyboard resize bursts are debounced for 150ms. Mobile token and claim
+card glows remain, while costly multilayer shadows, blur, and live backdrop blur are
+removed. Desktop quality and hover effects remain.
+
+The dedicated `/free-token/fluid-v2.js` engine is served from `assets/token-fluid-v2.txt`,
+retaining its MIT license. It adds frame/pixel budgets and prevents the original engine
+from overriding explicit mobile dye settings back to 512. Page control uses the new
+`/free-token/effects-v2.js` URL; the homepage `/vendor/fluid.js` is unchanged.
+Checks cover DPR=3 normal/low-power touch profiles, desktop, actual WebGL drawing
+rate limits, idle pause, resize batching, token navigation, and confirmation inputs.
+Browser emulation is not a physical-device measurement on the user's iPhone.
+
+The fix preserves subsequent repository changes including four homepage links, branding,
+centered claim cards, and exit behavior. It does not change Render configuration or keys.
+
 `https://leonmingod.com/api/free-token/claim` retains its existing confirmation request.
 Successful responses return `baseUrl: https://cpa-dhke.onrender.com/v1` and the same client
 key registered with Render CPA. The main Worker stores it as `FREE_TOKEN_RENDER_KEY`;

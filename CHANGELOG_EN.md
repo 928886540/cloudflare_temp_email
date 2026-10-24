@@ -18,6 +18,7 @@
 
 ### Bug Fixes
 
+- fix: |Free Token| Reduce mobile fluid resolution, cap drawing at 24–30 FPS, pause promptly when idle, remove costly touch blur layers, and debounce canvas resizing while retaining desktop quality
 - fix: |Free Token| Switch claims to Render CPA after validating the new client key, preserving existing keys, login credentials, configuration, and page interactions
 - fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs
 - fix: |Database| Fix admin config 404s caused by stale deployment bundles; always build the Worker from current source and repair unversioned databases before recording the schema version, preserving mail and accounts
