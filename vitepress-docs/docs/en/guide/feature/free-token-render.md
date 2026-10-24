@@ -2,6 +2,11 @@
 
 ## Mobile fluid performance fix
 
+Deployed at 2026-10-25 01:18 Asia/Shanghai. Code commit `89de9160c60e63f6a3c937d15e461dcd79155cfa`;
+entrance version `2abf9c44-faf5-4f98-80fa-e383108cca07`, parent still `8aa85754-acf1-498e-91ad-78117e40f8e5`.
+[Deployment and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40115492703) passed.
+Live entrance, claim HTML, and v2 scripts match the tested preview; the homepage matches its pre-deployment state.
+
 Touch devices use dye resolution 256, simulation resolution 64, six pressure iterations,
 a 30 FPS ceiling, and a pixel ratio cap of one. Lower-power devices use 192 / 48 / 4
 with a 24 FPS ceiling. Mobile rendering pauses after 2.5 seconds idle and resumes on
