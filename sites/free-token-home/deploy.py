@@ -15,8 +15,8 @@ TOKEN = os.environ['CLOUDFLARE_API_TOKEN'].strip()
 WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
-EXPECTED_VERSION = '0a14864c-6cd7-408f-b15c-9e476f2eea5c'
-EXPECTED_ENTRANCE_VERSION = 'dc0adf5b-52ec-4582-8a9c-d431509734b2'
+EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
+EXPECTED_ENTRANCE_VERSION = '4fda0cc3-1bdd-4b31-a5e6-9012b933931b'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -55,10 +55,15 @@ def verify():
     assert status == 200 and b'welcome-mobile-v1.webp' in body
     assert b'welcome-desktop-v1.webp' in body and b'/free-token/claim/' in body
     assert b'data-layout="fullscreen-token"' in body and b'id="token-entry"' in body
+    assert b'id="token-fluid"' in body and b'/free-token/effects-v1.js' in body
+    assert b'class="token-aura"' in body and b'translate(1px,-7px)' in body
     assert b'class="actions"' not in body and b'object-fit: contain' not in body
     status, headers, body = read_public('/free-token/claim/')
     assert status == 200 and b'id="oath-form"' in body
     assert b'/free-token/app.js' in body
+    assert b'id="free-token-compact-layout"' in body and b'id="token-fluid"' in body
+    status, headers, body = read_public('/free-token/effects-v1.js')
+    assert status == 200 and b'createFluidBackground' in body and b'prefers-reduced-motion' in body
     for kind in ['mobile', 'desktop']:
         name = f'welcome-{kind}-v1.webp'
         status, headers, body = read_public('/free-token/' + name)
@@ -88,6 +93,16 @@ def verify():
     settings = api(ROOT_API + '/settings')
     assert any(x.get('name') == 'FREE_TOKEN_CPA_KEY' and x.get('type') == 'secret_text'
                for x in settings.get('bindings', [])), 'Claim secret binding was not retained'
+    assert any(x.get('name') == 'FREE_TOKEN_RENDER_KEY' and x.get('type') == 'secret_text'
+               for x in settings.get('bindings', [])), 'Render claim binding was not retained'
+
+
+def claim():
+    req = urllib.request.Request(ORIGIN + '/api/free-token/claim', method='POST',
+        data=json.dumps({'oath': '义父', 'confirmed': True}).encode(),
+        headers={'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/json', 'Origin': ORIGIN})
+    with urllib.request.urlopen(req, timeout=30) as response:
+        return json.load(response)
 
 
 def main():
@@ -100,6 +115,10 @@ def main():
     entrance_versions = api(API_PATH + '/deployments')['deployments'][0]['versions']
     if len(entrance_versions) != 1 or entrance_versions[0]['percentage'] != 100 or entrance_versions[0]['version_id'] != EXPECTED_ENTRANCE_VERSION:
         raise RuntimeError('The entrance Worker changed since review; do not overwrite it')
+    previous_homepage = read_public('/')[2]
+    previous_claim = claim()
+    if previous_claim.get('baseUrl') != 'https://cpa-dhke.onrender.com/v1':
+        raise RuntimeError('Unexpected claim endpoint before deployment; review it')
     patterns = [host + suffix for host in ['leonmingod.com', 'www.leonmingod.com']
                 for suffix in ['/', '/index.html', '/free-token', '/free-token/*',
                                '/home-hero-mobile-v4.webp', '/home-hero-desktop-v4.webp', '/home-scene-v4.js']]
@@ -113,7 +132,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Jade homepage identity, compact navigation, fullscreen interactive token'},
+        'annotations': {'workers/message': 'Free Token fluid interactions, brighter floating token, compact claim layout'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []
@@ -142,6 +161,9 @@ def main():
         for attempt in range(8):
             try:
                 verify()
+                assert read_public('/')[2] == previous_homepage, 'Homepage changed during Free Token update'
+                assert claim() == previous_claim, 'Render URL or issued key changed during UI update'
+                assert api(ROOT_API + '/deployments')['deployments'][0]['versions'] == active, 'Parent Worker changed during UI update'
                 break
             except (AssertionError, urllib.error.URLError):
                 if attempt == 7:
@@ -162,6 +184,7 @@ def main():
         'id': live['id'], 'versions': live['versions'],
         'url': ORIGIN + '/free-token/', 'original_version': EXPECTED_VERSION,
         'worker': WORKER, 'route_ids': route_ids,
+        'homepage_unchanged': True, 'render_claim_unchanged': True,
     }))
 
 

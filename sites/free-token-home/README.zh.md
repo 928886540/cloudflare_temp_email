@@ -4,6 +4,8 @@
 
 免费 Token 首页 https://leonmingod.com/free-token/ 的横、竖图铺满整个视口，移除底部占位和大矩形按钮。将画中玉牌的局部图层裁剪后叠加，加入轻微上下浮动和柔光，令牌上的可访问链接打开原领取页 /free-token/claim/。图片和点击区域使用同一画布中的相对坐标，满屏裁切、旋转和缩放后仍对齐。遵循减少动态效果的系统偏好。
 
+2026-10-24 更新：入口与领取页通过 `src/token-scene.js` 复用首页的 `/vendor/fluid.js` 渲染器和青玉/淡金配色，支持指尖拖动与鼠标流光；特效层不拦截令牌、表单和弹窗操作，遵循减少动态效果偏好，页面隐藏或闲置时暂停。令牌浮动幅度约 7px，增加呼吸光晕与更明显的发光轮廓。`src/claim.js` 通过 HTMLRewriter 收紧原领取页，不改变原领取脚本；手机卡片最大 340px，短屏进一步收紧插画和纵向间距，确认按钮保持首屏可见。Render 地址、Key 和原主站 Worker 保持不变。
+
 独立的 leonmingod-free-token Worker 通过 SITE 服务绑定读取原站。src/homepage.js 变换主站首页 HTML；src/home-scene.js 保存基于原交互脚本调整的玉绿色流光效果；src/landing.js 为满屏令牌入口。src/site-original.js 是备份，不参与部署。原主站 Worker、静态资源、领取 API 和 FREE_TOKEN_CPA_KEY 密钥继续保留在 Cloudflare。
 
 根域与 www 的专用路由覆盖 /、/index.html、/free-token、/free-token/*、/home-hero-mobile-v4.webp、/home-hero-desktop-v4.webp 和 /home-scene-v4.js。带版本号的图片和脚本使用长期缓存，HTML 每次重新验证。

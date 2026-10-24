@@ -29,6 +29,7 @@
 
 ### Improvements
 
+- feat: |Free Token| Add homepage-style jade fluid effects to entrance and claim pages, strengthen token motion and glow, and narrow/compact the claim card so mobile confirmation fits the first viewport
 - docs: |Free Token operations| Record Cloudflare/Render resources, branches, versions, secret locations, acceptance evidence, and credential recovery, with an AGENTS.md entry for future sessions
 - feat: |Frontend| Refine frost-glass control borders, highlights, focus and selection states; unify buttons, mail cards and overlays; fix narrow-screen login tab overflow and improve address bar and login form spacing
 - feat: |Custom Fork| Preserve LeonMinGod branding, responsive admin layouts, cache updates and subdomain mailbox UI; display frontend and Telegram mail timestamps in Asia/Shanghai and retain the deployment bundle synchronized with the standalone Worker repository

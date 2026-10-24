@@ -5,6 +5,8 @@ import homeMobile from '../assets/home-hero-mobile-v4.webp';
 import homeDesktop from '../assets/home-hero-desktop-v4.webp';
 import homeScene from './home-scene.js';
 import { renderHomepage } from './homepage.js';
+import tokenScene from './token-scene.js';
+import { renderClaim } from './claim.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -17,6 +19,13 @@ export default {
     }
     if (read && url.pathname === '/home-scene-v4.js') {
       return new Response(request.method === 'HEAD' ? null : homeScene, { headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+      } });
+    }
+    if (read && url.pathname === '/free-token/effects-v1.js') {
+      return new Response(request.method === 'HEAD' ? null : tokenScene, { headers: {
         'Content-Type': 'application/javascript; charset=utf-8',
         'Cache-Control': 'public, max-age=31536000, immutable',
         'X-Content-Type-Options': 'nosniff',
@@ -47,7 +56,9 @@ export default {
     }
     if (read && ['/free-token/claim', '/free-token/claim/'].includes(url.pathname)) {
       url.pathname = '/free-token/';
-      return env.SITE.fetch(new Request(url, request));
+      const response = await env.SITE.fetch(new Request(url, request));
+      if (!response.ok || !response.headers.get('Content-Type')?.includes('text/html')) return response;
+      return renderClaim(response);
     }
     return env.SITE.fetch(request);
   },
