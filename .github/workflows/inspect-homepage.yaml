@@ -63,7 +63,7 @@ jobs:
           out = Path("homepage-backup")
           out.mkdir()
           request = urllib.request.Request(
-              "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/leonmingod-home/content",
+              "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/leonmingod-home",
               headers={"Authorization": "Bearer " + token})
           with urllib.request.urlopen(request, timeout=30) as response:
               (out / "worker-content.bin").write_bytes(response.read())
