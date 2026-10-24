@@ -1,0 +1,61 @@
+name: Inspect homepage Cloudflare deployment
+on:
+  push:
+    branches: [codex/free-token-home-20261024]
+    paths: [.github/workflows/inspect-homepage.yaml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect deployment metadata
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: python
+        run: |
+          import os, json, urllib.request, urllib.error
+          account = os.environ["CLOUDFLARE_ACCOUNT_ID"].strip()
+          token = os.environ["CLOUDFLARE_API_TOKEN"].strip()
+          if not account or not token:
+              raise SystemExit("Required Cloudflare secrets are missing")
+          def get(path):
+              request = urllib.request.Request(
+                  "https://api.cloudflare.com/client/v4" + path,
+                  headers={"Authorization": "Bearer " + token, "Accept": "application/json"})
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      data = json.load(response)
+                  return data.get("result", [])
+              except urllib.error.HTTPError as error:
+                  print(json.dumps({"endpoint": path, "http_status": error.code}))
+                  return []
+          scripts = get("/accounts/" + account + "/workers/scripts")
+          print("WORKER_SERVICES=" + json.dumps([
+              {"id": x.get("id"), "modified_on": x.get("modified_on")}
+              for x in scripts
+          ]))
+          domains = get("/accounts/" + account + "/workers/domains")
+          print("WORKER_DOMAINS=" + json.dumps([
+              {k: x.get(k) for k in ["id", "hostname", "service", "environment", "zone_id"]}
+              for x in domains
+          ]))
+          pages = get("/accounts/" + account + "/pages/projects")
+          print("PAGES_PROJECTS=" + json.dumps([
+              {"name": x.get("name"), "domains": x.get("domains"),
+               "production_branch": x.get("production_branch"),
+               "source_type": (x.get("source") or {}).get("type"),
+               "source_repository": {
+                   k: ((x.get("source") or {}).get("config") or {}).get(k)
+                   for k in ["owner", "repo_name", "production_branch"]
+               }}
+              for x in pages
+          ]))
+          zones = get("/zones?name=leonmingod.com")
+          for zone in zones:
+              zone_id = zone["id"]
+              routes = get("/zones/" + zone_id + "/workers/routes")
+              print("ZONE_ROUTES=" + json.dumps(routes))
