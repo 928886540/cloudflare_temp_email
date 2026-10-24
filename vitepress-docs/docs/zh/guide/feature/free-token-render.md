@@ -1,0 +1,171 @@
+# 免费 Token 的 Render 对接
+
+`https://leonmingod.com/api/free-token/claim` 仍接受原有的确认请求，成功后返回
+`baseUrl: https://cpa-dhke.onrender.com/v1` 和在 Render CPA 注册的同一把客户端 Key。
+客户端 Key 存在主站 Worker 的 `FREE_TOKEN_RENDER_KEY` Secret 中；原 `FREE_TOKEN_CPA_KEY`
+继续保留。首页图片、胶囊导航、免费 Token 满屏布局和令牌点击动效不受影响。
+
+## 配置来源
+
+Render 服务 `cpa` 绑定私库 `928886540/cpa` 的 `main` 分支，使用
+`./CLIProxyAPI --config /etc/secrets/config.yaml` 启动。客户端 Key 在该 Secret File
+的 `api-keys`（或新版 `access.api-keys`）列表中追加，其他配置不变。
+
+GitHub Actions 的 `Connect Free Token to Render` 工作流使用仓库 Secrets
+`RENDER_API_KEY`、`CLOUDFLARE_ACCOUNT_ID` 和 `CLOUDFLARE_API_TOKEN`。
+`RENDER_API_KEY` 是管理 Render 的凭据，不能作为发给用户的客户端 Key。
+
+## 发布与验证
+
+工作流在推送时仅执行 `inspect`。手动选择 `connect` 前，先核对检查输出中的
+主站、入口 Worker 版本和 Render 当前提交，再更新脚本里的版本保护值。
+连接脚本会保留原客户端 Key，先加密备份配置与登录文件，再追加新 Key 并使用原构建部署。
+没有持久化磁盘时，部署后通过 CPA 管理接口恢复缺失的登录文件，保留禁用状态。
+加密恢复备份以 Actions artifact 保留两天；解密私钥由本次操作的执行工作区单独保管，
+不提交到仓库。私钥不在 Actions artifact 中。
+
+只有新旧 Key 均通过 `/v1/models` 验证后，才替换主站领取接口的地址及 Secret 引用。
+发布后检查领取接口发放的 Key 与 Render 注册值一致，并逐字节校验页面、图片和交互脚本。
+验证失败时恢复发布前的主站版本。入口 Worker 不参与这次切换。
+
+`sites/free-token-home/src/site-original.js` 继续作为旧主站源码备份；连接脚本直接读取、
+核对并最小修改当前线上源码。旧入口部署脚本的版本保护值不会自动刷新，不能直接重跑。
+
+## 运维交接记录（2026-10-24）
+
+对接已完成并发布。最后一次完整验收为 **2026-10-24 05:08 UTC**：领取接口返回新地址，
+所发 Key 调用 Render `/v1/models` 返回 200，共 50 个模型；原 2 把客户端 Key 仍可用，
+8 份登录凭证已全部恢复，配置和环境变量保留。页面、四张图片及交互脚本逐字节比对通过。
+以下版本和数量是该次验收的快照，后续修改前必须重新读取。
+
+### 仓库与入口
+
+| 用途 | 位置 |
+| --- | --- |
+| 主站 | `https://leonmingod.com/` |
+| 免费 Token 入口 | `https://leonmingod.com/free-token/` |
+| 领取页 | `https://leonmingod.com/free-token/claim/` |
+| 领取 API | `POST https://leonmingod.com/api/free-token/claim` |
+| 发放的 API Base URL | `https://cpa-dhke.onrender.com/v1` |
+| 网站仓库 | `928886540/cloudflare_temp_email` |
+| 网站工作分支 | `codex/free-token-home-20261024` |
+| 网站代码 | `sites/free-token-home/`（位于工作分支） |
+| 部署脚本 | `.github/scripts/free_token_render.py`（位于工作分支） |
+| 对接工作流 | `.github/workflows/connect-render-free-token.yaml`（位于工作分支） |
+| 本次发布代码提交 | `e3d6320dcd65a9192cc705d4926aa4157e207893` |
+
+本记录与根目录 `AGENTS.md` 的索引同时保存到默认分支 `main` 和网站工作分支。
+**记录出现在 `main` 不代表网站工作分支已经合并。** 新会话在默认分支找不到网站代码时，
+先获取并切换工作分支，不要据此重新建站。
+
+### Cloudflare
+
+| 配置 | 已核对的值 |
+| --- | --- |
+| 主站 Worker | `leonmingod-home`：原站静态资源与领取 API |
+| 入口 Worker | `leonmingod-free-token`：主站首页变换、免费 Token 入口 |
+| 入口到主站的服务绑定 | `SITE` → `leonmingod-home` |
+| Zone | `leonmingod.com`，ID `4f078f06b815a404337c3b5387c45275` |
+| 发布后主站版本 | `8aa85754-acf1-498e-91ad-78117e40f8e5` |
+| 入口版本（本次未改） | `4fda0cc3-1bdd-4b31-a5e6-9012b933931b` |
+| 切换前主站版本 | `b3943206-85ca-4ca0-8617-951317245755` |
+| 主站绑定 | `ASSETS`（assets）、`FREE_TOKEN_CPA_KEY`、`FREE_TOKEN_RENDER_KEY`（secret_text） |
+| 当前领取 API 使用的绑定 | `FREE_TOKEN_RENDER_KEY` |
+| 发布后主站源码 SHA-256 | `1bfd639be2c04996d8e7fac80c2ab42e085acc5200f416b02a2904adc749562a` |
+
+入口 Worker 的根域与 www 路由覆盖首页、`/index.html`、`/free-token`、`/free-token/*`、
+两张 `home-hero-*-v4.webp` 和 `/home-scene-v4.js`。领取 API 由原主站处理。
+不要将主站 Worker 与入口 Worker 混为一个部署目标。
+
+`src/site-original.js` 仍包含旧地址和旧绑定，这是**历史备份**，不能直接覆盖线上主站。
+本次线上修改仅替换其中的两处 `env.FREE_TOKEN_CPA_KEY` 引用及一处旧 API 地址，静态资源不变。
+当前主站行为以线上源码和本记录为准。
+
+### Render
+
+| 配置 | 已核对的值 |
+| --- | --- |
+| 工作区 | `My Workspace`，`tea-d779tahr0fns73e1h3lg`，用户已指定此工作区 |
+| 服务 | `cpa`，`srv-d9c4kkvavr4c73ab3sfg` |
+| 控制台 | `https://dashboard.render.com/web/srv-d9c4kkvavr4c73ab3sfg` |
+| 实际部署仓库 | 私库 `https://github.com/928886540/cpa`，`main` 分支 |
+| 公开仓库 | `928886540/CLIProxyAPI` 不是此服务当前绑定的部署仓库 |
+| 运行方式 | Docker，`./Dockerfile`，构建上下文 `.` |
+| 启动命令 | `./CLIProxyAPI --config /etc/secrets/config.yaml` |
+| Secret File | 文件名 `config.yaml`，运行路径 `/etc/secrets/config.yaml` |
+| 客户端 Key 配置 | 当前为根级 `api-keys` 列表，共 3 把：原 2 把 + 本次新 Key |
+| 管理接口 | `/v8/management`；管理口令与客户端 Key 是不同用途的凭据 |
+| 环境变量 | `MANAGEMENT_PASSWORD`、`MANAGEMENT_STATIC_PATH`，本次值未改 |
+| 代码提交 | `f9cee393e5360db6b47dd18d6c2747a2e6c6cbb7`，v8.0.22 |
+| 本次成功部署 | `dep-dbe3q94s728c7392m8kg`，使用原构建部署，无代码升级 |
+| 健康检查 | `/healthz`，200 |
+| 区域与套餐 | Singapore，free，1 个实例 |
+| 自动部署 | 已开启，推送到所绑定私库的 `main` 会触发部署 |
+| 持久化磁盘 | 无；登录文件会因重新部署而丢失，必须先备份并在部署后恢复 |
+
+`/etc/secrets/config.yaml` 为只读运行配置。不要依赖管理页把配置写回此路径；
+持久配置应更新 Render Secret File。不要为了记录运维信息随意向私库 `cpa/main` 推送，
+因为它会触发线上重新部署。
+
+### 密钥保存位置与接入方式
+
+| 名称 | 保存位置与用途 |
+| --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | 网站仓库 Actions Secret，CF 账户定位 |
+| `CLOUDFLARE_API_TOKEN` | 网站仓库 Actions Secret，CF 管理鉴权；现有部署已验证可用 |
+| `RENDER_API_KEY` | 网站仓库 Actions Secret，Render REST API 管理鉴权；本次已验证可用 |
+| `FREE_TOKEN_RENDER_KEY` | CF 主站 Secret；同一值已追加进 Render `config.yaml`，用于发给用户 |
+| `FREE_TOKEN_CPA_KEY` | CF 主站原 Secret，保留但领取接口已不使用 |
+
+Secrets 设置页：`https://github.com/928886540/cloudflare_temp_email/settings/secrets/actions`。
+**不要在记录、仓库、聊天或日志中写密钥原值。** GitHub 中已有 Secret 不会自动成为新会话
+云环境的环境变量；本机看不到 `RENDER_API_KEY` 不等于 GitHub 没配置，不要重复要求用户创建。
+可通过已经配置好的 Actions 通道使用这些 Secrets。
+
+本次 Render 插件可以列出服务、读取服务信息、修改环境变量及触发部署，但没有 Secret File
+读写工具。Secret File 操作走 Render REST API，鉴权使用 Actions 中的 `RENDER_API_KEY`：
+`GET` / `PUT /v1/services/{serviceId}/secret-files/config.yaml`，单文件 PUT 的 JSON 为
+`{"content": "完整的更新后文件内容"}`。先读、仅追加客户端 Key、比较其他配置，再写；
+不要用覆盖全体环境变量或 Secret File 集合的操作。
+
+### 下次修改的流程
+
+1. 先读本记录和 `AGENTS.md`，确认用户要改页面、领取逻辑还是 Render 服务；切换到网站工作分支。
+2. 先执行只读检查，读取主站、入口当前版本、线上源码、Render 当前部署和 Secret 配置。
+   工作分支支持以下命令；工作流输出已脱敏：
+
+   ```bash
+   gh workflow run connect-render-free-token.yaml \
+     -R 928886540/cloudflare_temp_email \
+     --ref codex/free-token-home-20261024 -f mode=inspect
+   gh run list -R 928886540/cloudflare_temp_email \
+     --workflow connect-render-free-token.yaml -L 3
+   ```
+
+3. 仅改页面时，使用入口 Worker 的部署路径；保留原图、胶囊导航、满屏裁切和令牌点击动效，
+   除非用户要求更换。修改工作分支的 `sites/free-token-home/**` 会触发入口部署工作流，
+   包括修改该目录里的 README；部署前先核对并更新其版本保护值。
+4. 改主站领取逻辑时，读取当前主站源码再最小修改，保留 `ASSETS` 和所有 Secret 绑定。
+   `stage-render-free-token.yaml` 是旧暂存任务；不要重跑。
+   `connect` 是已经执行完成的**一次性切换**，内部仍校验切换前版本和旧地址；不能当作日常重部署命令，
+   也不能只刷新版本常量就盲目重跑。`inspect` 可继续用于只读核对。
+5. 只要 Render 操作会重新部署，先列出并下载当前全部登录 JSON，保存可恢复的加密备份，
+   核对配置和原 Key，再操作。下一次需使用自己持有私钥的新备份密钥对；仓库中的公钥
+   对应本次执行工作区的私钥，不能假定新会话也有该私钥。
+6. 部署后恢复缺失登录文件，保留禁用状态；检查原 Key 和新 Key，确认配置和环境变量未被误改。
+7. 验收：`/healthz` 200；领取 API 返回预期地址及 Key；用所发 Key 调用 `/v1/models` 200。
+   同时验证领取确认、同源限制和 GET 405，再检查图片哈希、胶囊导航、满屏令牌及交互脚本。
+8. 记录本次新版本、提交、部署和验收链接。版本保护用**刚读取并审阅的版本**，不要照抄历史快照。
+
+领取请求仍为 JSON `{"oath":"义父","confirmed":true}`，同源 Origin 为
+`https://leonmingod.com`，响应设置 `Cache-Control: no-store`。测试时不要打印响应中的 Key。
+
+### 验收证据与恢复注意
+
+- 成功发布与完整验收：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40065013859>
+- 发布后只读复核：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40065097553>
+- 加密恢复 artifact 位于成功发布任务，名称 `encrypted-render-integration-backup`，保留两天；
+  它不是长期备份，也不包含解密私钥。未来操作应重新备份当前状态。
+- 主站可通过 CF 版本部署回滚；未来修改应以当时发布前版本为回滚点。上表切换前的
+  `b394...` 版本会重新发放旧域名，不能当作保留 Render 对接的日常回滚版本。
+- 本次保留的是 8 份登录文件及其禁用状态，不代表将来在无持久化磁盘的 Render 上自动持久保存。
