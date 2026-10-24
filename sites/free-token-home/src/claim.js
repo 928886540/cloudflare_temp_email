@@ -139,6 +139,8 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 
 export function renderClaim(response) {
   const updated = new HTMLRewriter()
+    .on('title', { element: element => element.setInnerContent('LeonMinGod · 仙玉令牌领取 | 贵宾密钥') })
+    .on('link[rel="icon"]', { element: element => element.setAttribute('href', '/assets/logo.svg') })
     .on('head', { element: element => element.append(
       `<style id="free-token-compact-layout">${claimStyles}</style>${effectsScripts}`, { html: true }) })
     .on('body', { element: element => element.prepend(effectsMarkup, { html: true }) })

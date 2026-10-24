@@ -6,9 +6,9 @@ export default `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#050d1b">
-  <meta name="description" content="免费 Token · Leon🌙 的见面礼，叫对了就送。">
-  <title>免费 Token · LeonMinGod</title>
-  <link rel="icon" href="/favicon.png">
+  <meta name="description" content="LeonMinGod 仙玉流光 · 贵宾礼遇，专属密钥。">
+  <title>LeonMinGod · 仙玉流光 | 免费 Token 贵宾礼遇</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
   <script>window.addEventListener('dragstart',function(e){e.preventDefault();});</script>
   ${effectsScripts}
   <style>

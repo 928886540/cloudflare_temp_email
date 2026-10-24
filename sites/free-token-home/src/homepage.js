@@ -207,7 +207,8 @@ export const styles = `
 
 export function renderHomepage(response) {
   const updated = new HTMLRewriter()
-    .on('title', { element: element => element.setInnerContent('LeonMinGod · 青玉流光') })
+    .on('title', { element: element => element.setInnerContent('LeonMinGod · 灵境仙域 | 一念风起 万境星垂') })
+    .on('link[rel="icon"]', { element: element => element.setAttribute('href', '/assets/logo.svg') })
     .on('.cover source', { element: element => element.setAttribute('srcset', '/home-hero-desktop-v4.webp') })
     .on('.cover img', { element(element) {
       element.setAttribute('src', '/home-hero-mobile-v4.webp');

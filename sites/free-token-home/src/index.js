@@ -4,6 +4,7 @@ import desktop from '../assets/welcome-desktop-v1.webp';
 import homeMobile from '../assets/home-hero-mobile-v4.webp';
 import homeDesktop from '../assets/home-hero-desktop-v4.webp';
 import homeScene from './home-scene.js';
+import logo from '../assets/logo.svg';
 import { renderHomepage } from './homepage.js';
 import tokenScene from './token-scene.js';
 import { renderClaim } from './claim.js';
@@ -27,6 +28,13 @@ export default {
     if (read && url.pathname === '/free-token/effects-v1.js') {
       return new Response(request.method === 'HEAD' ? null : tokenScene, { headers: {
         'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+      } });
+    }
+    if (read && (url.pathname === '/assets/logo.svg' || url.pathname === '/logo.svg')) {
+      return new Response(request.method === 'HEAD' ? null : logo, { headers: {
+        'Content-Type': 'image/svg+xml',
         'Cache-Control': 'public, max-age=31536000, immutable',
         'X-Content-Type-Options': 'nosniff',
       } });
