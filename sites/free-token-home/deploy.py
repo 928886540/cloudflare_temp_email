@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '8aa85754-acf1-498e-91ad-78117e40f8e5'
-EXPECTED_ENTRANCE_VERSION = '4fda0cc3-1bdd-4b31-a5e6-9012b933931b'
+EXPECTED_ENTRANCE_VERSION = '5e32ed4c-a405-4e69-872d-f88526cba7d9'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -72,7 +72,7 @@ def verify():
     status, headers, body = read_public('/')
     assert status == 200 and b'home-hero-mobile-v4.webp' in body and b'home-hero-desktop-v4.webp' in body
     assert body.count(b'class="gift-link address-link jade-pill"') == 1
-    assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body
+    assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body and b'border-radius: 50%' in body and b'60.8%' in body
     assert 'href="https://addr.leonmingod.com"'.encode() in body and '地址证明'.encode() in body
     assert b'https://mail.leonmingod.com' in body and b'href="/free-token/"' in body
     for kind in ['mobile', 'desktop']:
@@ -132,7 +132,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Free Token fluid interactions, brighter floating token, compact claim layout'},
+        'annotations': {'workers/message': 'Landscape green circular navigation buttons and larger interface typography'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []
@@ -161,7 +161,9 @@ def main():
         for attempt in range(8):
             try:
                 verify()
-                assert read_public('/')[2] == previous_homepage, 'Homepage changed during Free Token update'
+                homepage_html = read_public('/')[2]
+                assert b'id="homepage-jade-layout"' in homepage_html, 'Homepage layout was not applied'
+                assert b'border-radius: 50%' in homepage_html and b'60.8%' in homepage_html, 'Landscape circular navigation was not applied'
                 assert claim() == previous_claim, 'Render URL or issued key changed during UI update'
                 assert api(ROOT_API + '/deployments')['deployments'][0]['versions'] == active, 'Parent Worker changed during UI update'
                 break
@@ -184,7 +186,7 @@ def main():
         'id': live['id'], 'versions': live['versions'],
         'url': ORIGIN + '/free-token/', 'original_version': EXPECTED_VERSION,
         'worker': WORKER, 'route_ids': route_ids,
-        'homepage_unchanged': True, 'render_claim_unchanged': True,
+        'homepage_updated': True, 'render_claim_unchanged': True,
     }))
 
 

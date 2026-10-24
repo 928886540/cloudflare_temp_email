@@ -24,6 +24,8 @@ jobs:
           node --check sites/free-token-home/src/token-scene.js
           node --check sites/free-token-home/src/claim.js
           node --check sites/free-token-home/src/site-original.js
+          node --check sites/free-token-home/src/homepage.js
+          node --check sites/free-token-home/src/home-scene.js
           python -m py_compile sites/free-token-home/deploy.py
       - name: Deploy and verify Free Token entrance
         env:

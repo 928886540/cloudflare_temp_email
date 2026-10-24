@@ -13,3 +13,6 @@ Routes on the root and www hostnames cover /, /index.html, /free-token, /free-to
 Deployment uses the existing GitHub CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN secrets from the codex/free-token-home-20261024 branch. deploy.py checks the reviewed parent and entrance version IDs before updating, rejects routes belonging to other Workers, and verifies all four image hashes, the main navigation, fullscreen token markup, claim page, and API method restrictions. On failure it restores the prior entrance version and deletes only newly created routes. Before another deployment, review the live versions and update EXPECTED_VERSION and EXPECTED_ENTRANCE_VERSION.
 
 Visual checks used actual browser rendering at phone and desktop sizes, including 320px-wide navigation, full-viewport artwork coverage, capsule dimensions, spacing from the hand, and token hit testing.
+
+
+2026-10-24 Landscape navigation update: On landscape/desktop viewports, the three homepage links are repositioned under the title/slogan over the water (approximate centers at 60.8%, 69.9%, and 80.9%, diameter 92–136px). They are restyled into circular jade-green buttons with vertical icon-and-text layout and luminous hover effects. Scene controls and footer hints have increased typography size for clarity; portrait mode retains responsive capsules with tightened padding for narrow screens.

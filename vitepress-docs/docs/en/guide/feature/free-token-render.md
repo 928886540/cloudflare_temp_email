@@ -35,11 +35,11 @@ Cloudflare's injected analytics script; all four original images were retained. 
 integration version table below is historical. Consult this newer entrance snapshot and
 read actual live versions again before future changes.
 
-## Next task: landscape homepage navigation (requested, not implemented)
+## Landscape homepage navigation update (completed)
 
 After the page release, the user reported that the three homepage navigation links
 are too small at the bottom in landscape and supplied a screenshot with three red circles.
-The next session should implement and deploy this request; it is not completed work:
+Implemented and deployed as requested by user screenshot:
 
 - Target the homepage `https://leonmingod.com/`, editing `src/homepage.js` on the website branch.
 - Move the three links below the logo/slogan on the right, matching the marked circles.
