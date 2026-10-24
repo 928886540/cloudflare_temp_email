@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## LeonMinGod homepage / Free Token / Render operations
+
+Before changing `leonmingod.com`, Free Token, either homepage Worker, or Render CPA,
+read [the operations record](vitepress-docs/docs/en/guide/feature/free-token-render.md)
+([中文](vitepress-docs/docs/zh/guide/feature/free-token-render.md)). It records the
+production resources, verified versions, secret locations, deployment evidence,
+and credential-preservation procedure. The website source and integration workflow
+are on `codex/free-token-home-20261024`; `main` also carries this record for discovery.
+The successful Render cutover was verified on 2026-10-24. Re-read live versions
+before any mutation. `connect` is a completed one-time migration, not a general
+redeploy command. Preserve existing keys, login files, artwork, and interactions.
+Use existing GitHub Actions secrets; their absence from a chat environment does not
+mean they are missing from GitHub. Never commit or print secret values.
+
 ## Project Structure
 
 - **Backend**: `worker/` — Cloudflare Workers API using Hono framework. Entry: `worker/src/worker.ts`, APIs under `worker/src/*_api/`.
