@@ -60,7 +60,7 @@ jobs:
           BqrYESVPhecIlOmIhrdbUwGBJ3z+XLGuhgOG0XE6rmjPSh/6oPXzsKVnobhGmen2
           BtZzIW2vwheVXOwdqmGgNUzu0qeuh16fk+tpArIZiAQkKTxASprOCiM=
           -----END CERTIFICATE-----
-          """.strip() + "\\n")
+          """.strip() + chr(10))
           payload = json.dumps({"api_key": client_key, "base_url": "https://cpa-dhke.onrender.com/v1"})
           protected = Path("payload.json")
           protected.write_text(payload)
