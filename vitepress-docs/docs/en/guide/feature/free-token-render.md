@@ -6,6 +6,35 @@ key registered with Render CPA. The main Worker stores it as `FREE_TOKEN_RENDER_
 the original `FREE_TOKEN_CPA_KEY` remains in place. Homepage artwork, pill navigation,
 the fullscreen Free Token layout, and token interactions are preserved.
 
+## Latest page deployment — 2026-10-24 05:23 UTC
+
+The entrance and claim pages now share the homepage jade/gold fluid effects. Token
+motion is approximately 7px with a stronger outline and breathing glow. Mobile claim
+cards are capped at 340px with reduced artwork/form spacing. The confirmation button
+ends around 511px in a 393×664 viewport and remains within the first viewport at 320×480.
+
+| Item | Current page deployment |
+| --- | --- |
+| Page code commit | `60af1c18e1fcc1df18086c9210fe7e4a9ab6cca4`, website working branch |
+| New entrance Worker version | `5e32ed4c-a405-4e69-872d-f88526cba7d9` |
+| Entrance deployment ID | `1a433adb-05de-4fd9-bee1-00c6da262e19` |
+| Parent Worker version | Still `8aa85754-acf1-498e-91ad-78117e40f8e5` |
+| Deployment evidence | <https://github.com/928886540/cloudflare_temp_email/actions/runs/40066068773> |
+| Render operations | None; URL, key, parent source, and homepage content preserved; issued key still returns models HTTP 200 with 50 models |
+
+`src/token-scene.js` reuses `/vendor/fluid.js`. `src/claim.js` compacts the original
+claim HTML through HTMLRewriter without rewriting its application confirmation, claim,
+or copy flows. The new browser script `/free-token/effects-v1.js` uses immutable caching:
+future script changes must also update its URL version. Effects do not intercept links,
+forms, or dialogs; reduced motion, unavailable WebGL, hidden pages, and idle pauses are supported.
+
+Chromium rendering checks covered 320×480, 375×548, 393×664, 430×740, and 1440×900,
+plus landscape token alignment, navigation, input/confirmation/refusal/credential dialogs,
+reduced motion, and WebGL fallback. Deployed content matches the tested preview excluding
+Cloudflare's injected analytics script; all four original images were retained. The 05:08
+integration version table below is historical. Consult this newer entrance snapshot and
+read actual live versions again before future changes.
+
 ## Configuration source
 
 Render service `cpa` uses the private repository `928886540/cpa`, branch `main`, and
