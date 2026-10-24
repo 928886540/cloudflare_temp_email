@@ -164,7 +164,7 @@ def main():
                 verify()
                 homepage_html = read_public('/')[2]
                 assert b'id="homepage-jade-layout"' in homepage_html, 'Homepage layout was not applied'
-                assert b'border-radius: 50%' in homepage_html and b'60.8%' in homepage_html, 'Landscape circular navigation was not applied'
+                assert b'border-radius: 50%' in homepage_html and b'61.2%' in homepage_html, 'Landscape circular navigation was not applied'
                 assert claim() == previous_claim, 'Render URL or issued key changed during UI update'
                 assert api(ROOT_API + '/deployments')['deployments'][0]['versions'] == active, 'Parent Worker changed during UI update'
                 break
