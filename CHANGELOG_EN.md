@@ -10,6 +10,7 @@
 
 ### Features
 
+- feat: |Homepage and Free Token| Regenerate jade-green mobile/desktop homepage art with the Free Token heroine, enlarge palm light, and use compact translucent pill navigation; make Free Token artwork cover the viewport with a glowing floating token entrance
 - feat: |Homepage| Add the Address Proof navigation link and arrange secondary entries side by side on mobile, preserving the original homepage imagery and interactions
 - feat: |Free Token site| Add separately generated portrait and landscape poster entrance pages, retain the existing claim flow, and preserve the main site's assets and secret bindings
 - feat: |User| Search bound mailboxes by email address in address management with accurate pagination (issue #1156)

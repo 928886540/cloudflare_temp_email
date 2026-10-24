@@ -1,11 +1,13 @@
-# 免费 Token 海报首页与主站导航
+# LeonMinGod 主站与免费 Token 首页
 
-免费 Token 子站使用基于用户原海报分别生成的手机竖版（941×1672）和电脑横版（1824×862）。横版选择规则与主站一致：屏幕宽度至少 768px 且横屏。点击“进入免费 Token”打开 `/free-token/claim/`，继续原有领取流程。
+主站 https://leonmingod.com/ 使用重新生成的玉绿色手机竖图（941×1672）和电脑横图（1824×862），人物以免费 Token 海报中的同一位女性为参考。掌心流光略微放大，保留原有交互渲染器，配色改为青玉和淡金色。底部三个入口采用小号半透明椭圆胶囊，分别链接邮箱、免费 Token 和地址证明，避开人物伸出的手。
 
-主站首页在已有“进入灵境”和“免费Token”旁新增“地址证明”，指向 `https://addr.leonmingod.com`，沿用现有入口样式。手机和竖屏设备上，邮箱入口独占第一行，两个子站入口并排显示在第二行。
+免费 Token 首页 https://leonmingod.com/free-token/ 的横、竖图铺满整个视口，移除底部占位和大矩形按钮。将画中玉牌的局部图层裁剪后叠加，加入轻微上下浮动和柔光，令牌上的可访问链接打开原领取页 /free-token/claim/。图片和点击区域使用同一画布中的相对坐标，满屏裁切、旋转和缩放后仍对齐。遵循减少动态效果的系统偏好。
 
-独立的 `leonmingod-free-token` Worker 接管根域和 www 下的 `/`、`/index.html`、`/free-token` 与 `/free-token/*`。主站首页通过服务绑定读取原站并使用 HTMLRewriter 添加导航；原领取页及依赖也通过服务绑定访问。原主站 Worker、静态资源、领取 API 和密钥保留不变。`src/site-original.js` 是发布前备份，不参与部署。
+独立的 leonmingod-free-token Worker 通过 SITE 服务绑定读取原站。src/homepage.js 变换主站首页 HTML；src/home-scene.js 保存基于原交互脚本调整的玉绿色流光效果；src/landing.js 为满屏令牌入口。src/site-original.js 是备份，不参与部署。原主站 Worker、静态资源、领取 API 和 FREE_TOKEN_CPA_KEY 密钥继续保留在 Cloudflare。
 
-部署脚本校验已核对的主站和入口 Worker 版本，仅创建尚未存在的专用路由，不覆盖其他 Worker 的路由。发布后检查首页导航、两张海报、领取页和 API 的 GET 方法限制；失败时恢复入口的旧版本并移除本次新建路由。
+根域与 www 的专用路由覆盖 /、/index.html、/free-token、/free-token/*、/home-hero-mobile-v4.webp、/home-hero-desktop-v4.webp 和 /home-scene-v4.js。带版本号的图片和脚本使用长期缓存，HTML 每次重新验证。
 
-使用现有 GitHub Secrets 部署，源码保存在 `codex/free-token-home-20261024` 分支。后续更新前，核对线上版本并更新 `deploy.py` 的 `EXPECTED_VERSION` 和 `EXPECTED_ENTRANCE_VERSION`。
+使用仓库现有 GitHub Secrets 和 codex/free-token-home-20261024 分支部署。deploy.py 校验已核对的主站、入口版本，不覆盖其他 Worker 的路由；发布后验证四张图片的哈希、导航、满屏入口、领取页和 API 的方法限制。失败时恢复入口旧版本并只移除本次新建路由。后续更新前需核对线上版本，再调整 EXPECTED_VERSION 与 EXPECTED_ENTRANCE_VERSION。
+
+已用实际浏览器检查横、竖屏以及 320px 窄屏的入口排版，验证画面铺满、胶囊尺寸、与人物手部的间距和令牌点击位置。

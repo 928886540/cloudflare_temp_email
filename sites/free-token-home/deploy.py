@@ -16,7 +16,7 @@ WORKER = 'leonmingod-free-token'
 ROOT_WORKER = 'leonmingod-home'
 ZONE = '4f078f06b815a404337c3b5387c45275'
 EXPECTED_VERSION = '0a14864c-6cd7-408f-b15c-9e476f2eea5c'
-EXPECTED_ENTRANCE_VERSION = 'bd5549a8-a862-4a72-bd99-fb524a79ec44'
+EXPECTED_ENTRANCE_VERSION = 'dc0adf5b-52ec-4582-8a9c-d431509734b2'
 API_PATH = f'/accounts/{ACCOUNT}/workers/scripts/{WORKER}'
 ROOT_API = f'/accounts/{ACCOUNT}/workers/scripts/{ROOT_WORKER}'
 ROUTES_API = f'/zones/{ZONE}/workers/routes'
@@ -54,6 +54,8 @@ def verify():
     status, headers, body = read_public('/free-token/')
     assert status == 200 and b'welcome-mobile-v1.webp' in body
     assert b'welcome-desktop-v1.webp' in body and b'/free-token/claim/' in body
+    assert b'data-layout="fullscreen-token"' in body and b'id="token-entry"' in body
+    assert b'class="actions"' not in body and b'object-fit: contain' not in body
     status, headers, body = read_public('/free-token/claim/')
     assert status == 200 and b'id="oath-form"' in body
     assert b'/free-token/app.js' in body
@@ -63,10 +65,18 @@ def verify():
         assert status == 200 and headers.get_content_type() == 'image/webp'
         assert hashlib.sha256(body).digest() == hashlib.sha256((ROOT / 'assets' / name).read_bytes()).digest()
     status, headers, body = read_public('/')
-    assert status == 200 and b'hero-mobile-v3.png' in body and b'hero-desktop-v3.png' in body
-    assert body.count(b'class="gift-link address-link"') == 1
+    assert status == 200 and b'home-hero-mobile-v4.webp' in body and b'home-hero-desktop-v4.webp' in body
+    assert body.count(b'class="gift-link address-link jade-pill"') == 1
+    assert b'id="homepage-jade-layout"' in body and b'border-radius: 999px' in body
     assert 'href="https://addr.leonmingod.com"'.encode() in body and '地址证明'.encode() in body
     assert b'https://mail.leonmingod.com' in body and b'href="/free-token/"' in body
+    for kind in ['mobile', 'desktop']:
+        name = f'home-hero-{kind}-v4.webp'
+        status, headers, body = read_public('/' + name)
+        assert status == 200 and headers.get_content_type() == 'image/webp'
+        assert hashlib.sha256(body).digest() == hashlib.sha256((ROOT / 'assets' / name).read_bytes()).digest()
+    status, headers, body = read_public('/home-scene-v4.js')
+    assert status == 200 and b'SPLAT_RADIUS: .13' in body and b'PALETTE: [[.08,1.45,.75]' in body
     status, headers, body = read_public('/free-token/app.js?v=1')
     assert status == 200 and b'/api/free-token/claim' in body
     req = urllib.request.Request(ORIGIN + '/api/free-token/claim', headers={'User-Agent': 'Mozilla/5.0'})
@@ -91,7 +101,8 @@ def main():
     if len(entrance_versions) != 1 or entrance_versions[0]['percentage'] != 100 or entrance_versions[0]['version_id'] != EXPECTED_ENTRANCE_VERSION:
         raise RuntimeError('The entrance Worker changed since review; do not overwrite it')
     patterns = [host + suffix for host in ['leonmingod.com', 'www.leonmingod.com']
-                for suffix in ['/', '/index.html', '/free-token', '/free-token/*']]
+                for suffix in ['/', '/index.html', '/free-token', '/free-token/*',
+                               '/home-hero-mobile-v4.webp', '/home-hero-desktop-v4.webp', '/home-scene-v4.js']]
     existing_routes = {x['pattern']: x for x in api(ROUTES_API)}
     if any(pattern in existing_routes and existing_routes[pattern].get('script') != WORKER for pattern in patterns):
         raise RuntimeError('A requested route belongs to another Worker; review before replacing it')
@@ -102,7 +113,7 @@ def main():
         'compatibility_flags': settings.get('compatibility_flags', []),
         'bindings': [{'name': 'SITE', 'type': 'service', 'service': ROOT_WORKER,
                       'environment': 'production'}],
-        'annotations': {'workers/message': 'Add Address Proof link to the homepage navigation'},
+        'annotations': {'workers/message': 'Jade homepage identity, compact navigation, fullscreen interactive token'},
     }
     boundary = 'free-token-' + uuid.uuid4().hex
     parts = []

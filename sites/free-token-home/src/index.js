@@ -1,6 +1,10 @@
 import landing from './landing.js';
 import mobile from '../assets/welcome-mobile-v1.webp';
 import desktop from '../assets/welcome-desktop-v1.webp';
+import homeMobile from '../assets/home-hero-mobile-v4.webp';
+import homeDesktop from '../assets/home-hero-desktop-v4.webp';
+import homeScene from './home-scene.js';
+import { renderHomepage } from './homepage.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -9,26 +13,19 @@ export default {
     if (read && (url.pathname === '/' || url.pathname === '/index.html')) {
       const response = await env.SITE.fetch(request);
       if (!response.ok || !response.headers.get('Content-Type')?.includes('text/html')) return response;
-      const updated = new HTMLRewriter()
-        .on('nav.entry-actions', {
-          element(element) {
-            element.append('<a class="gift-link address-link" href="https://addr.leonmingod.com" aria-label="地址证明">地址证明 <span aria-hidden="true">↗</span></a>', { html: true });
-          },
-        })
-        .on('head', {
-          element(element) {
-            element.append('<style id="homepage-navigation-layout">@media (max-width:767px),(orientation:portrait){.entry-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,360px);gap:10px}.entry-actions>.enter{grid-column:1/-1;width:100%;justify-self:center}.entry-actions>.gift-link{white-space:nowrap;padding:0 14px}}</style>', { html: true });
-          },
-        })
-        .transform(response);
-      const headers = new Headers(updated.headers);
-      headers.set('Cache-Control', 'no-cache');
-      headers.delete('Content-Length');
-      headers.delete('ETag');
-      return new Response(updated.body, { status: updated.status, statusText: updated.statusText, headers });
+      return renderHomepage(response);
+    }
+    if (read && url.pathname === '/home-scene-v4.js') {
+      return new Response(request.method === 'HEAD' ? null : homeScene, { headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+      } });
     }
     const image = url.pathname === '/free-token/welcome-mobile-v1.webp' ? mobile
-      : url.pathname === '/free-token/welcome-desktop-v1.webp' ? desktop : null;
+      : url.pathname === '/free-token/welcome-desktop-v1.webp' ? desktop
+      : url.pathname === '/home-hero-mobile-v4.webp' ? homeMobile
+      : url.pathname === '/home-hero-desktop-v4.webp' ? homeDesktop : null;
     if (read && image) {
       return new Response(request.method === 'HEAD' ? null : image, {
         headers: {
