@@ -18,6 +18,7 @@
 
 ### Bug Fixes
 
+- fix: |Free Token| Switch claims to Render CPA after validating the new client key, preserving existing keys, login credentials, configuration, and page interactions
 - fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs
 - fix: |Database| Fix admin config 404s caused by stale deployment bundles; always build the Worker from current source and repair unversioned databases before recording the schema version, preserving mail and accounts
 - fix: |Frontend| Load database status and capacity settings independently, add refresh/retry and local loading states for database actions, hide usage when size is unknown, and soften admin navigation highlights
