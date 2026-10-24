@@ -29,7 +29,13 @@ jobs:
               try:
                   with urllib.request.urlopen(req, timeout=45) as r: response = json.load(r)
               except urllib.error.HTTPError as error:
-                  raise RuntimeError("Cloudflare HTTP " + str(error.code)) from None
+                  try:
+                      detail = json.dumps(json.load(error).get("errors", []))
+                  except Exception:
+                      detail = "No validation detail"
+                  for value in [cf_token, globals().get("client_key", "")]:
+                      if value: detail = detail.replace(value, "[redacted]")
+                  raise RuntimeError("Cloudflare HTTP " + str(error.code) + ": " + detail) from None
               if not response.get("success", True): raise RuntimeError("Cloudflare rejected the operation")
               return response.get("result")
           active = api("/deployments")["deployments"][0]["versions"]
