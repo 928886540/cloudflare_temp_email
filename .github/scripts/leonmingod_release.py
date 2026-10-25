@@ -113,6 +113,7 @@ elif mode == 'publish':
     try:
         api.cf(worker+'/deployments','POST',{'strategy':'percentage','versions':[{'version_id':version_id,'percentage':100}],'annotations':{'workers/message':release['message']}})
         entrance_after=activate_forwarder()
+        print('ACTIVATED_SITE='+json.dumps({'parent':api.active(worker),'entrance':entrance_after,'exports':version['resources'].get('script',{}).get('named_handlers')}),flush=True)
         for attempt in range(12):
             try:
                 for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/game/','free-token/game/index.html')]:
@@ -120,7 +121,11 @@ elif mode == 'publish':
                     expected=(root/'public'/local).read_text()
                     import re
                     body=re.sub(r'<script[^>]*src=["\']https://static\.cloudflareinsights\.com/[^>]*>\s*</script>','',body)
-                    assert body.replace('\r\n','\n').strip()==expected.replace('\r\n','\n').strip(), 'Published page differs: '+path
+                    if body.replace('\r\n','\n').strip()!=expected.replace('\r\n','\n').strip():
+                        if attempt == 0:
+                            fresh=api.request(api.ORIGIN+path+'?lmg_verify='+version_id,headers={'Cache-Control':'no-cache'})[2].decode()
+                            print('PAGE_DIAGNOSTIC='+json.dumps({'path':path,'new_marker':'home-orb-v3.css' in body,'fresh_marker':'home-orb-v3.css' in fresh,'expected_bytes':len(expected),'actual_bytes':len(body),'first_difference':next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),None)}),flush=True)
+                        raise AssertionError('Published page differs: '+path)
                 assert claim() == before_claim, 'Reward changed during website publication'
                 assert api.models(before_claim['apiKey']) > 0
                 after=api.cf(worker+'/settings')['bindings']
