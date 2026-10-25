@@ -9,7 +9,9 @@ import time
 import yifu_key_api as api
 
 root = Path('sites/leonmingod-star-night')
-release = json.loads((root / 'dist/release.json').read_text())
+mode = os.environ.get('WEBSITE_MODE', 'stage')
+release = json.loads((root / ('dist/release.json' if mode == 'stage' else 'release.json')).read_text())
+(root/'dist').mkdir(exist_ok=True)
 worker = 'leonmingod-home'
 parent = api.active(worker)
 entrance = api.active('leonmingod-free-token')
@@ -51,7 +53,12 @@ if mode == 'stage':
 elif mode == 'publish':
     version_id=os.environ['WEBSITE_VERSION']
     version=api.cf(worker+'/versions/'+version_id)
-    assert version['metadata']['annotations']['workers/message'] == release['message'], 'Unrecognized staged version'
+    assert version_id == release['staged_version'], 'Publish only the reviewed staged version'
+    annotated = (version.get('annotations') or {}).get('workers/message')
+    assert annotated in [None, release['message']], 'Unrecognized staged version'
+    staged_bindings = version['resources']['bindings']
+    assert {(b['name'],b['type']) for b in staged_bindings} == {(b['name'],b['type']) for b in bindings}, 'Staged bindings differ'
+    assert [b for b in staged_bindings if b['name']=='GAME_RUNS'] == game, 'Staged game namespace differs'
     try:
         api.cf(worker+'/deployments','POST',{'strategy':'percentage','versions':[{'version_id':version_id,'percentage':100}],'annotations':{'workers/message':release['message']}})
         for attempt in range(12):
