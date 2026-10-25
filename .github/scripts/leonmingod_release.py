@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import secrets
 import time
+import urllib.request
+import urllib.error
 from email.parser import BytesParser
 import email.policy
 
@@ -47,7 +49,7 @@ def activate_forwarder():
     for part in message.iter_parts():
         filename=part.get_filename() or part.get_param('name',header='Content-Disposition')
         if filename != 'metadata':
-            parts.append((filename,part.get_content_type(),part.get_payload(decode=True)))
+            parts.append((filename,'application/javascript+module' if filename=='index.js' else 'application/source-map',part.get_payload(decode=True)))
     assert {name for name,_,_ in parts} == {'index.js','index.js.map'}
     metadata={'main_module':'index.js','compatibility_date':old['compatibility_date'],
         'compatibility_flags':old.get('compatibility_flags',[]),
@@ -58,7 +60,21 @@ def activate_forwarder():
         disposition='form-data; name="'+filename+'"'+('' if filename=='metadata' else '; filename="'+filename+'"')
         chunks.extend([(f'--{boundary}\r\nContent-Disposition: {disposition}\r\nContent-Type: {mime}\r\n\r\n').encode(),payload,b'\r\n'])
     chunks.append(('--'+boundary+'--\r\n').encode())
-    api.cf(name,'PUT',b''.join(chunks),{'Content-Type':'multipart/form-data; boundary='+boundary})
+    request=urllib.request.Request(
+        'https://api.cloudflare.com/client/v4/accounts/'+os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()+'/workers/scripts/'+name,
+        data=b''.join(chunks),method='PUT',headers={'User-Agent':'Mozilla/5.0','Content-Type':'multipart/form-data; boundary='+boundary,'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN'].strip()})
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(request,timeout=60) as response: uploaded=json.load(response)
+            assert uploaded['success']
+            break
+        except urllib.error.HTTPError as error:
+            if attempt < 2 and error.code == 400:
+                time.sleep(2+attempt)
+                continue
+            details=json.load(error)
+            print('FORWARDER_API_ERROR='+json.dumps([{'code':e.get('code'),'message':str(e.get('message',''))[:300]} for e in details.get('errors',[])]))
+            raise RuntimeError('Forwarder upload rejected: HTTP '+str(error.code)) from None
     assert api.cf(name+'/settings')['bindings'] == metadata['bindings']
     _, check_headers, check_body=api.cf(name,raw=True)
     checked=BytesParser(policy=email.policy.default).parsebytes(
