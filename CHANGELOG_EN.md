@@ -25,6 +25,7 @@
 
 ### Improvements
 
+- docs: |Yifu Token| Record successful new-key issuance, current CF/Render versions, preserved login files, and the routine issuance workflow
 - docs: |Free Token terminology| Persist the user-defined site shorthand, Render client-key creation, and website issuance semantics in agent guidance and operations notes
 - docs: |Free Token operations| Record mobile rendering budgets, v2 cache refresh, release evidence and validation limits, and clarify historical navigation status
 - docs: |Free Token operations| Record the fluid/compact claim release version, deployment evidence, mobile viewport verification, and pending landscape circular navigation

@@ -19,6 +19,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   Add only the client key when asked to add one; wire it into the website when
   asked to enable/share it. Use session context to identify the intended key.
 
+For routine new client-key creation and website issuance, use the working branch
+workflow `.github/workflows/issue-yifu-key.yaml` (`inspect`, then explicit `issue`).
+The historical `connect` mode is not the routine issuance path.
+
 Before changing `leonmingod.com`, Free Token, either homepage Worker, or Render CPA,
 read [the operations record](vitepress-docs/docs/en/guide/feature/free-token-render.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/free-token-render.md)). It records the

@@ -1,5 +1,41 @@
 # Free Token integration with Render
 
+## Current issued Yifu key — 2026-10-25 21:03 Asia/Shanghai
+
+A new client key is registered and issued by the website. Its value stays in Render
+and the CF Secret; its identifying SHA-256 prefix is `7fa19b84ca57a2ba` (not an authentication credential).
+Render has three client keys, preserving both originals; all ten login files were restored.
+Website claims and `/v1/models` with the issued key both return HTTP 200, with 34 models
+at acceptance. Pages, effects, and source modules are unchanged.
+
+- Parent version: `fad0e247-77a5-43c2-b708-737898d88ea4`, only `FREE_TOKEN_RENDER_KEY` updated.
+- Unchanged entrance version: `69575cec-ac2c-416f-81b9-b64030e87651`.
+- Render deploy: `dep-dbevs57b9u1s73b4q6pg`, using the existing build.
+- [Issuance and acceptance evidence](https://github.com/928886540/cloudflare_temp_email/actions/runs/40195833941).
+- Use `Issue and publish Yifu Token key`: inspect, review/refresh guards, then explicitly issue.
+  Do not rerun historical migration or default to revocation. The current parent includes
+  both `index.js` and `index.js.map`; the older single-module assumption no longer applies.
+  New issuance updates only the CF Secret and compares all module hashes.
+
+## Add and publish a Yifu client key
+
+Use the working branch's `Issue and publish Yifu Token key` workflow. Its default
+`inspect` mode is read-only. Explicit `issue` appends a new Render client key,
+redeploys the existing build, restores login files, verifies old and new keys,
+then updates only the parent Worker's `FREE_TOKEN_RENDER_KEY` Secret so the
+website issues the same new key. The entrance Worker, homepage, mobile effects,
+and source modules are not redeployed. SHA-256 checks cover all parent modules,
+including `index.js.map`; the parent CF version changes with the Secret update.
+
+The script is `.github/scripts/issue_yifu_key.py`, separate from historical
+one-time migration and key revocation. The historical workflow now also defaults
+to `inspect`, preventing automatic revocation on push. Read current parent/entrance
+versions, module hashes, and Render deployment before refreshing guards. Encrypted
+backups use `yifu-issue-backup-public.pem`; retain its matching private key outside
+the repository. Never commit client keys or private keys. Issuance appends without
+removing existing Render keys; a failed website switch restores the previous CF version.
+
+
 ## User-defined shorthand (confirmed 2026-10-25)
 
 | User phrase | Meaning and action in this project |
@@ -247,11 +283,11 @@ environment-variable or Secret File collections.
    read-only inspection with sanitized output:
 
    ```bash
-   gh workflow run connect-render-free-token.yaml \
+   gh workflow run issue-yifu-key.yaml \
      -R 928886540/cloudflare_temp_email \
      --ref codex/free-token-home-20261024 -f mode=inspect
    gh run list -R 928886540/cloudflare_temp_email \
-     --workflow connect-render-free-token.yaml -L 3
+     --workflow issue-yifu-key.yaml -L 3
    ```
 
 3. Page changes use the entrance Worker deployment path. Preserve artwork, pill navigation,
