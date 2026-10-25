@@ -1,0 +1,33 @@
+{
+  "tool": "native image_gen",
+  "edit_scope": "Clearly adult (28+) character styling: fuller figure, bolder deep V opaque emerald bodice, bare shoulders/collarbones; preserve identity, pose, night scene, hands and lettering.",
+  "checks": [
+    "original aspect ratios retained",
+    "hands and wrists reviewed",
+    "orb position retained",
+    "empty palm retained for separate token overlay",
+    "brand lettering and Chinese subtitle reviewed"
+  ],
+  "files": [
+    {
+      "source": "home-hero-desktop-v5.webp",
+      "generated": "/workspace/generated_images/exec-b2eb1edc-13ce-4e10-b39d-e84ccbf22659.png",
+      "published": "home-hero-desktop-v6.webp"
+    },
+    {
+      "source": "home-hero-mobile-v5.webp",
+      "generated": "/workspace/generated_images/exec-92982c19-7fc0-427a-bf85-23cce0fbc279.png",
+      "published": "home-hero-mobile-v6.webp"
+    },
+    {
+      "source": "free-token/welcome-desktop-v3.webp",
+      "generated": "/workspace/generated_images/exec-fbff3217-86a7-4e78-945c-8108f2f0fef3.png",
+      "published": "free-token/welcome-desktop-v4.webp"
+    },
+    {
+      "source": "free-token/welcome-mobile-v3.webp",
+      "generated": "/workspace/generated_images/exec-95959fa6-0f07-46c3-8ac3-934f0eb6c26e.png",
+      "published": "free-token/welcome-mobile-v4.webp"
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare';
-import { RULES, replay, validateTrace } from '../public/free-token/game/engine-v2.mjs';
+import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v3.mjs';
 import { verifyRun } from '../src/game.js';
 import { play } from '../scripts/calibrate.mjs';
 
-function winning(seed) {
+function winning(seed, engine) {
   for (const reaction of [4,7,10,14]) for (const foresight of [20,30,45,60]) {
-    const result=play(seed,reaction,foresight);
+    const result=play(seed,reaction,foresight,engine);
     if(result.state.won)return result;
   }
   return null;
@@ -51,11 +51,11 @@ test('real Durable Object grants one reward for concurrent finish requests',asyn
   try{
     assert.equal((await send('start',{},null,'https://elsewhere.example')).status,403);
     let run,trace,cookie;
-    for(let i=0;i<5&&!trace;i++){
+    for(let i=0;i<12&&!trace;i++){
       const response=await send('start',{});assert.equal(response.status,200);assert.match(response.headers.get('set-cookie'),/HttpOnly; SameSite=Strict/);
       cookie=response.headers.get('set-cookie').split(';')[0];run=await response.json();trace=winning(run.seed)?.trace;
     }
-    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,2);
+    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,3);assert.equal(run.rules.shields,2);
     assert.equal((await send('finish',{id:run.id,trace},cookie)).status,400);
     assert.equal((await send('finish',{id:run.id,trace})).status,403);
     await new Promise(resolve=>setTimeout(resolve,29500));
@@ -64,4 +64,18 @@ test('real Durable Object grants one reward for concurrent finish requests',asyn
     assert.equal(responses.filter(r=>r.status===200).length,1);assert.equal(responses.filter(r=>r.status===409).length,5);
     const reward=await responses.find(r=>r.status===200).json();assert.equal(reward.apiKey,'test-reward-placeholder');assert.equal(reward.baseUrl,'https://cpa-dhke.onrender.com/v1');
   }finally{await mf.dispose();}
+});
+
+
+test('the second damaging hit ends the two-shield run',()=>{
+  const state=createGame(1);
+  const hit=()=>{state.objects.push({id:999,type:'hazard',x:state.x,y:RULES.playerY-1,speed:1,vx:0,radius:26});step(state,state.target);};
+  assert.equal(state.shields,2);hit();assert.equal(state.shields,1);assert.equal(state.done,false);
+  while(state.cooldown>0)step(state,state.target);
+  hit();assert.equal(state.shields,0);assert.equal(state.done,true);assert.equal(state.won,false);
+});
+
+test('in-flight v2 runs retain their original three-shield replay',async()=>{
+  const engine=await import('../public/free-token/game/engine-v2.mjs');const seed=6849877;const trace=winning(seed,engine).trace;const now=Date.now();
+  assert.equal(verifyRun({seed,rulesVersion:2,sessionHash:'v2',started:now-31000,expires:now+60000,claimed:false},{sessionHash:'v2',trace},now).status,200);
 });

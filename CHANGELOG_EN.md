@@ -34,6 +34,10 @@
 
 ### Improvements
 
+- feat: |Star-night artwork| Refresh four adult-character homepage/token posters with native image_gen, emphasizing bare shoulders, a deeper neckline and fuller figure through versioned desktop/mobile assets
+
+- feat: |Jade Trial| Upgrade v3 to two shields, ending on the second damaging hit; increase hazard speed and later double swords while sharing server/client rules and preserving in-flight older runs
+
 - docs: |Free Token operations| Preserve recovered maintenance source, parent/forwarder entrypoint versions, public acceptance for both rewards, and duplicate-claim evidence
 
 - docs: |LeonMinGod website| Record the star-night/game handoff, verified parent version, GAME_RUNS, and pending source upload; prevent historical deployments from replacing the current site
