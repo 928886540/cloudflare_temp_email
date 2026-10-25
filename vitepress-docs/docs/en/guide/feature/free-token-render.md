@@ -1,5 +1,23 @@
 # Free Token integration with Render
 
+## Add and publish a Yifu client key
+
+Use the working branch's `Issue and publish Yifu Token key` workflow. Its default
+`inspect` mode is read-only. Explicit `issue` appends a new Render client key,
+redeploys the existing build, restores login files, verifies old and new keys,
+then updates only the parent Worker's `FREE_TOKEN_RENDER_KEY` Secret so the
+website issues the same new key. The entrance Worker, homepage, mobile effects,
+and source modules are not redeployed. SHA-256 checks cover all parent modules,
+including `index.js.map`; the parent CF version changes with the Secret update.
+
+The script is `.github/scripts/issue_yifu_key.py`, separate from historical
+one-time migration and key revocation. The historical workflow now also defaults
+to `inspect`, preventing automatic revocation on push. Read current parent/entrance
+versions, module hashes, and Render deployment before refreshing guards. Encrypted
+backups use `yifu-issue-backup-public.pem`; retain its matching private key outside
+the repository. Never commit client keys or private keys. Issuance appends without
+removing existing Render keys; a failed website switch restores the previous CF version.
+
 ## User-defined shorthand (confirmed 2026-10-25)
 
 | User phrase | Meaning and action in this project |

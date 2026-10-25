@@ -1,5 +1,19 @@
 # 免费 Token 的 Render 对接
 
+## 新增并开放义父密钥
+
+使用网站工作分支的 `Issue and publish Yifu Token key` 工作流：默认 `inspect` 只读检查；
+明确选择 `issue` 后，追加一把新的 Render 客户端 Key、使用原构建部署并恢复登录文件，
+验证新旧 Key 后，仅更新主站 Worker 的 `FREE_TOKEN_RENDER_KEY` Secret，让网页发放同一把新 Key。
+页面入口 Worker、首页、手机轻量特效和现有源代码模块不重部署；包括 `index.js.map` 在内的
+主站模块均进行 SHA-256 比对。主站 CF 版本会随 Secret 更新而改变。
+
+脚本为 `.github/scripts/issue_yifu_key.py`，与历史一次性 `connect`、旧密钥撤销任务分开。
+历史工作流的默认模式也已改回 `inspect`；不再因推送自动执行撤销。
+操作前重新读取并核对 CF 主站/入口版本、模块摘要与 Render 部署，更新新脚本的保护值。
+加密备份使用 `yifu-issue-backup-public.pem`，必须持有其对应的私钥；不要将私钥或客户端 Key 写入仓库。
+新发放只追加 Key，不删除、覆盖现有 Render Key；网页切换失败时恢复前一个 CF 版本。
+
 ## 用户固定用语（2026-10-25 确认）
 
 | 用户说法 | 在本项目中的含义与执行目标 |
