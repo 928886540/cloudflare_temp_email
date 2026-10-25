@@ -1,5 +1,19 @@
 # 免费 Token 的 Render 对接
 
+## 当前义父密钥发放记录（北京时间 2026-10-25 21:03）
+
+已新建并开放网页领取。Key 原值只保存在 Render 与 CF Secret 中；用于识别的 SHA-256 前 16 位为
+`7fa19b84ca57a2ba`，不是鉴权凭据。Render 现有 3 把客户端 Key（原 2 把保留），10 份登录凭证已恢复。
+网页领取与该 Key 调用 `/v1/models` 均为 200，验收时返回 34 个模型；页面、动效与代码模块均未改变。
+
+- 主站当前版本：`fad0e247-77a5-43c2-b708-737898d88ea4`（仅更新 `FREE_TOKEN_RENDER_KEY`）。
+- 入口版本：`69575cec-ac2c-416f-81b9-b64030e87651`，本次未改。
+- Render 部署：`dep-dbevs57b9u1s73b4q6pg`，仍使用原代码构建。
+- [发放与验证记录](https://github.com/928886540/cloudflare_temp_email/actions/runs/40195833941)。
+- 后续新增并开放 Key 使用 `Issue and publish Yifu Token key`，先 `inspect` 再审阅保护值后 `issue`。
+  不重跑历史 `connect` 或默认撤销旧 Key。当前主站包含 `index.js` 与 `index.js.map` 两个模块，
+  旧脚本的单模块假设已不适用；新流程通过 CF Secret API 更新绑定并核对全部模块摘要。
+
 ## 新增并开放义父密钥
 
 使用网站工作分支的 `Issue and publish Yifu Token key` 工作流：默认 `inspect` 只读检查；
@@ -223,11 +237,11 @@ Secrets 设置页：`https://github.com/928886540/cloudflare_temp_email/settings
    工作分支支持以下命令；工作流输出已脱敏：
 
    ```bash
-   gh workflow run connect-render-free-token.yaml \
+   gh workflow run issue-yifu-key.yaml \
      -R 928886540/cloudflare_temp_email \
      --ref codex/free-token-home-20261024 -f mode=inspect
    gh run list -R 928886540/cloudflare_temp_email \
-     --workflow connect-render-free-token.yaml -L 3
+     --workflow issue-yifu-key.yaml -L 3
    ```
 
 3. 仅改页面时，使用入口 Worker 的部署路径；保留原图、胶囊导航、满屏裁切和令牌点击动效，
