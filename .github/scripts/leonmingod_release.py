@@ -60,6 +60,11 @@ def activate_forwarder():
     chunks.append(('--'+boundary+'--\r\n').encode())
     api.cf(name,'PUT',b''.join(chunks),{'Content-Type':'multipart/form-data; boundary='+boundary})
     assert api.cf(name+'/settings')['bindings'] == metadata['bindings']
+    _, check_headers, check_body=api.cf(name,raw=True)
+    checked=BytesParser(policy=email.policy.default).parsebytes(
+        ('Content-Type: '+check_headers['Content-Type']+'\r\n\r\n').encode()+check_body)
+    actual={p.get_filename() or p.get_param('name',header='Content-Disposition'):hashlib.sha256(p.get_payload(decode=True)).hexdigest() for p in checked.iter_parts() if (p.get_filename() or p.get_param('name',header='Content-Disposition')) != 'metadata'}
+    assert actual == {n:hashlib.sha256(b).hexdigest() for n,_,b in parts}, 'Forwarder source changed'
     return api.active(name)
 
 if mode == 'stage':
