@@ -15,4 +15,6 @@ Deploy through `.github/workflows/leonmingod-star-night.yaml`, staging before pu
 
 The game uses native image_gen raster art, optimized as WebP. The shared v3 engine drives two-shield browser play and server replay; v1/v2 runs remain replayable during their existing three-minute credential lifetime. Offline simulated win rates are calibration evidence, not measured human pass rates.
 
-Production release: parent `168571b3-3eab-46c8-89f4-310b62491bf4`, forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Its unchanged forwarding code now binds `SITE` to the parent's named `Site` entrypoint so existing HTML reaches the current handler before the retained asset set. Preserve this binding and the more specific routes. New root-level resources should use versioned URLs. Acceptance evidence lives in `verification/`.
+Production release: parent `423d9f41-8557-4716-92d1-9b0035f63719`, forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Its unchanged forwarding code now binds `SITE` to the parent's named `Site` entrypoint so existing HTML reaches the current handler before the retained asset set. Preserve this binding and the more specific routes. New root-level resources should use versioned URLs. Acceptance evidence lives in `verification/`.
+
+The live page loads `app-v4.mjs`. Pause/resume controls, keyboard pause and automatic focus/background pause are removed by explicit user request. Advance combat/countdown by real elapsed time and settle hidden frames before accepting new input. Do not restore pause behavior from historical clients.

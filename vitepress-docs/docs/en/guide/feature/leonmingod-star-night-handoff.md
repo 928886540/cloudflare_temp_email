@@ -2,6 +2,22 @@
 
 This is the latest website handoff and supersedes historical page, directory, and deployment assumptions. This handoff did not deploy website code or rotate keys.
 
+## Published: all pause behavior removed (2026-10-25 23:50 UTC)
+
+Parent: `423d9f41-8557-4716-92d1-9b0035f63719`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`.
+The page loads `app-v4.mjs`, removing pause/resume controls, Space/Escape pause and automatic focus/background
+pause. Countdown/combat advance by real elapsed time, catching up on background/BFCache return. Touch dragging
+and focus changes do not stop play. The user explicitly forbids pause; do not restore it from historical clients.
+Rules remain v3 with two shields, 30 seconds and 16 jade.
+
+[Acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40246534213) passed. Apex/www game
+HTML and app-v4 match source and contain no pause/resume controls. A public 393x580 browser with a deterministic
+start-API fixture validated continuous drag, repeated blur, Space/Escape and time-jump return after suspended
+callbacks with no pause or script errors. That browser test mocks start and does not claim a new real reward
+redemption; publication checks confirmed real original claims/models HTTP 200 and unchanged rewards. Engines,
+keys, artwork and GAME_RUNS are unchanged; all six backend stage checks passed. See source evidence
+`verification/no-pause-browser*.json` and `no-pause-public-source.json`.
+
 ## Pause removal: app-v4 client
 
 Following mobile touch-drag complaints and an explicit request to remove rest, the new client removes pause/resume controls, Space/Escape pause, and focus/background auto-pause. Countdown and combat advance by real elapsed time. Returning from a hidden tab or BFCache catches up all elapsed frames; a new touch position affects only future frames. Rules remain v3: two shields, 30 seconds, 16 jade, and exit to choices. The page now loads `app-v4.mjs`; historical scripts remain available but are no longer referenced by the page.
