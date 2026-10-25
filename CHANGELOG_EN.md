@@ -22,6 +22,8 @@
 
 ### Bug Fixes
 
+- fix: |Jade Trial| Remove pause/resume controls, shortcuts, and focus/background auto-pause; advance by real elapsed time and catch up hidden frames to prevent touch-drag pauses
+
 - fix: |Free Token| Reduce mobile fluid resolution, cap drawing at 24–30 FPS, pause promptly when idle, remove costly touch blur layers, and debounce canvas resizing while retaining desktop quality
 - fix: |Free Token| Switch claims to Render CPA after validating the new client key, preserving existing keys, login credentials, configuration, and page interactions
 - fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs

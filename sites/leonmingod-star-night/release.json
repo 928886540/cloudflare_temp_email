@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "f9576720-5c7f-4909-a685-5e145fc25001",
+  "baseline_parent": "168571b3-3eab-46c8-89f4-310b62491bf4",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Raise jade trial difficulty to two shields and refresh adult star-night artwork",
+  "message": "Remove trial pause controls and keep real elapsed-time progression during touch and backgrounding",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -23,7 +23,7 @@
     "home-hero-mobile-v6.webp",
     "free-token/welcome-desktop-v4.webp",
     "free-token/welcome-mobile-v4.webp",
-    "free-token/choose-v2.css"
-  ],
-  "staged_version": "168571b3-3eab-46c8-89f4-310b62491bf4"
+    "free-token/choose-v2.css",
+    "free-token/game/app-v4.mjs"
+  ]
 }
