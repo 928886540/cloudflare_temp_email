@@ -4,6 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## LeonMinGod homepage / Free Token / Render operations
 
+### User-defined shorthand
+
+- “义父 Token” / “义父token” means the Free Token website at
+  `https://leonmingod.com/free-token/` in this repository.
+- “加一个义父密钥” means append a new **client API key** to the Render `cpa`
+  service configuration, preserving existing keys and other settings. It does not
+  mean creating another Render management API credential (`RENDER_API_KEY`).
+- “打开义父 Token 给别人用” means enable/publish issuance of the corresponding
+  Render client key through this website's claim flow, with the same key in the
+  parent Worker Secret and Render. This is an operational publishing request,
+  not merely an instruction to navigate to the page.
+- Creating a client key and publishing it on the website are distinct requests.
+  Add only the client key when asked to add one; wire it into the website when
+  asked to enable/share it. Use session context to identify the intended key.
+
 Before changing `leonmingod.com`, Free Token, either homepage Worker, or Render CPA,
 read [the operations record](vitepress-docs/docs/en/guide/feature/free-token-render.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/free-token-render.md)). It records the
