@@ -1,0 +1,32 @@
+#site-portals { position: absolute; inset: auto 4% auto 52%; top: 69.5%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; gap: clamp(6px, 1vw, 18px); width: auto; max-width: none; padding: 0; pointer-events: none; }
+#site-portals > a { position: relative; inset: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; height: auto; min-height: 0; min-width: 0; aspect-ratio: 1.62; margin: 0; padding: 12px 8px; border: 0; border-radius: 0; background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; overflow: visible; isolation: isolate; color: #fff2cc; font-family: "KaiTi", "STKaiti", "Songti SC", serif; font-size: clamp(12px, .98vw, 16px); font-weight: 600; line-height: 1.25; letter-spacing: .1em; text-shadow: 0 2px 5px #001d10, 0 0 12px #122f1b; transform: none; transition: transform .3s cubic-bezier(.2,.8,.2,1), color .25s; pointer-events: auto; }
+#site-portals > a::before { content: ""; position: absolute; inset: -4px; z-index: -1; width: auto; height: auto; border: 0; border-radius: 0; background: url('/assets/jade-portal-frame-v1.webp') center / 100% 170% no-repeat; opacity: .98; filter: drop-shadow(0 5px 8px #001a1280); transform: none; transition: filter .3s, transform .3s; pointer-events: none; }
+#site-portals > a::after { content: ""; position: absolute; inset: 20% 12%; z-index: -1; border: 0; border-radius: 40%; background: radial-gradient(ellipse, #b4ef6526, transparent 72%); opacity: 0; transform: none; transition: opacity .3s; pointer-events: none; }
+#site-portals > a svg { width: 23px; height: 23px; flex-shrink: 0; fill: none; stroke: #ffe9ad; stroke-width: 1.5; filter: drop-shadow(0 1px 4px #051c0b); transform: none; }
+#site-portals > a > span { position: relative; white-space: nowrap; }
+#site-portals > a[href="/free-token/"]::before { filter: brightness(1.1) saturate(1.12) drop-shadow(0 0 9px #7ef29c4d); }
+#site-portals > a:focus-visible { outline: 2px solid #fff1b8; outline-offset: 4px; border-radius: 10px; }
+#site-portals > a:active { transform: translateY(1px) scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  #site-portals > a:hover { color: #fff9e6; background: none; border-color: transparent; box-shadow: none; transform: translateY(-7px); }
+  #site-portals > a:hover::before { background: url('/assets/jade-portal-frame-v1.webp') center / 100% 170% no-repeat; border: 0; filter: brightness(1.25) saturate(1.16) drop-shadow(0 0 13px #b1ff9766); }
+  #site-portals > a:hover::after { opacity: 1; transform: none; border: 0; }
+  #site-portals > a:hover svg { transform: translateY(-1px); }
+}
+@media (max-width: 767px), (orientation: portrait) {
+  #site-portals { position: relative; inset: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; width: min(100%, 430px); padding: 0 2px; }
+  #site-portals > a { flex-direction: row; gap: 9px; height: 62px; aspect-ratio: auto; padding: 10px 8px; font-size: 13px; letter-spacing: .1em; }
+  #site-portals > a svg { width: 19px; height: 19px; }
+  #site-portals > a::before { inset: -2px; background-size: 100% 170%; }
+}
+@media (max-width: 359px) {
+  #site-portals { gap: 4px 8px; }
+  #site-portals > a { height: 51px; font-size: 11px; gap: 6px; }
+  #site-portals > a svg { width: 16px; height: 16px; }
+}
+@media (max-height: 520px) and (orientation: landscape) and (min-width: 768px) {
+  #site-portals { left: 51%; right: 2%; top: 73%; gap: 4px; }
+  #site-portals > a { height: auto; aspect-ratio: 1.6; gap: 2px; padding: 6px 4px; font-size: 10px; }
+  #site-portals > a svg { width: 16px; height: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { #site-portals > a, #site-portals > a::before, #site-portals > a::after { transition: none; } }

@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Free Token| Restore the single-token entrance, add a dedicated two-path choice page, compact short-screen layouts, and upgrade trial artwork/shared v2 difficulty while retaining legacy runs and reward protection
+
 - feat: |Yifu Token| Add reusable default-branch add/remove workflows with live version checks, encrypted recovery, credential preservation, and website synchronization; no recurring code edits or temporary private keys
 - feat: |Yifu Token| Add client-key issuance that preserves existing Render keys and credentials, validates the new key, then updates only the CF Secret; pushes default to read-only inspection
 - feat: |Homepage and Free Token| Regenerate jade-green mobile/desktop homepage art with the Free Token heroine, enlarge palm light, and use compact translucent pill navigation; make Free Token artwork cover the viewport with a glowing floating token entrance

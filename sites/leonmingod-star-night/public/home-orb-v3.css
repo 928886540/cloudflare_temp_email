@@ -1,0 +1,9 @@
+.orb-invitation{display:none!important}
+.spirit-orb::before{content:"";position:absolute;inset:-15%;border-radius:50%;background:radial-gradient(circle,#e9ffc44d 8%,#9ff39c59 30%,#64e6ad3b 48%,transparent 72%);mix-blend-mode:screen;pointer-events:none;animation:orb-beacon 2.6s ease-in-out infinite;will-change:transform,opacity}
+.spirit-orb .orb-orbit{border-color:#e5ffb7a6;box-shadow:0 0 21px #baff9e66,inset 0 0 19px #c0ffc32b;animation:orb-call 3s ease-in-out infinite}
+.spirit-orb .orb-orbit-inner{animation-delay:-1.5s;border-color:#efd6a880}
+.cover-palm{animation:orb-float-v3 3.6s ease-in-out infinite}
+@keyframes orb-beacon{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.13)}}
+@keyframes orb-call{0%,100%{opacity:.55;transform:translateY(0) scale(.98)}50%{opacity:1;transform:translateY(-5px) scale(1.09)}}
+@keyframes orb-float-v3{0%,100%{transform:translate(0,0)}33%{transform:translate(-3px,-7px)}66%{transform:translate(3px,-3px)}}
+@media(prefers-reduced-motion:reduce){.spirit-orb::before,.spirit-orb .orb-orbit,.cover-palm{animation:none!important}}

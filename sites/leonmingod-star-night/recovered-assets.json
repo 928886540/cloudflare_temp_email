@@ -1,0 +1,159 @@
+[
+  {
+    "path": "/",
+    "bytes": 14942,
+    "sha256": "7a964294159273801dc23c799911439d74eff3af3e27d5eb0022f14cb5f9bc7d"
+  },
+  {
+    "path": "/free-token/",
+    "bytes": 2724,
+    "sha256": "ceae62518aebbb7d043e7038cc4c9e8d03a7fb1e7ee6afd3c5e092b7b24c7100"
+  },
+  {
+    "path": "/free-token/claim/",
+    "bytes": 16526,
+    "sha256": "1da6e88dda7484da736394fc8a9c1615e4956096f81ef0028592feaae492920a"
+  },
+  {
+    "path": "/free-token/game/",
+    "bytes": 4434,
+    "sha256": "c0bb5d495e363a53b0a3d5f20c7a4b8ff92593fa1e70e0bd008972ba76f56ca7"
+  },
+  {
+    "path": "/assets/apple-touch-icon-v2.png",
+    "bytes": 28296,
+    "sha256": "df5058d8e884e53d9c7153dbec583f014a5a5d3de3c88f90fdae4c1a7aa41241"
+  },
+  {
+    "path": "/assets/favicon-v2-32.png",
+    "bytes": 2122,
+    "sha256": "2325d5ae3f352d259955ed7d24d0f8a60cc42250f8f99dfa44ea439a4e2d5a14"
+  },
+  {
+    "path": "/assets/logo-v2.svg",
+    "bytes": 1254,
+    "sha256": "1cad4f7296b24ee274822c4529054c916a1e0d5a146c45b72d4a9592da9c8acc"
+  },
+  {
+    "path": "/free-token/app.js?v=1",
+    "bytes": 3679,
+    "sha256": "477da2df272c0654a705a9f11803d6cf5b8c18cae0a2f9c50f57d776791e205c"
+  },
+  {
+    "path": "/free-token/game/app.mjs?v=1",
+    "bytes": 11858,
+    "sha256": "58b3ee23b2f8f5ab2f982bc32fd5fd75f7f5779f3fb496ea4d78484908346b99"
+  },
+  {
+    "path": "/free-token/game/style.css?v=1",
+    "bytes": 9787,
+    "sha256": "f3178eb847b05acdd813dc9b6774dcca51a7ccbae4463e4c74c985833c58aa35"
+  },
+  {
+    "path": "/free-token/jade-token-v2.webp",
+    "bytes": 521660,
+    "sha256": "995b5be4fc42cf1eda107ba0c374cee15c77c0fc3d7dcf19b08cf8eaaae97217"
+  },
+  {
+    "path": "/free-token/style.css?v=3",
+    "bytes": 9444,
+    "sha256": "b943c497a78a4a682b15d93440f381d76142417b9eb29179e9f98400e91bcd6a"
+  },
+  {
+    "path": "/free-token/token-passage-v1.css",
+    "bytes": 5171,
+    "sha256": "60eda13ad2bd232ddab17ab1060fd280a4f2fa5503fd9a9f1539cf9410fa94a0"
+  },
+  {
+    "path": "/free-token/token-passage-v1.js",
+    "bytes": 6380,
+    "sha256": "62c4ee0e9618989923298a280159e234265f70287a411231835a024385708bf3"
+  },
+  {
+    "path": "/free-token/token-passage-v1.js?v=20261025-night",
+    "bytes": 6380,
+    "sha256": "62c4ee0e9618989923298a280159e234265f70287a411231835a024385708bf3"
+  },
+  {
+    "path": "/free-token/welcome-desktop-v3.webp",
+    "bytes": 545368,
+    "sha256": "dc858ec718ce1da7b9803683d38b6d37f213f36566d0a0cc60622999bb245834"
+  },
+  {
+    "path": "/free-token/welcome-mobile-v3.webp",
+    "bytes": 543148,
+    "sha256": "84e20544e1766943597b59cb2b6202815c0e4334599ffa15c7bfa8da582b4d9d"
+  },
+  {
+    "path": "/free-token/welcome-v2.css?v=20261025-night",
+    "bytes": 9003,
+    "sha256": "1b7c1c45a2d5aaa28d3a7ad0be9718f446460b524b4cdbc57cf47916d99d447a"
+  },
+  {
+    "path": "/home-enhancements.css?v=20261025-1",
+    "bytes": 6575,
+    "sha256": "698c8b527e22285e3cceb9c29fe89a8c7b0480f530ce122e191380451baa66b9"
+  },
+  {
+    "path": "/home-enhancements.js?v=20261025-2",
+    "bytes": 1641,
+    "sha256": "5b9597f5a4e5d71370841e97bef157e97531ee73f5738d278dd14177032fb13d"
+  },
+  {
+    "path": "/home-hero-desktop-v5.webp",
+    "bytes": 584914,
+    "sha256": "d42e33f9ede2f7039195ab669f6cc4e406227d2457934090667de25f98877782"
+  },
+  {
+    "path": "/home-hero-mobile-v5.webp",
+    "bytes": 556450,
+    "sha256": "6caff1e3908c40a786a3fb121c5e4b2639d93288c44b808b0f1218c92687b2dd"
+  },
+  {
+    "path": "/home-scene-v5.js?v=20261025-night",
+    "bytes": 10338,
+    "sha256": "fd9cc91dcf516d3d3208d3e3dd9fa2fae1a9bd3334a443d3d2c5fa9acafa0e62"
+  },
+  {
+    "path": "/jade-portals-v2.css?v=20261025-2",
+    "bytes": 3792,
+    "sha256": "4e543086db1728151a51fec6e1ebf9e3bc6320b585223019333fed9d62493340"
+  },
+  {
+    "path": "/scene.css?v=20261023-5",
+    "bytes": 7583,
+    "sha256": "0c4935b2c12bcc493ec099a8e5c8948db85e5b705ae38cd4e004000684b596db"
+  },
+  {
+    "path": "/vendor/fluid.js",
+    "bytes": 46557,
+    "sha256": "9a12662e31edccdb61e8ebde2c6ddbfda19793b5129e417004a067f2514178c2"
+  },
+  {
+    "path": "/assets/hero-desktop-v3.png",
+    "bytes": 2882202,
+    "sha256": "9558b00c57958d9c5bacdb6896d7ae9c27ac6efe5376654e60466b2a6a583b71"
+  },
+  {
+    "path": "/assets/jade-portal-frame-v1.webp",
+    "bytes": 272606,
+    "sha256": "7dad44ab734eb9a3fdeebe70b3af8b9c80c468bb4544a7b6ccdd27894d3baf8f"
+  },
+  {
+    "path": "/free-token/game/engine.mjs",
+    "bytes": 2996,
+    "sha256": "9ebf75f2e83dd712c924f578370a9c92df253740b500136d273ddf1a42cafe71"
+  },
+  {
+    "path": "/free-token/game/response.js",
+    "error": "HTTPError"
+  },
+  {
+    "path": "/free-token/response.js",
+    "error": "HTTPError"
+  },
+  {
+    "path": "/vendor/dist/vendor/fluid.js",
+    "error": "HTTPError"
+  }
+]

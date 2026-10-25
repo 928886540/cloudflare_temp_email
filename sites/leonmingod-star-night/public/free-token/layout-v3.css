@@ -1,0 +1,8 @@
+/* New flow: one token on the entrance; choices live on their own page. */
+.welcome-copy,.token-hint{display:none!important}
+.token-aura{filter:none!important;opacity:.85;background:radial-gradient(ellipse,#e6ffb499,#65e69b68 35%,#32bc7428 60%,transparent 75%);animation:jade-aura 2.8s ease-in-out infinite}
+.token-float{animation:jade-invitation 3.1s ease-in-out infinite;transform-origin:50% 12%;will-change:transform}
+.token-art{filter:drop-shadow(0 0 9px #d1ffc0b3) drop-shadow(0 0 20px #60d9897a)!important}
+@keyframes jade-invitation{0%,100%{transform:translateY(0) rotate(-1.2deg)}30%{transform:translateY(-8px) rotate(1.5deg)}65%{transform:translateY(-3px) rotate(-.8deg)}}
+@keyframes jade-aura{0%,100%{opacity:.6;scale:.96}50%{opacity:1;scale:1.16}}
+@media(prefers-reduced-motion:reduce){.token-float,.token-aura{animation:none!important}}

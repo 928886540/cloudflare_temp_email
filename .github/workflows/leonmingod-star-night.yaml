@@ -1,0 +1,48 @@
+name: Deploy current LeonMinGod star-night website
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [stage, publish]
+        default: stage
+      version_id:
+        description: Version returned by the verified stage run (publish only)
+        type: string
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: free-token-home-production
+  cancel-in-progress: false
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sites/leonmingod-star-night/package-lock.json
+      - name: Build current source and validate replay/reward protection
+        working-directory: sites/leonmingod-star-night
+        run: |
+          npm ci
+          npm run build
+          npm test
+      - name: Stage or publish while retaining assets, secrets and game storage
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WEBSITE_MODE: ${{ inputs.mode }}
+          WEBSITE_VERSION: ${{ inputs.version_id }}
+        run: python .github/scripts/leonmingod_release.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: leonmingod-website-release
+          path: sites/leonmingod-star-night/dist/release-result.json
+          if-no-files-found: ignore
+          retention-days: 90

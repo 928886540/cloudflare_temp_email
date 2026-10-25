@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081619">
+  <meta name="description" content="叫声义父或凭实力御剑破阵，领取 Leon🌙 的接口地址与贵宾密钥。">
+  <meta name="referrer" content="same-origin">
+  <title>LeonMinGod · 仙玉令牌领取 | 贵宾密钥</title>
+  <link rel="icon" type="image/svg+xml" sizes="any" href="/assets/logo-v2.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-v2-32.png">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon-v2.png">
+  <script>
+    try {
+      var passage = JSON.parse(sessionStorage.getItem('lmg-token-passage') || 'null');
+      sessionStorage.removeItem('lmg-token-passage');
+      if (passage && passage.destination === location.pathname && Date.now() - passage.at >= 0 && Date.now() - passage.at < 8000 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('token-arrival');
+      }
+    } catch {}
+  </script>
+  <link rel="stylesheet" href="/free-token/token-passage-v1.css">
+  <script src="/free-token/token-passage-v1.js" defer></script>
+  <link rel="stylesheet" href="/free-token/style.css?v=3">
+  <script src="/free-token/app.js?v=1" defer></script>
+<style id="free-token-compact-layout">
+
+#token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
+#token-pointer-light { position: fixed; left: 0; top: 0; z-index: 4; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; pointer-events: none; opacity: 0; background: radial-gradient(circle,#fff 5%,#d9ffe0 26%,#83dba288 58%,transparent 75%); box-shadow: 0 0 10px #abedb399; mix-blend-mode: screen; }
+[data-motion="idle"] #token-fluid { opacity: .2; }
+[data-motion="reduced"] #token-fluid, [data-motion="unavailable"] #token-fluid { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { #token-fluid, #token-pointer-light { display: none; } }
+@media (pointer: coarse) { #token-fluid { filter: none; } }
+
+
+/* 背景图：切换为 Free Token 首页专属海报背景 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: linear-gradient(180deg, rgba(5, 13, 27, 0.48) 0%, rgba(5, 13, 27, 0.78) 100%), url('/free-token/welcome-mobile-v3.webp');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+@media (orientation: landscape) {
+  .backdrop {
+    background-image: linear-gradient(90deg, rgba(5, 13, 27, 0.52) 0%, rgba(5, 13, 27, 0.25) 45%, rgba(5, 13, 27, 0.62) 100%), url('/free-token/welcome-desktop-v3.webp');
+  }
+}
+
+/* 移除顶部导航、品牌小尾巴等边角料，保持全景仙境视野 */
+.topbar, .page-foot {
+  display: none !important;
+}
+
+body {
+  scroll-padding-bottom: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+.invitation, dialog {
+  cursor: default;
+}
+
+main { z-index: 2; width: min(840px,calc(100% - 32px)); margin: auto; padding: 0; }
+.invitation { grid-template-columns: .85fr 1.15fr; min-height: 500px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: rgba(181, 217, 197, 0.24); }
+.gift-art { padding: 30px 18px 24px; position: relative; overflow: visible; }
+
+/* 令牌容器与神圣仙芒 */
+.token-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 210px;
+  height: 310px;
+  cursor: pointer;
+}
+
+/* 令牌背景神圣灵光晕（常态柔和，hover炽盛） */
+.token-visual::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167, 243, 208, 0.35) 0%, rgba(74, 222, 128, 0.2) 35%, rgba(250, 204, 21, 0.12) 60%, transparent 75%);
+  filter: blur(14px);
+  pointer-events: none;
+  opacity: .75;
+  transition: opacity .4s ease, transform .4s ease, filter .4s ease;
+}
+
+.gift-art img {
+  position: relative;
+  display: block;
+  width: 210px;
+  height: 310px;
+  max-width: 100%;
+  object-fit: contain;
+  /* 默认周身温润青金灵光 */
+  filter: drop-shadow(0 0 10px rgba(110, 255, 190, 0.55)) drop-shadow(0 0 25px rgba(74, 222, 128, 0.35)) drop-shadow(0 15px 25px rgba(0, 15, 10, 0.7));
+  transition: filter .35s cubic-bezier(.2,.8,.25,1), transform .35s cubic-bezier(.2,.8,.25,1);
+  will-change: transform, filter;
+  animation: token-breathe 4s ease-in-out infinite;
+}
+
+@keyframes token-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* 轨道灵光环 */
+.art-orbit {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  height: 250px;
+  border: 1.5px solid rgba(175, 235, 195, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.25), inset 0 0 20px rgba(250, 204, 21, 0.15);
+  transition: all .35s cubic-bezier(.2,.8,.25,1);
+  pointer-events: none;
+}
+
+/* 【核心增强】鼠标移到令牌上时，周身神圣金绿神光暴涨！ */
+.gift-art:hover .token-visual::before,
+.token-visual:hover::before {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.25);
+  filter: blur(20px) brightness(1.4);
+  background: radial-gradient(circle, rgba(220, 255, 235, 0.65) 0%, rgba(110, 255, 190, 0.45) 30%, rgba(250, 204, 21, 0.35) 55%, transparent 75%);
+}
+
+.gift-art:hover .art-orbit,
+.token-visual:hover .art-orbit {
+  transform: translate(-50%, -50%) scale(1.14);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 35px rgba(110, 255, 190, 0.75), 0 0 70px rgba(250, 204, 21, 0.55), inset 0 0 30px rgba(74, 222, 128, 0.45);
+}
+
+.gift-art:hover img,
+.token-visual:hover img {
+  animation-play-state: paused;
+  transform: scale(1.07) translateY(-6px);
+  /* 超强璀璨神圣光晕：白炽心、青玉灵芒、金光外绽、深邃光辉多重叠加 */
+  filter: 
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 20px rgba(130, 255, 200, 0.95))
+    drop-shadow(0 0 40px rgba(74, 222, 128, 0.85))
+    drop-shadow(0 0 70px rgba(250, 204, 21, 0.7))
+    drop-shadow(0 0 110px rgba(52, 211, 153, 0.5));
+}
+
+.ritual { padding: 36px 36px 28px; }
+.eyebrow { margin-bottom: 16px; }
+h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
+.intro { margin: 14px 0 20px; line-height: 1.75; }
+.input-wrap { margin-top: 11px; }
+.input-wrap input { height: 48px; }
+#input-check { top: 13px; }
+.input-hint { margin: 8px 0 15px; }
+.claim-button { min-height: 46px; }
+.fine-print { margin-top: 12px; line-height: 1.6; }
+.page-foot { margin-top: 16px; }
+.modal { max-height: calc(100dvh - 32px); }
+
+/* 横屏桌面：完美置中，舒适沉浸 */
+@media (min-width: 768px) and (orientation: landscape) {
+  html, body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 0;
+  }
+  main {
+    width: min(860px, calc(100% - 48px));
+    margin: auto;
+    padding-bottom: 0;
+  }
+}
+
+/* 竖屏手机：高度有限，居中布局，保证首屏操作通畅 */
+@media (max-width: 740px) {
+  html, body {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 0;
+  }
+  main { width: min(340px,calc(100% - 32px)); margin: auto; }
+  .invitation { min-height: auto; }
+  .gift-art { min-height: 96px; padding: 8px 22px; }
+  .token-visual { width: 86px; height: 88px; }
+  .token-visual::before { width: 110px; height: 110px; }
+  .gift-art img { width: 60px; height: 88px; }
+  .art-orbit { width: 104px; height: 104px; }
+  .art-caption { font-size: 13px; letter-spacing: .18em; }
+  .ritual { padding: 20px 22px 18px; }
+  .eyebrow { margin-bottom: 10px; font-size: 8px; }
+  h1 { font-size: 30px; line-height: 1.32; }
+  .intro { margin: 10px 0 16px; font-size: 12px; line-height: 1.65; }
+  form label { font-size: 12px; }
+  .input-wrap { margin-top: 10px; }
+  .input-wrap input { height: 46px; font-size: 16px; }
+  .input-hint { margin: 8px 0 14px; }
+  .fine-print { margin-top: 10px; font-size: 9px; }
+  .page-foot { margin-top: 12px; font-size: 9px; }
+  .modal { width: min(440px,calc(100% - 32px)); padding: 24px 22px; }
+  .modal h2 { font-size: 24px; line-height: 1.45; }
+  .dialog-actions { margin-top: 20px; }
+}
+
+@media (max-width: 740px) and (max-height: 640px) {
+  .topbar { padding-top: 8px; }
+  main { margin-top: 4px; }
+  .gift-art { min-height: 72px; padding-top: 4px; padding-bottom: 4px; }
+  .token-visual, .gift-art img { height: 68px; }
+  .art-orbit { width: 84px; height: 84px; }
+  .ritual { padding-top: 14px; padding-bottom: 12px; }
+  .eyebrow { margin-bottom: 6px; }
+  h1 { font-size: 27px; }
+  .intro { margin: 6px 0 10px; }
+  .input-wrap input { height: 42px; }
+  .input-hint { margin-bottom: 8px; }
+}
+
+@media (min-width: 741px) and (max-height: 620px) {
+  body { padding: 12px 0; }
+  .topbar { padding-bottom: 6px; }
+  .invitation { min-height: auto; }
+  .ritual { padding: 18px 30px; }
+  .gift-art { padding-top: 18px; padding-bottom: 16px; }
+  .token-visual, .gift-art img { height: 240px; }
+  h1 { font-size: 28px; }
+  .intro { margin: 10px 0 14px; }
+  .eyebrow { margin-bottom: 10px; }
+}
+
+@media (pointer: coarse) {
+  .invitation { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: #0a1d20ed; }
+  .gift-art img, .gift-art:hover img, .token-visual:hover img { filter: none; will-change: transform; }
+  .token-visual::before, .gift-art:hover .token-visual::before, .token-visual:hover::before { filter: none; }
+}
+.skill-route { display:block; margin:0 0 20px; padding:13px 15px; border:1px solid #b9cc9980; border-radius:9px; color:#f1e4bb; background:linear-gradient(120deg,#36503a99,#173d3280); font-size:13px; text-decoration:none; }
+.skill-route small { display:block; margin-top:6px; color:#b5c8b5; font-size:10px; }
+.refusal .skill-route { margin-top:20px; }
+@media(max-width:740px){.skill-route{margin-bottom:15px;padding:11px 12px;font-size:12px;}.ritual{padding-top:16px}.gift-art{padding-top:4px;padding-bottom:3px}}
+</style><script>
+document.addEventListener('DOMContentLoaded', function() {
+  function exitToOrigin() {
+    if (window.history.length > 1 && document.referrer && document.referrer.includes(location.hostname)) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  }
+
+  // 自动选中输入框 (Autofocus + Focus)
+  function focusOathInput() {
+    if (document.documentElement.classList.contains('token-arrival')) return;
+    var input = document.getElementById('oath-input');
+    if (input) {
+      input.focus();
+      input.select?.();
+    }
+  }
+  focusOathInput();
+  setTimeout(focusOathInput, 60);
+  setTimeout(focusOathInput, 250);
+
+  // 点击空白区域（卡片外任意位置）退出
+  document.addEventListener('click', function(e) {
+    var openDialog = document.querySelector('dialog[open]');
+    if (openDialog) {
+      var rect = openDialog.getBoundingClientRect();
+      var inDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!inDialog) openDialog.close();
+      return;
+    }
+    if (e.target.closest('.invitation, dialog')) return;
+    exitToOrigin();
+  });
+
+  // 按 Escape 键退出
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
+      exitToOrigin();
+    }
+  });
+});
+</script><link rel="stylesheet" href="/free-token/claim-compact-v4.css">
+</head>
+<body><canvas id="token-fluid" aria-hidden="true"></canvas><span id="token-pointer-light" aria-hidden="true"></span>
+  <div class="backdrop" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="back" href="/">← 返回首页</a>
+    <span class="brand">LEON<span>🌙</span><i aria-hidden="true"></i>一点心意</span>
+  </header>
+  <main>
+    <section class="invitation" aria-labelledby="page-title">
+      <div class="gift-art">
+        <span class="art-caption">有缘人 · 请收下</span>
+        <div class="token-visual">
+          <div class="art-orbit" aria-hidden="true"></div>
+          <img src="/free-token/jade-token-v2.webp" alt="镶金青玉贵宾令牌，刻着一个令字，系有白色流苏" width="1122" height="1402">
+        </div>
+        <p class="art-note">一声义父，一份见面礼。</p>
+      </div>
+      <div class="ritual">
+        <p class="eyebrow">A LITTLE GIFT FROM LEON</p>
+        <h1 id="page-title">叫声<span>义父</span>，<br>领份见面礼<span class="title-dot">。</span></h1>
+        <p class="intro">Token 已备好。<br>只差你一句，咱们就算有缘了。</p>
+        <a class="skill-route" href="/free-token/game/">不叫义父？御剑破阵，凭实力拿 →<small>30 秒 · 收集 10 枚灵玉 · 通关领同一份奖励</small></a>
+        <form id="oath-form">
+          <label for="oath-input">先输入这两个字：<strong class="oath-word">义父</strong></label>
+          <div class="input-wrap"><input id="oath-input" name="oath" type="text" placeholder="请输入「义父」" maxlength="8" autocomplete="off" spellcheck="false" required aria-describedby="input-hint"><span id="input-check" aria-hidden="true">✓</span></div>
+          <p id="input-hint" class="input-hint">不多不少，就这两个字。</p>
+          <button class="primary claim-button" id="open-confirm" type="submit" disabled>确认称呼 <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="fine-print">确认后即可查看 API 地址与贵宾密钥，支持一键复制。</p>
+      </div>
+    </section>
+    <a class="claim-back" href="/free-token/choose/">← 换一种拿法</a>
+    <p class="page-foot">LEON🌙 <span>·</span> 有缘人，自取。</p>
+  </main>
+
+  <dialog id="confirm-dialog" class="modal" aria-labelledby="confirm-title">
+    <p class="eyebrow">认真的？再确认一下。</p>
+    <h2 id="confirm-title" tabindex="-1" autofocus>确认要拜<span class="leon-name">Leon🌙</span><br>为 <strong class="oath-word">义父</strong> 吗？</h2>
+    <p class="modal-description">这一声叫出口，见面礼就归你了。</p>
+    <p id="claim-error" class="error" role="alert" hidden></p>
+    <div class="dialog-actions"><button id="reject" class="secondary" type="button">拒绝</button><button id="accept" class="primary" type="button">确认，拜义父</button></div>
+  </dialog>
+
+  <dialog id="refuse-dialog" class="modal refusal" aria-labelledby="refuse-title">
+    <p class="eyebrow">LEON🌙 留下一句话</p>
+    <h2 id="refuse-title" tabindex="-1" autofocus>好！有种！</h2>
+    <a class="skill-route" href="/free-token/game/">那就凭实力，去御剑破阵 →</a>
+    <button id="close-refuse" class="primary" type="button">回去再想想</button>
+  </dialog>
+
+  <dialog id="credentials-dialog" class="modal credentials" aria-labelledby="credentials-title">
+    <button id="close-credentials" class="close" type="button" aria-label="关闭密钥弹窗">×</button>
+    <p class="eyebrow">见面礼 · 请查收</p>
+    <h2 id="credentials-title" tabindex="-1" autofocus>这份礼，收好。</h2>
+    <p class="modal-description">Leon🌙 贵宾密钥</p>
+    <label class="credential-label" for="base-url">接口地址 <span>Base URL</span></label>
+    <div class="copy-row"><input id="base-url" readonly aria-label="接口地址"><button id="copy-url" class="copy-button" type="button">复制地址</button></div>
+    <label class="credential-label" for="api-key">贵宾密钥 <span>API Key</span></label>
+    <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="贵宾密钥" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制密钥</button></div>
+    <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
+    <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+  </dialog>
+
+</body>
+</html>

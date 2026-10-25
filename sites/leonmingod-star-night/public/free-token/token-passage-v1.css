@@ -1,0 +1,32 @@
+.token-transitioning .token-entry { opacity: 0; pointer-events: none; }
+.token-transitioning .back { pointer-events: none; }
+.token-transitioning #token-fluid, .token-transitioning #token-pointer-light { opacity: 0; }
+.token-passage { position: fixed; inset: 0; z-index: 100; overflow: hidden; isolation: isolate; perspective: 1100px; pointer-events: auto; }
+.passage-veil { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, #103a2580, #020c0bf0 78%); animation: passage-veil 1500ms ease-out both; }
+.passage-rings { position: absolute; left: 50%; top: 45%; width: min(78vw, 61vh, 540px); aspect-ratio: 1; transform: translate(-50%, -50%); opacity: 0; animation: passage-sigil 1380ms 90ms cubic-bezier(.18,.65,.2,1) both; }
+.passage-rings::before { content: ""; position: absolute; inset: -30%; border-radius: 50%; background: radial-gradient(circle, #d6ff984d, #57f4a333 36%, transparent 66%); }
+.passage-rings svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: #e9ce8e; stroke-width: .7; filter: drop-shadow(0 0 5px #d2ffa273); }
+.passage-rings .sigil-inner { transform-origin: center; animation: passage-turn 1600ms ease-out both; }
+.passage-orbit { position: absolute; inset: 8%; border: 1px solid #b7ffbc94; border-radius: 50%; box-shadow: 0 0 20px #7dffb154, inset 0 0 20px #b6ff9c2b; transform: rotateX(62deg) rotate(-25deg); }
+.passage-orbit:last-child { inset: -5%; border-color: #f8dd9b85; transform: rotateX(68deg) rotate(32deg); }
+.passage-token { position: absolute; left: 0; top: 0; display: block; max-width: none; object-fit: contain; transform-origin: 31% 48%; filter: drop-shadow(0 0 8px #dfffbb) drop-shadow(0 0 25px #6dff9b91); backface-visibility: hidden; pointer-events: none; will-change: transform, opacity; }
+.passage-caption { position: absolute; left: 50%; top: 77%; margin: 0; transform: translateX(-50%); color: #f9e7af; font-family: "KaiTi", "STKaiti", "Songti SC", serif; font-size: clamp(25px, 4vw, 38px); font-weight: 400; letter-spacing: .38em; text-indent: .38em; white-space: nowrap; text-shadow: 0 0 20px #acff9e5e, 0 2px 6px #04150a; animation: passage-title 1500ms ease both; }
+.passage-caption::before, .passage-caption::after { content: ""; position: absolute; top: 50%; width: 36px; height: 1px; background: linear-gradient(90deg, transparent, #e5ce8e); }
+.passage-caption::before { right: calc(100% + 16px); }
+.passage-caption::after { left: calc(100% + 16px); transform: rotate(180deg); }
+.passage-particles { position: absolute; left: 50%; top: 45%; width: 0; height: 0; }
+.passage-particle { position: absolute; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: #fff4b9; box-shadow: 0 0 9px #b9ff9f; animation: passage-particle 1300ms var(--delay) ease-out both; }
+.passage-light { position: absolute; left: 50%; top: 45%; width: 190vmax; height: 190vmax; border-radius: 50%; background: radial-gradient(circle, #98c6a2 0%, #6aac88 16%, #34775c 36%, #0c362c 62%, #041b1a 75%); transform: translate(-50%, -50%) scale(0); opacity: 0; animation: passage-open 1500ms cubic-bezier(.2,.65,.2,1) both; pointer-events: none; }
+.token-arrival::after { content: ""; position: fixed; inset: 0; z-index: 100; background: radial-gradient(ellipse at 50% 45%, #98c6a2, #34775c 50%, #07302b); pointer-events: none; animation: passage-arrive 600ms ease-out both; }
+.token-arrival .invitation { animation: passage-card 650ms 60ms cubic-bezier(.18,.65,.2,1) both; }
+@keyframes passage-veil { 0% { opacity: 0; } 35% { opacity: .86; } 100% { opacity: 1; } }
+@keyframes passage-sigil { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.5) rotate(-28deg); } 38% { opacity: .9; } 72% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(7deg); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.18) rotate(18deg); } }
+@keyframes passage-turn { from { transform: rotate(60deg); } to { transform: rotate(-25deg); } }
+@keyframes passage-title { 0%, 25% { opacity: 0; filter: blur(3px); } 50%, 78% { opacity: 1; filter: blur(0); } 100% { opacity: 0; } }
+@keyframes passage-particle { 0% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.4); } 20% { opacity: .85; } 70% { opacity: .9; transform: translate(calc(var(--dx) * .35), calc(var(--dy) * .35)) scale(1); } 100% { opacity: 0; transform: translate(calc(var(--dx) * -.15), calc(var(--dy) * -.15)) scale(.2); } }
+@keyframes passage-open { 0%, 68% { opacity: 0; transform: translate(-50%, -50%) scale(.015); } 78% { opacity: .6; } 94%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes passage-arrive { 0%, 12% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes passage-card { from { opacity: .2; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (pointer: coarse) { .passage-rings svg { filter: none; } .passage-token { filter: drop-shadow(0 0 13px #9effae99); } }
+@media (max-height: 520px) { .passage-caption { top: 81%; font-size: 23px; } }
+@media (prefers-reduced-motion: reduce) { .token-passage, .token-arrival::after { display: none; } .token-arrival .invitation { animation: none; } }

@@ -1,0 +1,16 @@
+{
+  "name": "leonmingod-star-night",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/preview.mjs",
+    "test": "node --test tests/game.test.mjs",
+    "calibrate": "node scripts/calibrate.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "miniflare": "4.20260730.0"
+  }
+}
