@@ -2,6 +2,14 @@
 
 This is the latest website handoff and supersedes historical page, directory, and deployment assumptions. This handoff did not deploy website code or rotate keys.
 
+## Recovered maintenance source: token passage and game v2
+
+Current cloud source is now `sites/leonmingod-star-night/`: server/router code recovered from production source maps plus critical public assets. This is not a full copy of the Windows directory; original update/review files remain unavailable. Continue here, not in historical `sites/free-token-home/`.
+
+The token entrance now leads to `/free-token/choose/` with two illustrated routes. Homepage invitation text is removed and orb glow strengthened. Claim/game layouts fit short screens; game exit returns to choices. Native image_gen created the icon atlas and night mountain background. V2 requires 16 jade in 30 seconds with three shields and escalating formations; a 160-run regular bot profile won 52.5%, which is not human pass-rate data. Existing v1 runs retain their original replay rules.
+
+Use `.github/workflows/leonmingod-star-night.yaml` to stage then publish, preserving existing ASSETS, all Secrets, namespace/state, and forwarding structure. See the source directory's `WEBSITE_UPDATE_CN.md`.
+
 ## Source availability
 
 - User's local website: `D:\apiWorkSpace\leonmingod-home`, without a Git repository.

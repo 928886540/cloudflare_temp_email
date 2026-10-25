@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Free Token| Restore the single-token entrance, add a dedicated two-path choice page, compact short-screen layouts, and upgrade trial artwork/shared v2 difficulty while retaining legacy runs and reward protection
+
 - feat: |Yifu Token| Add reusable default-branch add/remove workflows with live version checks, encrypted recovery, credential preservation, and website synchronization; no recurring code edits or temporary private keys
 - feat: |User| Search bound mailboxes by email address in address management with accurate pagination (issue #1156)
 - feat: |AI Extract| Add `AI_EXTRACT_MODE` to explicitly choose local rules only (`local`) or prefer Workers AI (`ai`); defaults to local rules when unset so mail content is never sent to AI. **Upgrade note**: deployments that relied on the Workers AI binding to enable AI extraction automatically must set `AI_EXTRACT_MODE = "ai"`

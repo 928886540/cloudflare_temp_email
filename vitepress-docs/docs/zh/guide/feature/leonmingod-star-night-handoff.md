@@ -2,6 +2,14 @@
 
 这是最新网站交接，优先于旧版页面、目录和部署说明。用户要求先承接已有成果，后续再按要求修改；本轮没有发布网站或更换 Key。
 
+## 后续维护源码已恢复：单令牌入口与游戏 v2
+
+当前云端维护源码位于 `sites/leonmingod-star-night/`，由线上 source map 恢复服务端/转发代码，并抓取关键公开资源。它不等于 Windows 目录完整拷贝；原更新记录和旧截图仍未上传。后续修改从本目录继续，不能再部署 `sites/free-token-home/`。
+
+本轮恢复单令牌入口，点击进入 `/free-token/choose/` 再选择叫义父或御剑破阵；首页去掉遮挡提示并加强球体光晕。领取页和游戏压缩到短屏可视高度，游戏退出返回选择页。新图片图集、星夜山谷背景由原生 image_gen 生成。游戏 v2 为 30 秒、3 盾、16 灵玉与逐段剑阵；普通模拟玩家 160 局通过率 52.5%，不代表真实玩家统计。新旧引擎均保留，已开始的 v1 局继续按旧规则验奖。
+
+部署入口为 `.github/workflows/leonmingod-star-night.yaml`，先 stage、后 publish，保留原 ASSETS、所有 Secret、原命名空间和转发结构。详见源码的 `WEBSITE_UPDATE_CN.md`。
+
 ## 源码与接手状态
 
 - 用户本地网站：`D:\apiWorkSpace\leonmingod-home`，没有 Git 仓库。

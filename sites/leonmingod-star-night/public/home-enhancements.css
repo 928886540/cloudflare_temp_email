@@ -1,0 +1,58 @@
+.topbar { justify-content: space-between; }
+.site-brand { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border: 1px solid #d6e9bb30; border-radius: 50px; background: #06281e78; backdrop-filter: blur(12px); box-shadow: 0 3px 20px #001a1233; }
+.site-brand img { display: block; }
+.site-brand > span { color: #f3e9c5; font-size: 13px; letter-spacing: .025em; line-height: 1.35; }
+.site-brand small { display: block; margin-top: 2px; color: #c3ddc4; font-family: "KaiTi", "STKaiti", serif; font-size: 10px; letter-spacing: .2em; }
+.entry-actions > a.jade-pill { isolation: isolate; overflow: hidden; border-color: #ebdfb5a6; background: radial-gradient(ellipse at 32% 8%, #f3ffe36b 0%, #dafbd51c 33%, transparent 65%), linear-gradient(155deg, #3c876e75, #143d32c4 65%, #09281fd9); box-shadow: 0 9px 26px #00170f59, inset 0 1px 1px #efffd6b3, inset 0 -3px 10px #062f25a8, 0 0 0 4px #d4e9b20b; color: #fff4d8; font-weight: 500; text-shadow: 0 2px 5px #022d22; }
+.entry-actions > a.jade-pill::before { content: ""; position: absolute; inset: 5px; width: auto; height: auto; border: 1px solid #f8efd43b; border-radius: inherit; background: linear-gradient(120deg, #f8ffe61c, transparent 46%, #8ee9bc0d); pointer-events: none; }
+.entry-actions > a.jade-pill::after { content: ""; position: absolute; inset: -40%; border: 0; border-radius: 0; background: linear-gradient(115deg, transparent 35%, #ffffec27 49%, transparent 62%); transform: translateX(-80%); transition: transform .65s ease; pointer-events: none; }
+.entry-actions > a.enter { border-color: #f2da99b8; background: radial-gradient(ellipse at 30% 8%, #fff3c47d, transparent 57%), linear-gradient(150deg, #8c9d4994, #354f27c9 70%, #1c3723eb); }
+.entry-actions > a.jade-pill svg { position: relative; z-index: 1; stroke: #f2eac7; stroke-width: 1.4; filter: drop-shadow(0 1px 3px #061b15a3); }
+.entry-actions > a.jade-pill > span { position: relative; z-index: 1; }
+.spirit-orb { position: fixed; z-index: 1; left: 32%; top: 70%; width: 150px; height: 150px; padding: 0; border: 0; border-radius: 50%; transform: translate(-50%, -50%); color: #fff0c6; background: transparent; touch-action: manipulation; cursor: pointer; }
+.orb-orbit { position: absolute; inset: -7%; border: 1px solid #eaffd14d; border-radius: 50%; box-shadow: 0 0 20px #98ffbd24, inset 0 0 15px #cbffcc14; animation: orb-breathe 4.5s ease-in-out infinite; pointer-events: none; }
+.orb-orbit-inner { inset: 3%; border-style: dashed; border-color: #ffe4a045; animation-delay: -2s; }
+.orb-invitation { position: absolute; left: 50%; bottom: -24px; transform: translateX(-50%); padding: 5px 12px; border: 1px solid #e4ebbb49; border-radius: 24px; color: #fff1c8; background: #062f22a8; backdrop-filter: blur(8px); font-family: "KaiTi", "STKaiti", serif; font-size: 12px; letter-spacing: .14em; white-space: nowrap; text-shadow: 0 1px 5px #001b11; pointer-events: none; }
+.cover-palm { animation: orb-idle 5.5s ease-in-out infinite; }
+.orb-hover .cover-palm { animation: orb-wiggle .8s ease-in-out infinite; }
+.orb-awake .cover-palm { animation: orb-wiggle .44s ease-in-out 3; filter: brightness(1.12) saturate(1.12); }
+.orb-awake .orb-orbit { border-color: #fff5bd; box-shadow: 0 0 35px #ceffad94; }
+.orb-ripple { position: absolute; inset: -10%; border: 2px solid #e8ffce; border-radius: 50%; box-shadow: 0 0 14px #b6ffcb88; pointer-events: none; animation: orb-ripple 1.35s cubic-bezier(.15,.5,.2,1) forwards; }
+.orb-ripple:nth-of-type(even) { border-color: #ffe4a3; }
+@keyframes orb-idle { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -3px); } }
+@keyframes orb-wiggle { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-3px, -2px) rotate(-.2deg); } 60% { transform: translate(3px, 1px) rotate(.2deg); } }
+@keyframes orb-breathe { 0%, 100% { opacity: .45; scale: 1; } 50% { opacity: .9; scale: 1.05; } }
+@keyframes orb-ripple { from { opacity: .85; scale: .8; } to { opacity: 0; scale: 1.85; } }
+@media (hover: hover) and (pointer: fine) {
+  .entry-actions > a.jade-pill:hover { border-color: #fff0bd; background: radial-gradient(ellipse at 32% 8%, #fffadf80, transparent 60%), linear-gradient(155deg, #4b9e7ba6, #174c38e0 75%); box-shadow: 0 13px 32px #00140d73, 0 0 28px #bce7a636, inset 0 1px 2px #fff8d9bd; }
+  .entry-actions > a.jade-pill:hover::before { background: transparent; border-color: #fff0c47d; }
+  .entry-actions > a.jade-pill:hover::after { transform: translateX(80%); }
+}
+@media (min-width: 768px) and (orientation: landscape) {
+  .entry-actions > a.jade-pill { gap: 9px; width: clamp(90px, 8vw, 116px); height: clamp(90px, 8vw, 116px); font-size: clamp(13px, 1.05vw, 15px); letter-spacing: .1em; }
+  .entry-actions > a.jade-pill::before { inset: 6px; }
+  .entry-actions > a.jade-pill svg { width: 24px; height: 24px; }
+  .entry-actions > a.jade-pill:active { transform: translate(-50%, -50%) scale(.97); }
+}
+@media (max-width: 767px), (orientation: portrait) {
+  .site-brand { gap: 6px; padding: 4px 9px 4px 4px; }
+  .site-brand img { width: 29px; height: 29px; }
+  .site-brand > span { font-size: 10px; }
+  .site-brand small { font-size: 8px; }
+  .topbar { gap: 5px; }
+  .scene-controls button { min-height: 36px; padding: 0 6px; font-size: 9px; }
+  .entry-actions { display: grid; width: min(100%, 470px); grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 4px; }
+  .entry-actions > a.jade-pill { width: 100%; height: 70px; min-height: 64px; flex-direction: column; gap: 7px; padding: 8px 3px; border-radius: 22px 22px 19px 19px; font-size: 11px; letter-spacing: .04em; }
+  .entry-actions > a.jade-pill svg { width: 20px; height: 20px; }
+  .entry-actions > a.jade-pill:active { transform: scale(.95); }
+  .footer-meta { margin-top: 6px; }
+  .orb-invitation { bottom: -22px; font-size: 11px; }
+}
+@media (max-width: 359px) { .site-brand > span { display: none; } .site-brand { padding: 3px; } .entry-actions { gap: 6px; } .entry-actions > a.jade-pill { height: 65px; border-radius: 20px; font-size: 10px; } }
+@media (max-height: 520px) and (orientation: landscape) {
+  .site-brand img { width: 28px; height: 28px; }
+  .entry-actions > a.jade-pill { width: clamp(62px, 15vmin, 76px); height: clamp(62px, 15vmin, 76px); font-size: 10px; gap: 4px; }
+  .entry-actions > a.jade-pill svg { width: 17px; height: 17px; }
+  .orb-invitation { bottom: -18px; padding: 3px 8px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .cover-palm, .orb-orbit, .orb-ripple { animation: none !important; } .orb-ripple { display: none; } }

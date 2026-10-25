@@ -1,0 +1,21 @@
+{
+  "baseline_parent": "2bc44ccd-b647-483b-aca7-256ea46ad69c",
+  "baseline_entrance": "69575cec-ac2c-416f-81b9-b64030e87651",
+  "message": "Refine token passage and mobile layouts; add illustrated choices and calibrated jade trial v2",
+  "files": [
+    "index.html",
+    "home-orb-v3.css",
+    "free-token/index.html",
+    "free-token/layout-v3.css",
+    "free-token/choose/index.html",
+    "free-token/choose-v1.css",
+    "free-token/claim/index.html",
+    "free-token/claim-compact-v4.css",
+    "free-token/game/index.html",
+    "free-token/game/app-v2.mjs",
+    "free-token/game/style-v2.css",
+    "free-token/game/engine-v2.mjs",
+    "free-token/game/jade-atlas-v1.webp",
+    "free-token/game/mountain-night-v1.webp"
+  ]
+}

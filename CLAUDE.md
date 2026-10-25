@@ -10,12 +10,16 @@ Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-n
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
 Worker `leonmingod-home` verified at `2bc44ccd-b647-483b-aca7-256ea46ad69c`.
-The new website source is from the user's non-Git `D:\apiWorkSpace\leonmingod-home`
-project and has NOT yet been uploaded/connected here. Historical `sites/free-token-home/`
-code is not the current deployment authority; do not deploy it over the new website.
-Preserve both claim paths, the `GAME_RUNS` Durable Object binding/migration, existing
-secrets, star-night art, touch controls, and page transitions. Existing Actions CF/Render
-credentials remain usable; do not request duplicate setup. Re-read live versions before changes.
+Current cloud maintenance source has now been recovered from production source maps
+and public assets into `sites/leonmingod-star-night/` (`/workspace/leonmingod-home`
+is a convenience symlink). Read its `WEBSITE_UPDATE_CN.md` and `README.md`. This is
+not a complete copy of the user's original non-Git Windows directory or its historical
+review files. Historical `sites/free-token-home/` is not the deployment authority.
+Use `.github/workflows/leonmingod-star-night.yaml` to stage then publish; it preserves
+existing assets, secrets, forwarding routes, and the GameRun namespace. Do not deploy
+the incomplete recovered public mirror as a replacement static asset set. Preserve
+both claim paths, the `GAME_RUNS` migration/state, star-night art and touch controls.
+Existing Actions CF/Render credentials remain usable. Re-read live versions before changes.
 
 ### User-defined shorthand
 

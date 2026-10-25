@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="jade" x1="8" y1="4" x2="54" y2="64" gradientUnits="userSpaceOnUse"><stop stop-color="#266d59"/><stop offset=".5" stop-color="#0b3c33"/><stop offset="1" stop-color="#041f1d"/></linearGradient>
+    <linearGradient id="gold" x1="12" y1="9" x2="50" y2="57" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1bd"/><stop offset=".48" stop-color="#d8b974"/><stop offset="1" stop-color="#ad8b48"/></linearGradient>
+    <linearGradient id="moon" x1="21" y1="17" x2="43" y2="49" gradientUnits="userSpaceOnUse"><stop stop-color="#f4ffe9"/><stop offset="1" stop-color="#a2efd0"/></linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="19" fill="url(#jade)"/>
+  <rect x="4" y="4" width="56" height="56" rx="17" stroke="url(#gold)" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="22" stroke="#c5edcb" stroke-opacity=".35" stroke-width=".7"/>
+  <path d="M35 14a20 20 0 1 0 16 29c-13 6-27-5-23-18a17 17 0 0 1 7-11Z" fill="url(#moon)"/>
+  <path d="m43 15 3.1 7.9L54 26l-7.9 3.1L43 37l-3.1-7.9L32 26l7.9-3.1L43 15Z" fill="url(#gold)"/>
+  <path d="m32 7 1.5 2.5L32 12l-1.5-2.5L32 7Zm0 45 1.5 2.5L32 57l-1.5-2.5L32 52Z" fill="#ead39d"/>
+</svg>
