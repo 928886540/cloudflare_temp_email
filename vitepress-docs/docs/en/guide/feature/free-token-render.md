@@ -1,5 +1,14 @@
 # Free Token integration with Render
 
+## Latest website handoff takes precedence (2026-10-25)
+
+Read [the star-night and game handoff](./leonmingod-star-night-handoff.md) first.
+The parent is now `2bc44ccd-b647-483b-aca7-256ea46ad69c`, with `GAME_RUNS` and a game
+reward path. Current source belongs to the user's separate website directory, not yet
+uploaded here. Historical page deployment/source assumptions below must not overwrite
+production. Both claim paths use `FREE_TOKEN_RENDER_KEY`; existing Actions credentials
+were reverified and remain usable.
+
 ## Routine one-run operations: add / remove
 
 Both operations are installed on default branch `main`; no script edits, static version
