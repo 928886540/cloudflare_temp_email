@@ -1,0 +1,56 @@
+name: 移除义父 Key
+on:
+  workflow_dispatch:
+    inputs:
+      fingerprint:
+        description: 留空移除网页当前 Key；其他 Key 填日志中的16位指纹
+        type: string
+        default: current
+      dry_run:
+        description: 只检查，不实际更改（测试工具时使用）
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: free-token-home-production
+  cancel-in-progress: false
+jobs:
+  operate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      YIFU_OPERATION: remove
+      YIFU_DRY_RUN: ${{ inputs.dry_run }}
+      YIFU_TARGET: ${{ inputs.fingerprint }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install operation dependencies
+        run: pip install PyYAML==6.0.3 cryptography==46.0.3
+      - name: Prepare from current configuration
+        run: python .github/scripts/yifu_keys.py prepare
+      - name: Save encrypted recovery plan before changes
+        if: ${{ !inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: encrypted-yifu-operation
+          path: yifu-operation.enc
+          if-no-files-found: error
+          retention-days: 7
+      - name: Apply and verify
+        if: ${{ !inputs.dry_run }}
+        run: python .github/scripts/yifu_keys.py apply
+      - name: Restore missing login files after failure
+        if: ${{ failure() && !inputs.dry_run }}
+        run: python .github/scripts/yifu_keys.py recover
+      - name: Save verification result
+        if: ${{ always() && !inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: yifu-operation-result
+          path: yifu-result.json
+          if-no-files-found: ignore
+          retention-days: 90

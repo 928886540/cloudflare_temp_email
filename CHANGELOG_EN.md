@@ -10,6 +10,7 @@
 
 ### Features
 
+- feat: |Yifu Token| Add reusable default-branch add/remove workflows with live version checks, encrypted recovery, credential preservation, and website synchronization; no recurring code edits or temporary private keys
 - feat: |Yifu Token| Add client-key issuance that preserves existing Render keys and credentials, validates the new key, then updates only the CF Secret; pushes default to read-only inspection
 - feat: |Homepage and Free Token| Regenerate jade-green mobile/desktop homepage art with the Free Token heroine, enlarge palm light, and use compact translucent pill navigation; make Free Token artwork cover the viewport with a glowing floating token entrance
 - feat: |Homepage| Add the Address Proof navigation link and arrange secondary entries side by side on mobile, preserving the original homepage imagery and interactions

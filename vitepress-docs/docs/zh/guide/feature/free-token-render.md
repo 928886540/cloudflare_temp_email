@@ -1,5 +1,36 @@
 # 免费 Token 的 Render 对接
 
+## 日常一键操作：添加 / 移除
+
+两个固定操作已安装到默认分支 `main`，下次无需修改脚本、手动刷新版本号或生成备份私钥。
+
+| 操作 | 默认行为 | GitHub Actions 入口 |
+| --- | --- | --- |
+| 添加义父 Key | 在 Render 追加新客户端 Key，并同步到网站领取流程 | [添加义父 Key](https://github.com/928886540/cloudflare_temp_email/actions/workflows/yifu-add-key.yaml) |
+| 移除义父 Key | 停止网页发放当前 Key，并从 Render 移除该 Key，验证其返回 401 | [移除义父 Key](https://github.com/928886540/cloudflare_temp_email/actions/workflows/yifu-remove-key.yaml) |
+
+直接执行：
+
+```bash
+gh workflow run yifu-add-key.yaml -R 928886540/cloudflare_temp_email
+gh workflow run yifu-remove-key.yaml -R 928886540/cloudflare_temp_email
+```
+
+添加时 `publish=false` 表示只加到 Render；移除时可填 `fingerprint`（16 位 SHA-256 指纹），
+选择其他 Key，不影响网页当前 Key。不填则针对网页当前 Key。`dry_run=true` 仅检查，不更改线上。
+新增保留已有 Key；移除只针对选中的 Key，并阻止删除最后一把 Render 客户端 Key。
+
+共享实现：`.github/scripts/yifu_keys.py` 与 `yifu_key_api.py`。每次先读取实时状态并准备计划，
+上传加密恢复计划成功后才应用；应用前再次比对版本、配置与登录文件，发生并发变化就停止。
+只用原构建重新部署，保留并恢复登录文件；只更新或移除 CF Secret，不上传页面代码。
+删除当前网页 Key 后，领取接口返回 503 停止发放；下次添加并同步会重新开放。
+
+备份使用 AES-GCM 完整性加密，密钥由现有 `RENDER_API_KEY` 加随机盐派生，无需额外配置 Secrets。
+加密计划保留 7 天，操作结果保留 90 天并写入 Actions 摘要；管理凭据更换后，旧备份仍需当时的
+凭据原值解密。失败步骤会尝试恢复缺失登录文件。固定流程省去改代码与手工核对步骤，但 Render
+重新部署仍需要等待，不能承诺瞬时完成。旧 `issue-yifu-key.yaml` 和一次性迁移脚本留作历史记录，
+日常操作使用上面两个入口。
+
 ## 当前义父密钥发放记录（北京时间 2026-10-25 21:03）
 
 已新建并开放网页领取。Key 原值只保存在 Render 与 CF Secret 中；用于识别的 SHA-256 前 16 位为

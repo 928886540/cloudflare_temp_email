@@ -1,5 +1,40 @@
 # Free Token integration with Render
 
+## Routine one-run operations: add / remove
+
+Both operations are installed on default branch `main`; no script edits, static version
+refreshes, or temporary backup private keys are needed for the next operation.
+
+| Operation | Default behavior | Actions entry |
+| --- | --- | --- |
+| Add Yifu key | Append a Render client key and publish it through website claims | [添加义父 Key](https://github.com/928886540/cloudflare_temp_email/actions/workflows/yifu-add-key.yaml) |
+| Remove Yifu key | Stop website issuance of the current key, remove it from Render, and verify HTTP 401 | [移除义父 Key](https://github.com/928886540/cloudflare_temp_email/actions/workflows/yifu-remove-key.yaml) |
+
+```bash
+gh workflow run yifu-add-key.yaml -R 928886540/cloudflare_temp_email
+gh workflow run yifu-remove-key.yaml -R 928886540/cloudflare_temp_email
+```
+
+For add, `publish=false` changes only Render. For remove, an optional 16-character
+SHA-256 `fingerprint` selects another key without changing the currently issued key;
+omission targets the website's current key. `dry_run=true` is read-only. Adding retains
+existing keys; removal affects only the selected key and cannot delete the final client key.
+
+Shared implementation: `.github/scripts/yifu_keys.py` and `yifu_key_api.py`. Preparation
+reads live state and uploads an authenticated encrypted recovery plan before mutation.
+Apply rechecks versions, configuration, and login files, aborting on concurrent changes.
+It redeploys the existing build, restores login files, and updates/deletes only the CF
+Secret without uploading page code. Removing the active key makes claims return HTTP
+503; adding with publication reopens issuance.
+
+AES-GCM encryption uses a salted key derived from the existing `RENDER_API_KEY`; no extra
+secret setup is needed. Recovery plans are retained for seven days; results are retained
+for 90 days and written to the Actions summary. After credential rotation, old backups
+still require the original management credential to decrypt. Failed apply steps attempt
+login-file recovery. The fixed workflow removes manual editing and repeated preparation,
+but Render redeployment still takes time. Legacy issuance/migration workflows remain
+historical; use the two routine entries above.
+
 ## Current issued Yifu key — 2026-10-25 21:03 Asia/Shanghai
 
 A new client key is registered and issued by the website. Its value stays in Render
