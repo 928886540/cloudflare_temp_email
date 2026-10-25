@@ -1,5 +1,22 @@
 # 免费 Token 的 Render 对接
 
+## 当前发布：独立选择页与御剑破阵 v2（2026-10-25 16:40 UTC）
+
+当前维护源码为 `sites/leonmingod-star-night/`，由本轮线上恢复并修改。主站版本
+`f9576720-5c7f-4909-a685-5e145fc25001`；转发版本
+`51a33be8-6ca4-4b4f-886f-613bfea996b0`。转发源码不变，SITE 绑定主站命名入口 `Site`，
+保留原具体路由、ASSETS、Secret 和 GAME_RUNS。令牌点击后进入 `/free-token/choose/`，
+选择原义父领取或 v2 游戏；游戏退出回选择页。v2 为 30 秒、3 盾、16 灵玉。
+
+[发布记录](https://github.com/928886540/cloudflare_temp_email/actions/runs/40212806612)通过。
+公网两种领取 Key 完全相同，指纹仍为 `7fa19b84ca57a2ba`，models 200/22 个模型；
+游戏并发领奖为 200/409/409。14 个更新资源、8 个原图/脚本和 www 对齐检查通过。
+当前记录与证据在新目录的 `WEBSITE_UPDATE_CN.md` 和 `verification/`，不含密钥原值。
+
+保留 ASSETS 时不应只设置 `assets.config.run_worker_first` 期待覆盖其旧路由；保留命名入口
+绑定才能让当前页面进入主站处理。HTML 校验排除 CF 统计脚本及其多插入的一行空白。
+旧版本号及旧部署说明在下文作为历史记录保留。
+
 ## 最新网站交接优先（2026-10-25）
 
 先读[星夜版与御剑破阵交接](./leonmingod-star-night-handoff.md)。主站已更新到

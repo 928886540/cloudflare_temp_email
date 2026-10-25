@@ -1,0 +1,37 @@
+{
+  "rule_version": 2,
+  "goal": 16,
+  "simulated_only": true,
+  "summary": [
+    {
+      "profile": "new",
+      "reaction_ms": 300,
+      "lookahead_ms": 300,
+      "runs": 160,
+      "wins": 30,
+      "win_rate": 0.1875,
+      "average_jade": 22.475,
+      "average_shields": 0.28125
+    },
+    {
+      "profile": "regular",
+      "reaction_ms": 167,
+      "lookahead_ms": 500,
+      "runs": 160,
+      "wins": 84,
+      "win_rate": 0.525,
+      "average_jade": 26.075,
+      "average_shields": 0.825
+    },
+    {
+      "profile": "expert",
+      "reaction_ms": 67,
+      "lookahead_ms": 917,
+      "runs": 160,
+      "wins": 86,
+      "win_rate": 0.5375,
+      "average_jade": 25.06875,
+      "average_shields": 0.775
+    }
+  ]
+}

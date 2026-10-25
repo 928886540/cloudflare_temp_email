@@ -9,7 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` verified at `2bc44ccd-b647-483b-aca7-256ea46ad69c`.
+Worker `leonmingod-home` now at `f9576720-5c7f-4909-a685-5e145fc25001`.
+Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
+leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
+and public concurrent reward protection were reverified; see source `verification/`.
 Current cloud maintenance source has now been recovered from production source maps
 and public assets into `sites/leonmingod-star-night/` (`/workspace/leonmingod-home`
 is a convenience symlink). Read its `WEBSITE_UPDATE_CN.md` and `README.md`. This is
