@@ -1,5 +1,20 @@
 # Free Token integration with Render
 
+## Current v3 release: two shields and character artwork (2026-10-25 17:05 UTC)
+
+Parent: `168571b3-3eab-46c8-89f4-310b62491bf4`; entrance remains
+`51a33be8-6ca4-4b4f-886f-613bfea996b0`. New runs have two shields, faster/more frequent
+hazards and increased double swords. Browser/server share `engine-v3.mjs`; older runs
+retain original replay. Duration stays 30 seconds with 16 jade and exit to choices.
+Native image_gen refreshed all four adult-character posters with fuller figures, deeper
+necklines and bare shoulders, published as homepage v6 / token v4 URLs.
+
+[Acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40214794565) passed:
+public starts confirm two shields; game/original rewards share the existing key, models
+returns 200, and concurrent finishes return 409/409/200. All 21 resources, apex/www parity
+and mobile browser checks passed. Keys, original assets and GAME_RUNS remain intact. See
+source `verification/*v3.json` and `artwork-v6.json`; versions below are historical.
+
 ## Current release: dedicated choices and trial v2 (2026-10-25 16:40 UTC)
 
 Maintenance source is now `sites/leonmingod-star-night/`, recovered and updated during this task.

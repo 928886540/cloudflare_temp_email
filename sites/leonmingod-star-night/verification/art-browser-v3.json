@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "two_shield_hud": true,
+  "results": [
+    {
+      "label": "mobile",
+      "page": "home",
+      "src": "http://localhost:8790/home-hero-mobile-v6.webp",
+      "loaded": true
+    },
+    {
+      "label": "mobile",
+      "page": "token",
+      "src": "http://localhost:8790/free-token/welcome-mobile-v4.webp",
+      "loaded": true
+    },
+    {
+      "label": "desktop",
+      "page": "home",
+      "src": "http://localhost:8790/home-hero-desktop-v6.webp",
+      "loaded": true
+    },
+    {
+      "label": "desktop",
+      "page": "token",
+      "src": "http://localhost:8790/free-token/welcome-desktop-v4.webp",
+      "loaded": true
+    }
+  ]
+}

@@ -1,5 +1,14 @@
 # LeonMinGod 网站更新记录
 
+## v3 已发布：2026-10-25 17:05 UTC（北京时间 10 月 26 日 01:05）
+
+- 主站：`168571b3-3eab-46c8-89f4-310b62491bf4`；转发仍为 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，SITE / Site 绑定和路由不变。
+- 发布：https://github.com/928886540/cloudflare_temp_email/actions/runs/40214794565 。
+- 6 项服务端测试通过，覆盖第二次受击即结束、v1/v2 在途局、回放一致性、会话与真实 SQLite 并发领奖保护。
+- 公网新局确认规则版本 3、初始 2 点护盾；25 灵玉、剩余 1 点护盾通关领奖成功，并发返回 409/409/200。与原领取发出同一 Key，models 200/22 个模型。
+- 全部 21 个发布资源与源码一致，包括四张新海报；主域名/www 对齐、手机公网浏览器和短屏操作检查通过。原图/旧脚本保留，Render Key 和 GAME_RUNS 命名空间未改。
+- 证据：`verification/production-v3.json`、`public-browser-v3.json`、`art-browser-v3.json`、`flow-v3.json`、`difficulty-v3.json`、`artwork-v6.json`。
+
 ## 本轮：v3 两点护盾、难度加码与成人星夜人物美术
 
 - 用户追加要求人物更性感。四张首页/令牌横竖海报均使用原生 image_gen 局部修改，加强成年人丰满身形、深 V 衣领和露肩，保留不透明衣料、星夜、字体、手腕和手指；使用 v6/v4 新图片地址，原图保留。

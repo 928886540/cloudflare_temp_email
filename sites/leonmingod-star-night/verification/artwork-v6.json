@@ -2,7 +2,7 @@
   "tool": "native image_gen",
   "edit_scope": "Clearly adult (28+) character styling: fuller figure, bolder deep V opaque emerald bodice, bare shoulders/collarbones; preserve identity, pose, night scene, hands and lettering.",
   "checks": [
-    "original aspect ratios retained",
+    "original framing retained; token desktop is 1824x862, others retain original dimensions",
     "hands and wrists reviewed",
     "orb position retained",
     "empty palm retained for separate token overlay",
