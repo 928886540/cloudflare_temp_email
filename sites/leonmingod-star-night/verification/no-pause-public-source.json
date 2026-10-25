@@ -1,0 +1,26 @@
+[
+  {
+    "host": "https://leonmingod.com",
+    "path": "/free-token/game/",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "host": "https://leonmingod.com",
+    "path": "/free-token/game/app-v4.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "host": "https://www.leonmingod.com",
+    "path": "/free-token/game/",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "host": "https://www.leonmingod.com",
+    "path": "/free-token/game/app-v4.mjs",
+    "http": 200,
+    "matches_source": true
+  }
+]
