@@ -18,6 +18,8 @@
 
 ### Bug Fixes
 
+- fix: |Jade Trial| Remove pause/resume controls, shortcuts, and focus/background auto-pause; advance by real elapsed time and catch up hidden frames to prevent touch-drag pauses
+
 - fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs
 - fix: |Database| Fix admin config 404s caused by stale deployment bundles; always build the Worker from current source and repair unversioned databases before recording the schema version, preserving mail and accounts
 - fix: |Frontend| Load database status and capacity settings independently, add refresh/retry and local loading states for database actions, hide usage when size is unknown, and soften admin navigation highlights

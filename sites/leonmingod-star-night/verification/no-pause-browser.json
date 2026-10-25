@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "viewport": "393x580",
+  "pause_controls_absent": true,
+  "touch_drag_and_repeated_blur_no_pause": true,
+  "space_escape_no_pause": true,
+  "before": "30s",
+  "after": "29s",
+  "background_time_settled": true,
+  "returned_title": "护盾耗尽",
+  "page_errors": []
+}

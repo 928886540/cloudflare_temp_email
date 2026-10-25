@@ -2,6 +2,10 @@
 
 This is the latest website handoff and supersedes historical page, directory, and deployment assumptions. This handoff did not deploy website code or rotate keys.
 
+## Pause removal: app-v4 client
+
+Following mobile touch-drag complaints and an explicit request to remove rest, the new client removes pause/resume controls, Space/Escape pause, and focus/background auto-pause. Countdown and combat advance by real elapsed time. Returning from a hidden tab or BFCache catches up all elapsed frames; a new touch position affects only future frames. Rules remain v3: two shields, 30 seconds, 16 jade, and exit to choices. The page now loads `app-v4.mjs`; historical scripts remain available but are no longer referenced by the page.
+
 ## Current v3 release: two shields and character artwork (2026-10-25 17:05 UTC)
 
 Parent: `168571b3-3eab-46c8-89f4-310b62491bf4`; entrance remains
