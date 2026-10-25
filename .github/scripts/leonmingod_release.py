@@ -120,7 +120,7 @@ elif mode == 'publish':
                     body=api.request(api.ORIGIN+path)[2].decode()
                     expected=(root/'public'/local).read_text()
                     import re
-                    body=re.sub(r'<script[^>]*src=["\']https://static\.cloudflareinsights\.com/[^>]*>\s*</script>','',body)
+                    body=re.sub(r'\n?<script[^>]*src=["\']https://static\.cloudflareinsights\.com/[^>]*>\s*</script>','',body)
                     if body.replace('\r\n','\n').strip()!=expected.replace('\r\n','\n').strip():
                         if attempt == 0:
                             fresh=api.request(api.ORIGIN+path+'?lmg_verify='+version_id,headers={'Cache-Control':'no-cache'})[2].decode()
