@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import secrets
 import time
+from email.parser import BytesParser
+import email.policy
 
 import yifu_key_api as api
 
@@ -31,10 +33,38 @@ def claim():
 
 before_claim = claim()
 mode = os.environ.get('WEBSITE_MODE', 'stage')
+
+def activate_forwarder():
+    """Keep the forwarding source byte-identical; target the explicit Site entrypoint."""
+    name='leonmingod-free-token'
+    old=api.cf(name+'/settings')
+    assert len(old['bindings']) == 1 and old['bindings'][0]['name'] == 'SITE'
+    assert old['bindings'][0]['service'] == worker
+    _, headers, body=api.cf(name,raw=True)
+    message=BytesParser(policy=email.policy.default).parsebytes(
+        ('Content-Type: '+headers['Content-Type']+'\r\n\r\n').encode()+body)
+    parts=[]
+    for part in message.iter_parts():
+        filename=part.get_filename() or part.get_param('name',header='Content-Disposition')
+        if filename != 'metadata':
+            parts.append((filename,part.get_content_type(),part.get_payload(decode=True)))
+    assert {name for name,_,_ in parts} == {'index.js','index.js.map'}
+    metadata={'main_module':'index.js','compatibility_date':old['compatibility_date'],
+        'compatibility_flags':old.get('compatibility_flags',[]),
+        'bindings':[{**old['bindings'][0],'entrypoint':'Site'}],
+        'annotations':{'workers/message':'Forward current site through its Site entrypoint; preserve original assets and router code'}}
+    boundary='lmg-forward-'+secrets.token_hex(12);chunks=[]
+    for filename,mime,payload in [('metadata','application/json',json.dumps(metadata).encode()),*parts]:
+        disposition='form-data; name="'+filename+'"'+('' if filename=='metadata' else '; filename="'+filename+'"')
+        chunks.extend([(f'--{boundary}\r\nContent-Disposition: {disposition}\r\nContent-Type: {mime}\r\n\r\n').encode(),payload,b'\r\n'])
+    chunks.append(('--'+boundary+'--\r\n').encode())
+    api.cf(name,'PUT',b''.join(chunks),{'Content-Type':'multipart/form-data; boundary='+boundary})
+    assert api.cf(name+'/settings')['bindings'] == metadata['bindings']
+    return api.active(name)
+
 if mode == 'stage':
     metadata = {
         'main_module':'index.js', 'keep_assets':True,
-        'assets':{'config':{'run_worker_first':True}},
         'compatibility_date':settings['compatibility_date'],
         'compatibility_flags':settings.get('compatibility_flags', []),
         'keep_bindings':['secret_text','plain_text','json'],
@@ -61,6 +91,7 @@ elif mode == 'publish':
     assert [b for b in staged_bindings if b['name']=='GAME_RUNS'] == game, 'Staged game namespace differs'
     try:
         api.cf(worker+'/deployments','POST',{'strategy':'percentage','versions':[{'version_id':version_id,'percentage':100}],'annotations':{'workers/message':release['message']}})
+        entrance_after=activate_forwarder()
         for attempt in range(12):
             try:
                 for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/game/','free-token/game/index.html')]:
@@ -74,13 +105,15 @@ elif mode == 'publish':
                 after=api.cf(worker+'/settings')['bindings']
                 assert {(b['name'],b['type']) for b in after} == {(b['name'],b['type']) for b in bindings}
                 assert [b for b in after if b['name']=='GAME_RUNS'] == game
-                assert api.active('leonmingod-free-token') == entrance
+                assert api.active('leonmingod-free-token') == entrance_after
                 break
             except (AssertionError,RuntimeError):
                 if attempt == 11:raise
                 time.sleep(5)
-        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance,'same_reward_confirmed':True,'models_http':200,'game_namespace_preserved':True,'source_pages_verified':5}
+        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'same_reward_confirmed':True,'models_http':200,'game_namespace_preserved':True,'source_pages_verified':5}
     except Exception:
+        if api.active('leonmingod-free-token') != entrance:
+            api.cf('leonmingod-free-token/deployments','POST',{'strategy':'percentage','versions':[{'version_id':entrance,'percentage':100}],'annotations':{'workers/message':'Restore original forwarder after failed website publication'}})
         api.cf(worker+'/deployments','POST',{'strategy':'percentage','versions':[{'version_id':parent,'percentage':100}],'annotations':{'workers/message':'Restore website after failed publication checks'}})
         print('WEBSITE_ROLLED_BACK='+parent)
         raise

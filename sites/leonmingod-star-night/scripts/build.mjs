@@ -21,6 +21,6 @@ for (const file of release.files) {
 await mkdir('.generated', {recursive:true});
 await mkdir('dist', {recursive:true});
 await writeFile('.generated/routes.mjs', 'export default ' + JSON.stringify(routes) + ';\n');
-await build({ entryPoints:['src/index.js'], bundle:true, format:'esm', target:'es2022', outfile:'dist/index.js', sourcemap:'external', minify:true });
+await build({ entryPoints:['src/index.js'], bundle:true, format:'esm', target:'es2022', external:['cloudflare:workers'], outfile:'dist/index.js', sourcemap:'external', minify:true });
 await writeFile('dist/release.json', JSON.stringify({...release, manifest}, null, 2));
 console.log('Built current Worker with', release.files.length, 'updated/new static files; existing ASSETS remain in place.');

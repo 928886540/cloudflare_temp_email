@@ -1,8 +1,9 @@
+import { WorkerEntrypoint } from 'cloudflare:workers';
 import { handleGame } from './game.js';
 import { staticResponse } from './static.js';
 export { GameRun } from './game.js';
 
-export default {
+const site = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const page = staticResponse(request);
@@ -47,3 +48,10 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
+
+export default site;
+
+// Service bindings target this entrypoint to invoke page handling before existing assets.
+export class Site extends WorkerEntrypoint {
+  fetch(request) { return site.fetch(request, this.env); }
+}
