@@ -1,5 +1,20 @@
 # Free Token integration with Render
 
+## User-defined shorthand (confirmed 2026-10-25)
+
+| User phrase | Meaning and action in this project |
+| --- | --- |
+| 义父 Token / 义父token | This Free Token website: `https://leonmingod.com/free-token/` |
+| 加一个义父密钥 | Append a new client API key to Render service `cpa`, retaining existing keys and configuration |
+| 打开义父 Token 给别人用 | Publish issuance of the corresponding client key through the website claim flow; synchronize the same key between the CF Secret and Render, then verify the deployment |
+
+“义父密钥” is a client credential for API consumers, not the Render management
+credential `RENDER_API_KEY`. “打开给别人用” requests website issuance, not just
+browser navigation. A request to add a key alone does not replace the website's
+currently issued key; enable website distribution when requested, identifying the
+intended key from session context. Reuse the established repository, services,
+and GitHub Secrets instead of recreating resources because a different shorthand is used.
+
 ## Mobile fluid performance fix
 
 Deployed at 2026-10-25 01:18 Asia/Shanghai. Code commit `89de9160c60e63f6a3c937d15e461dcd79155cfa`;
