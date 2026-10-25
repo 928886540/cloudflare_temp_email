@@ -1,0 +1,25 @@
+name: Snapshot current LeonMinGod website
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: free-token-home-production
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Read current deployment and source maps
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python .github/scripts/leonmingod_snapshot.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: leonmingod-current-source
+          path: leonmingod-snapshot/
+          retention-days: 7
+          if-no-files-found: error
