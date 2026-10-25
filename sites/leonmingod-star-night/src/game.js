@@ -1,4 +1,5 @@
-import { RULES, replay } from '../public/free-token/game/engine-v2.mjs';
+import { RULES, replay } from '../public/free-token/game/engine-v3.mjs';
+import { replay as replayV2 } from '../public/free-token/game/engine-v2.mjs';
 import { replay as replayV1 } from '../public/free-token/game/engine.mjs';
 
 export const MAX_AGE = 180000;
@@ -15,7 +16,8 @@ export function verifyRun(run, body, now) {
   if (body.sessionHash !== run.sessionHash) return { status: 403, error: '这一局与当前浏览器不匹配，请重新开局。' };
   if (run.claimed) return { status: 409, error: '这一局已经领取过奖励。' };
   if (now - run.started < 29300) return { status: 400, error: '请完整完成 30 秒挑战后再领取。' };
-  const result = (run.rulesVersion === 2 ? replay : replayV1)(run.seed, body.trace);
+  const replayRun = { 1: replayV1, 2: replayV2, 3: replay }[run.rulesVersion ?? 1];
+  const result = replayRun?.(run.seed, body.trace);
   if (!result?.won) return { status: 400, error: '尚未破阵成功，再挑战一次吧。' };
   return { status: 200, result };
 }

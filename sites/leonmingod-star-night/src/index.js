@@ -42,8 +42,9 @@ const site = {
     if (url.pathname === '/image' || url.pathname === '/img' || url.pathname === '/bg' || url.pathname === '/wallpaper.png') {
       const userAgent = request.headers.get('user-agent') || '';
       const isMobile = /mobile|iphone|ipod|android|blackberry|opera mini|iemobile|wpdesktop/i.test(userAgent);
-      url.pathname = isMobile ? '/home-hero-mobile-v5.webp' : '/home-hero-desktop-v5.webp';
-      return env.ASSETS.fetch(new Request(url.toString(), request));
+      url.pathname = isMobile ? '/home-hero-mobile-v6.webp' : '/home-hero-desktop-v6.webp';
+      const imageRequest = new Request(url.toString(), request);
+      return staticResponse(imageRequest) || env.ASSETS.fetch(imageRequest);
     }
     return env.ASSETS.fetch(request);
   }

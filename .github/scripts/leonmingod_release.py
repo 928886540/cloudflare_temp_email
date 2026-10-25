@@ -42,6 +42,8 @@ def activate_forwarder():
     old=api.cf(name+'/settings')
     assert len(old['bindings']) == 1 and old['bindings'][0]['name'] == 'SITE'
     assert old['bindings'][0]['service'] == worker
+    if old['bindings'][0].get('entrypoint') == 'Site':
+        return api.active(name)
     _, headers, body=api.cf(name,raw=True)
     message=BytesParser(policy=email.policy.default).parsebytes(
         ('Content-Type: '+headers['Content-Type']+'\r\n\r\n').encode()+body)

@@ -1,6 +1,8 @@
-import { RULES, createGame, step, replay } from '../public/free-token/game/engine-v2.mjs';
+import * as currentEngine from '../public/free-token/game/engine-v3.mjs';
+const { RULES } = currentEngine;
 
-export function play(seed, reaction = 9, lookahead = 30) {
+export function play(seed, reaction = 9, lookahead = 30, engine = currentEngine) {
+  const { RULES, createGame, step, replay } = engine;
   const state = createGame(seed), trace = [];
   let target = 500, prior = -1;
   while (!state.done) {
