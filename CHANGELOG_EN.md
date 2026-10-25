@@ -28,6 +28,8 @@
 
 ### Improvements
 
+- docs: |Free Token operations| Preserve recovered maintenance source, parent/forwarder entrypoint versions, public acceptance for both rewards, and duplicate-claim evidence
+
 - docs: |LeonMinGod website| Record the star-night/game handoff, verified parent version, GAME_RUNS, and pending source upload; prevent historical deployments from replacing the current site
 - docs: |Yifu Token| Record successful new-key issuance, current CF/Render versions, preserved login files, and the routine issuance workflow
 - docs: |Free Token terminology| Persist the user-defined site shorthand, Render client-key creation, and website issuance semantics in agent guidance and operations notes

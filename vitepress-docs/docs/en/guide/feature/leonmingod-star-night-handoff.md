@@ -2,6 +2,26 @@
 
 This is the latest website handoff and supersedes historical page, directory, and deployment assumptions. This handoff did not deploy website code or rotate keys.
 
+## Current release: dedicated choices and trial v2 (2026-10-25 16:40 UTC)
+
+Maintenance source is now `sites/leonmingod-star-night/`, recovered and updated during this task.
+Parent: `f9576720-5c7f-4909-a685-5e145fc25001`. Forwarder:
+`51a33be8-6ca4-4b4f-886f-613bfea996b0`. Forwarding source is unchanged; SITE now targets the
+parent's named `Site` entrypoint. Preserve its specific routes, ASSETS, Secrets, and GAME_RUNS.
+The single-token entrance leads to `/free-token/choose/`; game exit returns there. Trial v2
+requires 16 jade in 30 seconds with three shields.
+
+[Publication](https://github.com/928886540/cloudflare_temp_email/actions/runs/40212806612) passed.
+Both public reward paths return the same existing key, fingerprint `7fa19b84ca57a2ba`; models
+returns 200 with 22 models. Concurrent game claims return 200/409/409. All 14 updated resources,
+eight protected originals, and apex/www parity checks passed. See the source directory's
+`WEBSITE_UPDATE_CN.md` and sanitized `verification/` evidence.
+
+Keeping ASSETS also retains its routing: do not expect setting `assets.config.run_worker_first`
+alone to replace that behavior. Preserve the named entrypoint binding. HTML comparisons remove
+only the injected CF analytics script and its extra newline. Version numbers and deployment
+assumptions further below are historical.
+
 ## Recovered maintenance source: token passage and game v2
 
 Current cloud source is now `sites/leonmingod-star-night/`: server/router code recovered from production source maps plus critical public assets. This is not a full copy of the Windows directory; original update/review files remain unavailable. Continue here, not in historical `sites/free-token-home/`.

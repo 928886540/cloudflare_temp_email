@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "touch": true,
+  "transition": true,
+  "old_claim": true,
+  "pause_resume": true,
+  "game_exit": true,
+  "reduced_motion": true,
+  "compact_layouts": [
+    "320x480",
+    "844x390"
+  ],
+  "page_errors": []
+}

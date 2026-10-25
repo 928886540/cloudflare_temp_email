@@ -1,0 +1,16 @@
+{
+  "screens": [
+    "320x480",
+    "393x580",
+    "393x664",
+    "844x390",
+    "1440x900"
+  ],
+  "initial_checks": 25,
+  "page_errors": 0,
+  "final_compact_checks": [
+    "320x480",
+    "844x390"
+  ],
+  "note": "Final 320x480 and 844x390 layouts were rechecked after the initial layout adjustments."
+}
