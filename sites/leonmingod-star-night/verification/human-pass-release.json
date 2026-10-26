@@ -1,0 +1,91 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Shanghai",
+  "inspect_run": 40345232205,
+  "stage_run": 40345932586,
+  "publish_run": 40346185218,
+  "acceptance_run": 40346269266,
+  "tests_passed": 20,
+  "stage": {
+    "mode": "stage",
+    "version_id": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
+    "production_unchanged": true,
+    "parent_version": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "82ca23716dd23c126125640944b95453696536119a63ae5ca21af4130fed0a67",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_OPS_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SITEKEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
+    "previous_version": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  },
+  "acceptance": {
+    "scope": "Owner-signed temporary pass; not an automated human challenge",
+    "results": [
+      {
+        "origin": "https://leonmingod.com",
+        "trusted_config": true,
+        "repeat_starts_http": [
+          200,
+          200
+        ],
+        "same_reward": true,
+        "invalid_expired_missing_http": 403,
+        "fixed_expiry": true
+      },
+      {
+        "origin": "https://www.leonmingod.com",
+        "trusted_config": true,
+        "repeat_starts_http": [
+          200,
+          200
+        ],
+        "same_reward": true,
+        "invalid_expired_missing_http": 403,
+        "fixed_expiry": true
+      }
+    ]
+  }
+}
