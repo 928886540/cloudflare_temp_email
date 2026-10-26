@@ -36,5 +36,6 @@
     "free-token/game/app-v8.mjs",
     "free-token/game/golden-token-v1.webp",
     "free-token/game/golden-ward-v1.webp"
-  ]
+  ],
+  "staged_version": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa"
 }
