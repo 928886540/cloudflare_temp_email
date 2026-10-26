@@ -1,0 +1,18 @@
+[
+  {
+    "host": "https://leonmingod.com",
+    "client": "app-v7.mjs",
+    "client_matches_source": true,
+    "floating_gap_markers_removed": true,
+    "rules_engine_unchanged": true,
+    "engine_sha256": "1be4abc97b71466562a7128ebf64491f1f63e657b2be6495934be7c0bfbe3fcb"
+  },
+  {
+    "host": "https://www.leonmingod.com",
+    "client": "app-v7.mjs",
+    "client_matches_source": true,
+    "floating_gap_markers_removed": true,
+    "rules_engine_unchanged": true,
+    "engine_sha256": "1be4abc97b71466562a7128ebf64491f1f63e657b2be6495934be7c0bfbe3fcb"
+  }
+]

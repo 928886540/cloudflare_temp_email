@@ -1,5 +1,21 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Published: remove floating rectangles and gap labels (2026-10-26 01:30 UTC)
+
+Parent `190a247f-8f89-4437-b41d-137cf2760145`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`; client `app-v7.mjs`.
+Only the falling dashed/transparent rectangle and gap label are removed; players read the formation's open space. The v5 engine, actual corridor protection, difficulty, uninterrupted play, win conditions and ten taunts are unchanged.
+[Publication acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40254536775) and all twelve mandatory stage tests passed. Apex/www load the source-matching client without box/label rendering; v5 engine bytes remain identical.
+Public browser/wall-scene checks at 320x480, 393x580 and 844x390 passed with a mocked start API; this visual-only change does not claim another real game redemption. Publication verified original claim/models HTTP 200, the same current key, GAME_RUNS and forwarding structure; Render is unchanged.
+Evidence: `verification/no-gap-marker-*.json`, `release-no-gap-markers.json`. The user rejected debug-like safe-zone cues; do not restore them. Sections below are historical.
+
+
+## Visual correction: remove floating gap boxes and labels
+
+The user rejected the descending transparent/dashed rectangle and “gap” label as immersion-breaking. Client `app-v7.mjs` only removes that rendering block, leaving players to read the sword formation's empty space.
+No replacement cue asset is added. The v5 three-lane opening, corridor protection, straight sword trajectories, difficulty, rewards and elapsed-time progression remain intact.
+Do not restore debug-like safe-zone boxes or labels; any future cue artwork should fit the existing fantasy scene.
+
+
 ## Published: v5 fair sword patterns and concise win conditions (2026-10-26 01:16 UTC)
 
 Parent `8a812fa0-2aec-4ebb-ba29-bff5442ff8d0`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`.
