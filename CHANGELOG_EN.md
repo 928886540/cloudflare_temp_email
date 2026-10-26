@@ -46,6 +46,8 @@
 
 ### Improvements
 
+- fix: |Yifu Key Operations| Guard delayed rotation with the expected published fingerprint; stop on changes or management lockout and report only sanitized errors
+
 - docs: |Yifu Token| Record a newly registered key and reopened website, live CF/Render versions and verification while preserving standalone Karl and original logins
 
 - feat: |Jade Trial| Add native-generated gold-token/barrier art and five-second invincibility with shared server replay and legacy support

@@ -1,12 +1,28 @@
 # Free Token integration with Render
 
+## Current state: security fix live, exposed Yifu key revoked (2026-10-26 16:09 Asia/Shanghai)
+
+New Yifu fingerprint `a6bbe9c75913e4ec` (not a credential) returned models HTTP 200 and is synchronized to the website. Exposed `69ba11c6809909d7` was removed and returns HTTP 401. Issuance remains open, both reward paths share the new key at https://cpa-dhke.onrender.com/v1, and anonymous direct claims require human verification.
+Current parent `d93ec9bd-702c-4379-9ac3-922b7919130d`, source release `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Render deploy `dep-dbfglagae00c73819490`. Rotation changes only the issuance Secret, with no further code/art/game changes.
+[Register/publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40290134078) and [revoke old key](https://github.com/928886540/cloudflare_temp_email/actions/runs/40290264958) succeeded. Four keys remain: the sole current Yifu key, two originals and standalone Karl. All twelve CURRENT login files were backed up/restored, rather than relying on the older ten-file snapshot. Fifteen operation tests include the delayed-rotation fingerprint guard.
+A temporary CPA failed-login lockout stopped two preflights before any mutation. Rotation waited for expiry and fresh backups; do not clear a ban by restarting without preserving current login files. Sanitized evidence: `.github/operations/render-client-keys/yifu-security-rotation-20261026.json`. Full live-game security verification follows below.
+
+## Live security v7 published and publicly verified (2026-10-26 15:47 Asia/Shanghai)
+
+Source parent `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Retain GAME_RUNS, original ASSETS, other bindings and artwork. Client app-v9.mjs / engine-v7.mjs preserves gameplay parameters. Live versions were reread; the post-configuration baseline was `468396f7-8023-4ed8-8339-f835610dabd3`.
+[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287641432) passed eighteen checks; [publication](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287743435) and fourteen key-operation tests passed. Three local mobile sizes verified real live updates and original claims. All 39 resources match source on apex/www, including unchanged artwork and physics.
+[Real public API acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287817328) used private owner-signed starts, continuously submitted 45 live packets and won with 24 jade/two shields. Concurrent rewards returned 200/409/409; signed oath claims issue the same key, models HTTP 200 / 34 models. Owner signatures bypass only Turnstile, never live game checks; this is not an automated human-challenge pass claim.
+Unsigned start/claim and fake tokens return 403 on apex/www. Waiting before submitting a full trace and one-shot 2700-frame progress are rejected. Actual public mobile widgets load within 393x580; challenges were not solved on the user's behalf. Old v1-v6 runs must refresh and restart.
+Operations: optional `expected_current_fingerprint` stops delayed additions if another session changed issuance. A temporary CPA management login lockout stops preflight before backup/mutation; retain accounts and retry after the lockout expires.
+Never restore full-seed/end-only-trace redemption. Continuous live automation and copying an issued shared key remain possible.
+
 ## Live protocol v7: block offline solved traces and automated direct claims
 
 Replace full-seed disclosure and wait-then-submit rewards with live-v1. The server owns game state, commits immutable input prefixes about once per second and supplies fresh unpredictable encounter entropy in three-second blocks only after live commitments. Check timing, sequence, short disconnections, browser identity and single-use rewards; exact lost-response retries are idempotent and cannot rewrite input history.
 Retire v1-v6 reward protocols rather than preserving the vulnerable endpoint: old pages/runs must refresh and restart. Keep 45 seconds, 24 jade, two shields, gold barriers, artwork and uninterrupted play; a lost connection ends the run rather than pausing time.
 Require server-verified Cloudflare Turnstile for both starts and oath claims, checking hostname/action and single-use tokens with fail-closed behavior. Add per-source start/claim rate limits. Local test tokens require both an explicit binding and a localhost URL, never a production hostname.
 CF Secrets: FREE_TOKEN_TURNSTILE_SITEKEY, FREE_TOKEN_TURNSTILE_SECRET, FREE_TOKEN_OPS_SECRET. Existing Actions verify issuance with a private 30-second HMAC signature bound to method/path/raw body. This key is never exposed to clients and does not bypass live game checks; it is derived from existing Render management credentials, so rerun security setup after changing those credentials.
-These controls block the reported offline precomputation and basic direct scripts, not all live automation. An issued shared key can still be copied. Publication evidence follows after acceptance.
+These controls block the reported offline precomputation and basic direct scripts, not all live automation. An issued shared key can still be copied. Publication evidence is recorded above.
 
 ## Current state: new Yifu key synchronized, website reopened (2026-10-26 15:00 Asia/Shanghai)
 

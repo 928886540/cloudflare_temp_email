@@ -9,18 +9,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `fd79879f-4dbc-43c9-b5fa-d9cf240b9b59`
-(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `51310ec6-e00b-4308-b729-bcfc7af6f111`).
+Worker `leonmingod-home` now at `d93ec9bd-702c-4379-9ac3-922b7919130d`
+(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v8.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v9.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
-Current trial is v6: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
+Current trial is v7 (unchanged v6 physics): 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
 (five remaining), NEVER at a remaining-seconds threshold. At 24, stop jade and survive
 the full duration. Defeat shows one of ten emoji/poetic oath taunts and a direct claim
-link. Keep browser/server aligned and retain v1/v2/v3/v4/v5 in-flight replay. Current poster URLs are home v6 / token v4.
+link. Keep browser/server aligned; old v1-v6 reward protocols are retired and must return 410. Never restore the vulnerable full-seed/trace finish path. Current poster URLs are home v6 / token v4.
 Sword-tip pickup fix: v6 collects jade/gold along the visible tip-to-body capsule
 (70 units above playerY); never shift/enlarge the ordinary damage hitbox to match it.
 Gold is a separate native-image_gen talisman, NOT goal jade. It grants exactly five
@@ -46,6 +46,32 @@ the incomplete recovered public mirror as a replacement static asset set. Preser
 both claim paths, the `GAME_RUNS` migration/state, star-night art and touch controls.
 Existing Actions CF/Render credentials remain usable. Re-read live versions before changes.
 
+### Security protocol v7 (2026-10-26)
+
+The reported exploit was offline solving from the initial full seed, waiting 45
+seconds and submitting a winning trace. Live v7 commits input prefixes about once
+per second and uses fresh private server entropy for each three-second encounter
+block, revealed only after a live commitment. The server stores authoritative
+state and validates elapsed time, receipt order, immutable prefixes, identity,
+short connection gaps and single-use rewards. Finish accepts the current receipt,
+not a full trace. Exact progress retries are idempotent. Old v1-v6 runs must restart.
+Both game starts and oath claims require server-verified Turnstile (hostname/action
+and single-use token checks), with per-source rate limits. Keep test-token bypass
+restricted to an explicit local-only binding AND localhost; never enable it on a
+production hostname. Real public mobile widgets have been visually checked.
+CF bindings: FREE_TOKEN_TURNSTILE_SITEKEY, FREE_TOKEN_TURNSTILE_SECRET,
+FREE_TOKEN_OPS_SECRET. Existing Actions use a private 30-second HMAC probe derived
+from RENDER_API_KEY; it binds method/path/raw body and bypasses Turnstile only,
+never game progress. Rerun security setup after rotating Render management auth.
+Use current add/remove workflows, whose verification is signed; historical bare
+claim scripts no longer authorize. Never expose these secrets or disable checks
+just to make a deployment probe pass. Continuous live automation and sharing an
+already issued shared key remain possible; do not claim perfect proof of humanity.
+Stage 40287641432, publish 40287743435, live security proof 40287817328 passed.
+Public QA used owner-signed start probes, continuously submitted 45 live packets
+and won with 24 jade/two shields; concurrent rewards were 200/409/409. Unauthenticated
+start/claim, fake tokens, wait-then-submit and one-shot batch progress were rejected.
+
 ### User-defined shorthand
 
 - **“暂时去掉 / 关闭义父 Token” means revoke the currently issued Yifu key in
@@ -60,16 +86,20 @@ Existing Actions CF/Render credentials remain usable. Re-read live versions befo
   stage/publish must retain a closed state if its issuance Secret is absent.
 
 Current Yifu issuance is OPEN. The sole published Yifu key fingerprint is
-`69ba11c6809909d7`, created and synchronized by run `40283102427` on 2026-10-26.
-`01db29c9e73f5fba` was revoked (401), run `40268141055`; prior
-`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbffl1cs728c73f95fqg`.
-Render has four keys in total: this Yifu key plus the three unrelated keys below.
-Both apex/www claim the same new key (models 200 / 34 models); actual mobile token
-clicks restore the original transition to `/free-token/choose/` without page changes.
-Three non-website client keys now exist: the two originals plus a standalone Karl
-key (`sk-karl-` + eight random digits), fingerprint `162618109a2dc43b`. Karl has no
-automatic expiry and is UNRELATED to Yifu website issuance: preserve it across all
-website opening/closing/rotation operations. Ten login files remain intact.
+`a6bbe9c75913e4ec`, registered/published by run `40290134078` after the
+security fix on 2026-10-26. Exposed `69ba11c6809909d7` was revoked (models 401)
+by run `40290264958`. Earlier `01db29c9e73f5fba` and `7fa19b84ca57a2ba`
+remain revoked. Render deploy `dep-dbfglagae00c73819490`.
+Render has four keys: the new Yifu key, two originals and standalone Karl
+(`162618109a2dc43b`, no automatic expiry). Karl is UNRELATED to website issuance;
+preserve it across website opening, closing and rotation. All twelve current
+login files were backed up/restored (the service now has twelve, not the earlier ten).
+Web claims are verified with signed management probes; anonymous direct calls
+require Turnstile and return 403 without it. The web/game reward remains identical.
+CPA management had a temporary failed-login ban. Preflight stopped without
+mutation; waiting preserved current credentials. Do not restart to clear such a
+ban without first preserving current login files. Optional add input
+`expected_current_fingerprint` guards a delayed operation against concurrent changes.
 Use default add/remove dry-run workflows to inspect a closed service; the historical
 `issue-yifu-key` inspect assumes an open claim endpoint.
 
