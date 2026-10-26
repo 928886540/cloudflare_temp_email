@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "468396f7-8023-4ed8-8339-f835610dabd3",
+  "baseline_parent": "d93ec9bd-702c-4379-9ac3-922b7919130d",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Reject offline solved/replayed rewards with live immutable inputs, unrevealed encounters and server-verified Turnstile",
+  "message": "Isolate delayed live-progress responses across mobile game restarts; preserve verified security and reward",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -41,7 +41,7 @@
     "free-token/game/engine-v7.mjs",
     "free-token/game/app-v9.mjs",
     "free-token/human-v1.mjs",
-    "free-token/claim-v2.mjs"
-  ],
-  "staged_version": "c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a"
+    "free-token/claim-v2.mjs",
+    "free-token/game/app-v10.mjs"
+  ]
 }
