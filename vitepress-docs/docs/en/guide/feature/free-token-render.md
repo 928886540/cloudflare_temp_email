@@ -1,5 +1,11 @@
 # Free Token integration with Render
 
+## Standalone long-lived client keys, separate from website issuance
+
+The add workflow now supports `use_custom_key=true`, a prefix and 6–12 random digits, requiring `publish=false`. It writes no CF Secret, does not reopen the website and sets no automatic expiry. The recipient supplies an RSA public key; Actions retains only the encrypted key while the private key stays local. Logs/source record fingerprints only.
+The user requested Karl: `sk-karl-` plus eight random digits. This standalone long-lived key must survive subsequent Yifu website toggles/rotations. Existing ordinary keys and login files are preserved.
+
+
 ## Current state: temporarily closed, Yifu key revoked (2026-10-26 04:16 UTC)
 
 The requested two-state click behavior is implemented and currently CLOSED. Yifu fingerprint `01db29c9e73f5fba` was removed from Render and returns models HTTP 401; CF `FREE_TOKEN_RENDER_KEY` is absent.

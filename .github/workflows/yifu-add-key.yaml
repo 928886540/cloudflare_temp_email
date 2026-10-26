@@ -6,6 +6,22 @@ on:
         description: 同时把新 Key 挂到网页给别人领取
         type: boolean
         default: true
+      use_custom_key:
+        description: 创建指定前缀的独立客户端 Key（必须 publish=false）
+        type: boolean
+        default: false
+      key_prefix:
+        description: 独立 Key 前缀，例如 sk-karl（不是完整密钥）
+        type: string
+        default: ''
+      suffix_digits:
+        description: 独立 Key 的随机数字位数（6-12）
+        type: string
+        default: '8'
+      recipient_public_key:
+        description: 接收新 Key 的 RSA 公钥，只上传加密结果
+        type: string
+        default: ''
       dry_run:
         description: 只检查，不实际更改（测试工具时使用）
         type: boolean
@@ -23,6 +39,10 @@ jobs:
       RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      YIFU_USE_CUSTOM_KEY: ${{ inputs.use_custom_key }}
+      YIFU_CUSTOM_PREFIX: ${{ inputs.key_prefix }}
+      YIFU_CUSTOM_DIGITS: ${{ inputs.suffix_digits }}
+      YIFU_RECIPIENT_PUBLIC_KEY: ${{ inputs.recipient_public_key }}
       YIFU_OPERATION: add
       YIFU_DRY_RUN: ${{ inputs.dry_run }}
       YIFU_PUBLISH: ${{ inputs.publish }}
@@ -43,6 +63,14 @@ jobs:
       - name: Apply and verify
         if: ${{ !inputs.dry_run }}
         run: python .github/scripts/yifu_keys.py apply
+      - name: Save encrypted standalone key for its recipient
+        if: ${{ !inputs.dry_run && inputs.use_custom_key }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-render-client-key
+          path: render-client-key.enc
+          if-no-files-found: error
+          retention-days: 7
       - name: Restore missing login files after failure
         if: ${{ failure() && !inputs.dry_run }}
         run: python .github/scripts/yifu_keys.py recover
