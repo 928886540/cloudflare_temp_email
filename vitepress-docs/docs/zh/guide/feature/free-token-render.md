@@ -1,5 +1,11 @@
 # 免费 Token 的 Render 对接
 
+## 独立长期客户端 Key：与网页发放隔离
+
+默认添加流程现支持 `use_custom_key=true`、前缀和 6–12 位随机数字，必须 `publish=false`，不写 CF Secret、不开放网页，也不设置自动过期。接收方提供 RSA 公钥，Actions 仅保存加密 Key，私钥留在本地，日志与源码只记录指纹。
+本次用户明确要求 Karl：`sk-karl-` 加 8 位随机数字。这是独立长期 Key，后续义父网页的开关/轮换不得删除它。现有普通 Key 与登录凭证保留。
+
+
 ## 当前状态：暂未开放，义父 Key 已撤销（2026-10-26 04:16 UTC）
 
 用户要求固定两种点击形态，本轮已实现并关闭：当前义父 Key `01db29c9e73f5fba` 从 Render 删除，models 401；CF `FREE_TOKEN_RENDER_KEY` 已移除。

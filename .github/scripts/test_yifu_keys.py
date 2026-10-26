@@ -132,7 +132,10 @@ class KeyOperationsTest(unittest.TestCase):
         self.assertIn('retained-test-key', current['keys'])
         if operation == 'add':
             self.assertEqual(set(current['keys']), set(original_keys + [op['target']]))
-            self.assertEqual(current['claim']['apiKey'], op['target'] if publish else active)
+            if publish:
+                self.assertEqual(current['claim']['apiKey'], op['target'])
+            else:
+                self.assertEqual(current['claim'], claim)
         elif closed:
             self.assertEqual(current['keys'], original_keys)
             self.assertEqual(mutations, [])
@@ -148,6 +151,35 @@ class KeyOperationsTest(unittest.TestCase):
 
     def test_add_reopens_a_closed_website(self):
         self.run_operation('add', closed=True)
+
+    def test_custom_standalone_key_preserves_closed_website(self):
+        with patch.dict(os.environ, {'YIFU_USE_CUSTOM_KEY': 'true', 'YIFU_CUSTOM_PREFIX': 'sk-test', 'YIFU_CUSTOM_DIGITS': '8'}):
+            self.run_operation('add', publish=False, closed=True)
+
+    def test_custom_key_cannot_publish_and_retries_do_not_duplicate(self):
+        state = {'keys': ['sk-test-12345678'], 'claim': None, 'modules': {'claim_binding': True}}
+        with patch.dict(os.environ, {'YIFU_USE_CUSTOM_KEY': 'true', 'YIFU_CUSTOM_PREFIX': 'sk-test', 'YIFU_CUSTOM_DIGITS': '8'}), patch.object(tool.secrets, 'randbelow', return_value=12345678):
+            with self.assertRaises(RuntimeError):
+                tool.select_operation(state, 'add', publish=True)
+            op = tool.select_operation(state, 'add', publish=False)
+            self.assertFalse(op['render_change'])
+            self.assertEqual(op['after_keys'], state['keys'])
+
+    def test_invalid_custom_key_is_rejected_before_mutation(self):
+        state = {'keys': ['test-key'], 'claim': None, 'modules': {'claim_binding': True}}
+        with patch.dict(os.environ, {'YIFU_USE_CUSTOM_KEY': 'true', 'YIFU_CUSTOM_PREFIX': 'bad value with spaces', 'YIFU_CUSTOM_DIGITS': '8'}):
+            with self.assertRaises(RuntimeError):
+                tool.select_operation(state, 'add', publish=False)
+
+    def test_standalone_delivery_is_encrypted_for_the_recipient(self):
+        private = tool.rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public = private.public_key().public_bytes(tool.serialization.Encoding.PEM, tool.serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'YIFU_RECIPIENT_PUBLIC_KEY': public}), patch.object(tool, 'Path', lambda name: Path(directory) / name):
+            tool.encrypt_custom_key('test-client-placeholder')
+            encrypted = (Path(directory) / 'render-client-key.enc').read_bytes()
+            self.assertNotIn(b'test-client-placeholder', encrypted)
+            plain = private.decrypt(encrypted, tool.padding.OAEP(mgf=tool.padding.MGF1(tool.hashes.SHA256()), algorithm=tool.hashes.SHA256(), label=None))
+            self.assertEqual(plain, b'test-client-placeholder')
 
     def test_remove_published_key_and_stop_issuance(self):
         self.run_operation('remove')

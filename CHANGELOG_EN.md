@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Render Client Keys| Support standalone prefix/numeric keys without website publication, encrypt delivery for the recipient, and preserve existing keys, logins and closed website state
+
 - feat: |Yifu Token| Gate token clicks on issued-key availability: closed shows a temporary-unavailable notice, open restores the original transition; block both reward paths while closed and preserve state in key/release operations
 
 - feat: |Free Token| Restore the single-token entrance, add a dedicated two-path choice page, compact short-screen layouts, and upgrade trial artwork/shared v2 difficulty while retaining legacy runs and reward protection

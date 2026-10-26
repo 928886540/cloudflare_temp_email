@@ -16,6 +16,8 @@ import urllib.error
 import urllib.parse
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 import yaml
 
 import yifu_key_api as api
@@ -127,8 +129,17 @@ def select_operation(state, operation, publish=True, target='current'):
     assert operation in ['add', 'remove']
     active = state['claim']['apiKey'] if state['claim'] else None
     if operation == 'add':
-        key = 'sk-leon-yifu-' + secrets.token_urlsafe(32)
-        after = state['keys'] + [key]
+        if os.environ.get('YIFU_USE_CUSTOM_KEY') == 'true':
+            if publish:
+                raise RuntimeError('Standalone custom keys must use publish=false')
+            prefix = os.environ.get('YIFU_CUSTOM_PREFIX', '').strip()
+            digits = int(os.environ.get('YIFU_CUSTOM_DIGITS', '8'))
+            if not re.fullmatch(r'sk-[A-Za-z0-9][A-Za-z0-9-]{1,30}', prefix) or not 6 <= digits <= 12:
+                raise RuntimeError('Invalid standalone key prefix or digit count')
+            key = prefix + '-' + str(secrets.randbelow(10 ** digits)).zfill(digits)
+        else:
+            key = 'sk-leon-yifu-' + secrets.token_urlsafe(32)
+        after = state['keys'] + ([] if key in state['keys'] else [key])
         disable = False
     else:
         if target in ['', 'current']:
@@ -151,6 +162,19 @@ def select_operation(state, operation, publish=True, target='current'):
         assert state['modules']['claim_binding'], 'The claim handler no longer references the expected Secret'
     return dict(operation=operation, publish=publish, target=key, fingerprint=fingerprint(key) if key else None,
                 after_keys=after, render_change=changed, disable=disable, touches_site=touches_site)
+
+
+def encrypt_custom_key(key):
+    try:
+        public = serialization.load_pem_public_key(os.environ.get('YIFU_RECIPIENT_PUBLIC_KEY', '').encode())
+    except (ValueError, TypeError):
+        raise RuntimeError('A valid public delivery key is required') from None
+    if not isinstance(public, rsa.RSAPublicKey) or public.key_size < 2048:
+        raise RuntimeError('Delivery requires an RSA public key of at least 2048 bits')
+    encrypted = public.encrypt(key.encode(), padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
+    path = Path('render-client-key.enc')
+    path.write_bytes(encrypted)
+    path.chmod(0o600)
 
 
 def seal(plan):
@@ -195,6 +219,8 @@ def prepare():
     if preview['dry_run']:
         print('READ_ONLY_PREFLIGHT_PASSED=True', flush=True)
         return
+    if os.environ.get('YIFU_USE_CUSTOM_KEY') == 'true':
+        encrypt_custom_key(op['target'])
     backups = {}
     if op['render_change']:
         assert not any(f.get('runtime_only') for f in state['files']), 'Cannot back up a runtime-only login file'
