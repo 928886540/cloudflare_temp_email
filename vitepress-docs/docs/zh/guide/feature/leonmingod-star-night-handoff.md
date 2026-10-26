@@ -1,5 +1,12 @@
 # LeonMinGod 星夜版交接（2026-10-25）
 
+## 最终发布：弱网跨局响应隔离（北京时间 2026-10-26 16:19）
+
+当前 CF 主站/代码版本均为 `0c98caa6-334b-4b4c-ac1f-694ec95e8879`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。客户端 app-v10.mjs，实时协议仍为 v7。旧局迟到的成功响应、错误及清理回调均与新局隔离，不覆盖新凭证、不结束新游戏、不清空新局正在提交的请求。
+两个针对性浏览器场景均通过，新局持续实时提交 200、无脚本异常。[阶段](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291321848) 18 项检查通过，[发布](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291450251)通过；主域名/www 40 项资源与源码一致，匿名领取/开局和假凭证仍为 403。
+新义父 Key 仍为指纹 `a6bbe9c75913e4ec`，models 200；旧 `69ba11c6809909d7` 已撤销 401。Render 仍 `dep-dbfglagae00c73819490`、4 把 Key、12 份登录，Karl 保留；本补丁未变更奖励或后端游戏规则，也未再部署 Render。下方完整 45 秒实时通关验收仍适用于未改变的协议/规则。
+证据 `verification/security-v7-stale-responses.json`、`verification/security-v7-client-v10-release.json`。刷新旧页面后使用新客户端。
+
 ## 当前状态：修复已上线，暴露的义父 Key 已撤销（北京时间 2026-10-26 16:09）
 
 新义父 Key 指纹 `a6bbe9c75913e4ec`（非凭据）已在 Render 验证 models 200 并同步网页；旧 `69ba11c6809909d7` 已删除并验证 models 401。网页仍开放，两条领取使用同一把新 Key，地址仍为 https://cpa-dhke.onrender.com/v1；匿名直接领取须先过真人验证。

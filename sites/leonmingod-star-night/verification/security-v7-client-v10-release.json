@@ -1,0 +1,106 @@
+{
+  "stage": {
+    "mode": "stage",
+    "version_id": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
+    "production_unchanged": true,
+    "parent_version": "d93ec9bd-702c-4379-9ac3-922b7919130d",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "280357733e9678a96999b470b6d47e8f0533d7d69e384ac850e1296e6bcde248",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_OPS_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SITEKEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
+    "previous_version": "d93ec9bd-702c-4379-9ac3-922b7919130d",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  },
+  "stage_run": 40291321848,
+  "publish_run": 40291450251,
+  "targeted_browser": {
+    "results": [
+      {
+        "delayed_response": "200 success",
+        "new_run_progress_http": [
+          200,
+          200,
+          200
+        ],
+        "old_response_ignored": true,
+        "errors": []
+      },
+      {
+        "delayed_response": "503 error",
+        "new_run_progress_http": [
+          200,
+          200,
+          200
+        ],
+        "old_response_ignored": true,
+        "errors": []
+      }
+    ]
+  },
+  "public_resources": {
+    "https://leonmingod.com": {
+      "source_resources_match": 40,
+      "unsigned_requests": {
+        "claim": 403,
+        "game/start": 403,
+        "claim-fake": 403
+      },
+      "human_verification_required": true,
+      "production_local_bypass_disabled": true
+    },
+    "https://www.leonmingod.com": {
+      "source_resources_match": 40,
+      "unsigned_requests": {
+        "claim": 403,
+        "game/start": 403,
+        "claim-fake": 403
+      },
+      "human_verification_required": true,
+      "production_local_bypass_disabled": true
+    }
+  },
+  "backend_checks_passed": 18
+}

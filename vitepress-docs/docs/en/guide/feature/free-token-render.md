@@ -1,5 +1,12 @@
 # Free Token integration with Render
 
+## Final release: isolate delayed responses across runs (2026-10-26 16:19 Asia/Shanghai)
+
+Current CF parent/source `0c98caa6-334b-4b4c-ac1f-694ec95e8879`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Client app-v10.mjs retains live protocol v7. Delayed success/error/cleanup from a prior run cannot overwrite a new receipt, stop the new game or clear its pending submission.
+Both targeted browser cases passed with continued HTTP 200 live progress and no script errors. [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291321848) passed eighteen checks; [publication](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291450251) passed. All forty source resources match on apex/www; unsigned claims/starts and fake tokens still return 403.
+Current Yifu fingerprint remains `a6bbe9c75913e4ec`, models HTTP 200; exposed `69ba11c6809909d7` was revoked (401). Render remains `dep-dbfglagae00c73819490`, four keys/twelve logins with Karl preserved. This patch changes neither rewards nor server game rules and does not redeploy Render; the real forty-five-second acceptance below covers the unchanged protocol/rules.
+Evidence: `verification/security-v7-stale-responses.json`, `verification/security-v7-client-v10-release.json`. Refresh old pages to load the new client.
+
 ## Current state: security fix live, exposed Yifu key revoked (2026-10-26 16:09 Asia/Shanghai)
 
 New Yifu fingerprint `a6bbe9c75913e4ec` (not a credential) returned models HTTP 200 and is synchronized to the website. Exposed `69ba11c6809909d7` was removed and returns HTTP 401. Issuance remains open, both reward paths share the new key at https://cpa-dhke.onrender.com/v1, and anonymous direct claims require human verification.

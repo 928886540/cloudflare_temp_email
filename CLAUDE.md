@@ -9,12 +9,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `d93ec9bd-702c-4379-9ac3-922b7919130d`
-(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`).
+Worker `leonmingod-home` now at `0c98caa6-334b-4b4c-ac1f-694ec95e8879`
+(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `0c98caa6-334b-4b4c-ac1f-694ec95e8879`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v9.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v10.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
 Current trial is v7 (unchanged v6 physics): 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
@@ -71,6 +71,12 @@ Stage 40287641432, publish 40287743435, live security proof 40287817328 passed.
 Public QA used owner-signed start probes, continuously submitted 45 live packets
 and won with 24 jade/two shields; concurrent rewards were 200/409/409. Unauthenticated
 start/claim, fake tokens, wait-then-submit and one-shot batch progress were rejected.
+
+Client v10 isolates delayed successes/errors from old runs so weak-network restarts
+cannot overwrite the new receipt, stop a new game, or clear its pending submission.
+Both delayed-response browser scenarios passed; stage 40291321848 (18 checks),
+publish 40291450251 and 40 source resources on apex/www passed. Protocol/keys,
+gameplay/artwork and the real public 45-packet acceptance above remain unchanged.
 
 ### User-defined shorthand
 
