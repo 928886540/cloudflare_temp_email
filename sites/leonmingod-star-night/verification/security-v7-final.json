@@ -1,0 +1,15 @@
+{
+  "standalone_karl": {
+    "fingerprint": "162618109a2dc43b",
+    "models_http": 200,
+    "models": 34
+  },
+  "https://leonmingod.com": {
+    "open": true,
+    "unsigned_claim_http": 403
+  },
+  "https://www.leonmingod.com": {
+    "open": true,
+    "unsigned_claim_http": 403
+  }
+}

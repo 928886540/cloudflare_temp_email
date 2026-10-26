@@ -1,0 +1,89 @@
+{
+  "stage": {
+    "mode": "stage",
+    "version_id": "c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a",
+    "production_unchanged": true,
+    "parent_version": "468396f7-8023-4ed8-8339-f835610dabd3",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "192dafe8d9260646b500abaa227a193bfb51d239e745769dfd1356074988df4f",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_OPS_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SITEKEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a",
+    "previous_version": "468396f7-8023-4ed8-8339-f835610dabd3",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  },
+  "public_live": {
+    "protocol": "live-v1",
+    "owner_signed_QA_not_a_human_bypass_test": true,
+    "attempts": [
+      {
+        "jade": 24,
+        "shields": 2,
+        "frames": 2700,
+        "won": true,
+        "live_packets": 45
+      }
+    ],
+    "unsigned_direct_claim_and_start_rejected": true,
+    "concurrent_finish_statuses": [
+      200,
+      409,
+      409
+    ],
+    "wait_then_finish_and_single_batch_rejected": true,
+    "same_reward": true,
+    "fingerprint": "69ba11c6809909d7",
+    "models_http": 200,
+    "model_count": 34
+  },
+  "runs": {
+    "configuration": 40286556128,
+    "stage": 40287641432,
+    "publish": 40287743435,
+    "public_verification": 40287817328
+  },
+  "backend_checks_passed": 18,
+  "operation_checks_passed": 15
+}

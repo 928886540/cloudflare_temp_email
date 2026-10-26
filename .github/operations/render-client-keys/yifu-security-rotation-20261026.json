@@ -1,0 +1,37 @@
+{
+  "added": {
+    "operation": "add",
+    "fingerprint": "a6bbe9c75913e4ec",
+    "render_key_count": 5,
+    "credentials_preserved": 12,
+    "website_enabled": true,
+    "model_count": 34,
+    "render_deploy": "dep-dbfgkpgm7kps7391ils0",
+    "parent_version": "d93ec9bd-702c-4379-9ac3-922b7919130d",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "removed": {
+    "operation": "remove",
+    "fingerprint": "69ba11c6809909d7",
+    "render_key_count": 4,
+    "credentials_preserved": 12,
+    "website_enabled": true,
+    "model_count": null,
+    "render_deploy": "dep-dbfglagae00c73819490",
+    "parent_version": "d93ec9bd-702c-4379-9ac3-922b7919130d",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "add_run": 40290134078,
+  "remove_run": 40290264958,
+  "old_key_models_http": 401,
+  "new_key_models_http": 200,
+  "preserved_non_website_keys": 3,
+  "standalone_karl_fingerprint": "162618109a2dc43b",
+  "website_code_changed_during_rotation": false,
+  "source_release": "c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a",
+  "management_lockout_handling": "Waited for CPA cooldown; did not restart or overwrite credentials",
+  "failed_preflight_runs_without_mutation": [
+    40287937995,
+    40288192394
+  ]
+}
