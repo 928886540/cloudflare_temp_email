@@ -1,5 +1,14 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Yesterday's Yifu key revoked (2026-10-26 00:46 UTC)
+
+The user explicitly clarified that refreshing means replacing and revoking the prior Yifu key. [Revocation and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250878059) passed.
+Yesterday's `7fa19b84ca57a2ba` was removed from Render and returns models HTTP 401. The website still issues only new `01db29c9e73f5fba`, with models HTTP 200.
+Render retains three client keys: the current Yifu key and two other original keys. All ten login files were restored. Deploy `dep-dbfa5eq9lscs739btcq0` uses unchanged code.
+CF parent remains `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`, entrance `51a33be8-6ca4-4b4f-886f-613bfea996b0`; website/game code and new-key issuance are unchanged.
+Future Yifu key refreshes must verify/publish the new key and then revoke the prior Yifu key, never append only. Evidence: `verification/key-revocation-20261026.json`. Sections below are historical.
+
+
 ## Current issued key refreshed (2026-10-26 00:39 UTC)
 
 Completed the requested new Yifu client key using default-branch `yifu-add-key.yaml`, `publish=true`.

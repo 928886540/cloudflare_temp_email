@@ -1,5 +1,22 @@
 # 免费 Token 的 Render 对接
 
+## 昨天的义父 Key 已撤销（2026-10-26 00:46 UTC）
+
+用户明确要求更新即替换并撤销旧义父 Key，已完成：[撤销与验证](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250878059)。
+昨天的 `7fa19b84ca57a2ba` 已从 Render 删除，调用 models 返回 401；当前网站仍只发新 Key `01db29c9e73f5fba`，models 200。
+Render 剩 3 把客户端 Key：当前义父 Key 和另外 2 把原有 Key；10 份登录均已恢复。部署 `dep-dbfa5eq9lscs739btcq0`，代码提交不变。
+CF 主站仍 `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`、入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，网页/游戏与新 Key 发放均未改动。
+后续“更新/换义父 Key”必须完成新 Key 验证与网页切换后撤销旧义父 Key，不能只新增。脱敏证据 `verification/key-revocation-20261026.json`；以下为历史记录。
+
+
+## 用户更正：更新义父 Key 必须撤销旧 Key（2026-10-26）
+
+“更新义父 Key”“换个新的义父 key”是轮换，不是只新建：只保留最新的义父发放 Key。
+先记录旧网页 Key 的指纹，新增并验证新 Key、同步网站成功后，必须用 `yifu-remove-key.yaml` 的明确旧指纹撤销旧义父 Key，并验证旧 Key 401、新 Key 200。
+切换后不要用移除流程的默认 `current`，否则会删掉新 Key。其他原有客户端 Key 和登录凭证保留；明确要求“额外新增并保留旧义父 Key”时才追加保留。
+本次需撤销昨天的 `7fa19b84ca57a2ba`，保留当前 `01db29c9e73f5fba`；指纹不含 Key 原值。
+
+
 ## 当前发放 Key 已更新（2026-10-26 00:39 UTC）
 
 按用户“换个新的义父 key”要求，使用默认分支 `yifu-add-key.yaml`，`publish=true` 完成。
