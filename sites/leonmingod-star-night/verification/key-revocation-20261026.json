@@ -1,0 +1,22 @@
+{
+  "workflow_run": 40250878059,
+  "result": {
+    "operation": "remove",
+    "fingerprint": "7fa19b84ca57a2ba",
+    "render_key_count": 3,
+    "credentials_preserved": 10,
+    "website_enabled": true,
+    "model_count": null,
+    "render_deploy": "dep-dbfa5eq9lscs739btcq0",
+    "parent_version": "c6a75a10-b1bd-4a93-ba54-8d4ba2236408",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "revoked_fingerprint": "7fa19b84ca57a2ba",
+  "revoked_models_http": 401,
+  "current_issued_fingerprint": "01db29c9e73f5fba",
+  "current_models_http": 200,
+  "source_modules_unchanged": true,
+  "website_content_unchanged": true,
+  "other_existing_client_keys_preserved": 2,
+  "semantics": "Refresh/replace Yifu key means publish/verify new key, then revoke prior Yifu key."
+}

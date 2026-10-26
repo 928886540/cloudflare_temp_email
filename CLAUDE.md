@@ -33,6 +33,19 @@ Existing Actions CF/Render credentials remain usable. Re-read live versions befo
 
 ### User-defined shorthand
 
+Current Yifu issuance fingerprint: `01db29c9e73f5fba` (models 200). Prior
+`7fa19b84ca57a2ba` is REVOKED (401), confirmed by run `40250878059`.
+Two other original client keys and ten login files remain intact.
+
+- **“更新义父 Key” / “换个新的义父 key” means ROTATE, not append-only.**
+  The user corrected this explicitly on 2026-10-26: retain only the newest Yifu
+  issuance key. Capture the currently issued key fingerprint before adding;
+  create/register a new key, publish it and verify models 200, then revoke the
+  captured prior Yifu key and verify 401. Use `yifu-remove-key.yaml` with that
+  explicit OLD fingerprint; never remove `current` after switching, which would
+  revoke the new key. Preserve unrelated pre-existing client keys and login files.
+  Only an explicit “add another key / keep the old Yifu key” request changes this.
+
 - “义父 Token” / “义父token” means the Free Token website at
   `https://leonmingod.com/free-token/` in this repository.
 - “加一个义父密钥” means append a new **client API key** to the Render `cpa`
