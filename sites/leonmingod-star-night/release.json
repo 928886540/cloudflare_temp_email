@@ -29,5 +29,6 @@
     "free-token/game/app-v5.mjs",
     "free-token/game/style-v3.css",
     "free-token/game/taunts-v1.mjs"
-  ]
+  ],
+  "staged_version": "ad78a420-ae8e-4df3-86b4-8b2f3d3edca3"
 }
