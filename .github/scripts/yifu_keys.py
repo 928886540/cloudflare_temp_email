@@ -319,6 +319,8 @@ def apply(plan):
         assert api.render('/services/' + api.SERVICE + '/secret-files/config.yaml')['content'] == expected_content
         assert {v['envVar']['key']: v['envVar']['value'] for v in api.render('/services/' + api.SERVICE + '/env-vars?limit=100')} == state['env']
         assert api.request(api.RENDER_ORIGIN + '/healthz')[0] == 200
+        availability = json.loads(api.request(api.ORIGIN + '/api/free-token/status')[2])
+        assert availability['open'] is (public_claim() is not None), 'Token click mode did not follow the issued key'
     except Exception:
         if published_version and api.active('leonmingod-home') == published_version:
             api.cf('leonmingod-home/deployments', 'POST', {'strategy': 'percentage',

@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Yifu Token| Gate token clicks on issued-key availability: closed shows a temporary-unavailable notice, open restores the original transition; block both reward paths while closed and preserve state in key/release operations
+
 - feat: |Free Token| Restore the single-token entrance, add a dedicated two-path choice page, compact short-screen layouts, and upgrade trial artwork/shared v2 difficulty while retaining legacy runs and reward protection
 
 - feat: |Yifu Token| Add reusable default-branch add/remove workflows with live version checks, encrypted recovery, credential preservation, and website synchronization; no recurring code edits or temporary private keys

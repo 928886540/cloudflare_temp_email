@@ -1,0 +1,4 @@
+/* A short message after a closed entrance click; the artwork stays full screen. */
+.token-availability-notice{position:fixed;z-index:90;left:50%;bottom:max(32px,calc(env(safe-area-inset-bottom) + 24px));transform:translateX(-50%);margin:0;padding:13px 28px;max-width:calc(100vw - 32px);border:1px solid #d3c49470;border-radius:999px;background:linear-gradient(120deg,#163b32f5,#092429f5);box-shadow:0 8px 28px #0006,inset 0 1px #e7dcaa20;color:#f1e0b6;text-align:center;font:20px/1.5 "STKaiti","KaiTi","Songti SC",serif;letter-spacing:.12em;pointer-events:none;white-space:nowrap}
+.token-availability-notice[hidden]{display:none!important}
+@media(max-width:700px){.token-availability-notice{font-size:18px;padding:11px 24px;bottom:max(26px,calc(env(safe-area-inset-bottom) + 18px))}}

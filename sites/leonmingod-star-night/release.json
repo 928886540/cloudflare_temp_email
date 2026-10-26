@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "190a247f-8f89-4437-b41d-137cf2760145",
+  "baseline_parent": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Collect at sword tip and add generated golden token with a five-second golden invincibility barrier",
+  "message": "Switch token clicks automatically between temporarily closed notice and original open entrance",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -35,7 +35,8 @@
     "free-token/game/engine-v6.mjs",
     "free-token/game/app-v8.mjs",
     "free-token/game/golden-token-v1.webp",
-    "free-token/game/golden-ward-v1.webp"
-  ],
-  "staged_version": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa"
+    "free-token/game/golden-ward-v1.webp",
+    "free-token/token-passage-v2.js",
+    "free-token/availability-v1.css"
+  ]
 }

@@ -1,0 +1,70 @@
+{
+  "origin": "http://localhost:8790",
+  "results": [
+    {
+      "viewport": "393x580",
+      "reduced": false,
+      "keyboard": false,
+      "status_api_mocked": true,
+      "closed_click_stays_on_token": true,
+      "closed_notice": "暂未开放",
+      "no_closed_transition": true,
+      "notice_within_viewport": true,
+      "reopens_without_refresh": true,
+      "original_choice_destination": true,
+      "errors": []
+    },
+    {
+      "viewport": "320x480",
+      "reduced": false,
+      "keyboard": false,
+      "status_api_mocked": true,
+      "closed_click_stays_on_token": true,
+      "closed_notice": "暂未开放",
+      "no_closed_transition": true,
+      "notice_within_viewport": true,
+      "reopens_without_refresh": true,
+      "original_choice_destination": true,
+      "errors": []
+    },
+    {
+      "viewport": "844x390",
+      "reduced": false,
+      "keyboard": false,
+      "status_api_mocked": true,
+      "closed_click_stays_on_token": true,
+      "closed_notice": "暂未开放",
+      "no_closed_transition": true,
+      "notice_within_viewport": true,
+      "reopens_without_refresh": true,
+      "original_choice_destination": true,
+      "errors": []
+    },
+    {
+      "viewport": "393x580",
+      "reduced": true,
+      "keyboard": false,
+      "status_api_mocked": true,
+      "closed_click_stays_on_token": true,
+      "closed_notice": "暂未开放",
+      "no_closed_transition": true,
+      "notice_within_viewport": true,
+      "reopens_without_refresh": true,
+      "original_choice_destination": true,
+      "errors": []
+    },
+    {
+      "viewport": "1440x900",
+      "reduced": false,
+      "keyboard": true,
+      "status_api_mocked": true,
+      "closed_click_stays_on_token": true,
+      "closed_notice": "暂未开放",
+      "no_closed_transition": true,
+      "notice_within_viewport": true,
+      "reopens_without_refresh": true,
+      "original_choice_destination": true,
+      "errors": []
+    }
+  ]
+}

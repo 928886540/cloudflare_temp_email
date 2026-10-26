@@ -172,3 +172,16 @@ test('in-flight v5 traces preserve pre-tip pickup and no-powerup replay',async()
   const fixture=JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../verification/difficulty-v5-fixture.json',import.meta.url),'utf8'));
   const now=Date.now();assert.equal(verifyRun({seed:fixture.seed,rulesVersion:5,sessionHash:'v5',started:now-46000,expires:now+60000,claimed:false},{sessionHash:'v5',trace:fixture.trace},now).status,200);
 });
+
+test('availability exposes no secret and closed issuance blocks both claim paths',async()=>{
+  for(const enabled of [false,true]){
+    const mf=new Miniflare({modules:true,scriptPath:'dist/index.js',compatibilityDate:'2025-04-01',bindings:enabled?{FREE_TOKEN_RENDER_KEY:'availability-test-placeholder'}:{},durableObjects:{GAME_RUNS:{className:'GameRun',useSQLite:true}},serviceBindings:{ASSETS:()=>new Response('Not found',{status:404})}});
+    try{
+      const response=await mf.dispatchFetch('http://localhost/api/free-token/status');assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
+      const text=await response.text();assert.equal(JSON.parse(text).open,enabled);assert.ok(!text.includes('availability-test-placeholder'));assert.ok(!text.includes('apiKey'));
+      const headers={'Content-Type':'application/json',Origin:'http://localhost'};
+      const claim=await mf.dispatchFetch('http://localhost/api/free-token/claim',{method:'POST',headers,body:JSON.stringify({oath:'义父',confirmed:true})});assert.equal(claim.status,enabled?200:503);
+      if(!enabled){assert.match((await claim.json()).error,/暂未开放/);const start=await mf.dispatchFetch('http://localhost/api/free-token/game/start',{method:'POST',headers,body:'{}'});assert.equal(start.status,503);assert.match((await start.json()).error,/暂未开放/);}
+    }finally{await mf.dispose();}
+  }
+});
