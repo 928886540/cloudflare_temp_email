@@ -14,6 +14,14 @@ import yifu_keys as tool
 
 
 class KeyOperationsTest(unittest.TestCase):
+    def test_delayed_rotation_refuses_a_changed_published_key(self):
+        state = {'keys': ['new-current'], 'claim': {'apiKey': 'new-current'}, 'modules': {'claim_binding': True}}
+        with patch.dict(os.environ, {'YIFU_EXPECT_CURRENT': tool.fingerprint('previous-current')}):
+            with self.assertRaises(RuntimeError):
+                tool.select_operation(state, 'add')
+        with patch.dict(os.environ, {'YIFU_EXPECT_CURRENT': tool.fingerprint('new-current')}):
+            self.assertEqual(tool.select_operation(state, 'add')['operation'], 'add')
+
     def test_yaml_preserves_other_settings(self):
         for content in ['api-keys: [one, two]\nport: 8317\n',
                         'api-keys:\n  - one\n  - two # keep trailing comment\nremote-management: {secret-key: unchanged}\n',

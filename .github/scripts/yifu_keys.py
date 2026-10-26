@@ -128,6 +128,10 @@ def read_state():
 def select_operation(state, operation, publish=True, target='current'):
     assert operation in ['add', 'remove']
     active = state['claim']['apiKey'] if state['claim'] else None
+    expected = os.environ.get('YIFU_EXPECT_CURRENT', '')
+    if operation == 'add' and expected:
+        if not re.fullmatch(r'[0-9a-f]{16}', expected) or not active or fingerprint(active) != expected:
+            raise RuntimeError('Published key changed while waiting; reread before rotation')
     if operation == 'add':
         if os.environ.get('YIFU_USE_CUSTOM_KEY') == 'true':
             if publish:
