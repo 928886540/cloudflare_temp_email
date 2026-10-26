@@ -1,0 +1,21 @@
+{
+  "workflow_run": 40273968410,
+  "role": "standalone Karl client key; unrelated to website/Yifu issuance",
+  "pattern": "sk-karl-<8 random digits>",
+  "automatic_expiry": false,
+  "result": {
+    "operation": "add",
+    "fingerprint": "162618109a2dc43b",
+    "render_key_count": 3,
+    "credentials_preserved": 10,
+    "website_enabled": false,
+    "model_count": 34,
+    "render_deploy": "dep-dbfe7q8473hc73crcqr0",
+    "parent_version": "096277f9-58f3-4671-a137-b4cb2cdcd21b",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "website_secret_changed": false,
+  "website_code_changed": false,
+  "preserved_original_keys": 2,
+  "operation_tests_passed": 14
+}

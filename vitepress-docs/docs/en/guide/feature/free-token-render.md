@@ -1,5 +1,13 @@
 # Free Token integration with Render
 
+## Added: standalone long-lived Karl key (2026-10-26 13:24 Asia/Shanghai)
+
+Created the requested `sk-karl-` plus eight random digits. The raw key is excluded from source/logs; its fingerprint is `162618109a2dc43b`.
+This is a Render-only client key with no automatic expiry, unrelated to Yifu website issuance. Models returned HTTP 200 with 34 models. Render now has three keys, retaining both originals, and all ten login files were backed up/restored.
+Deploy `dep-dbfe7q8473hc73crcqr0` reuses the original build. CF parent `096277f9-58f3-4671-a137-b4cb2cdcd21b`, entrance `51a33be8-6ca4-4b4f-886f-613bfea996b0`, modules and pages are unchanged. `FREE_TOKEN_RENDER_KEY` remains absent and apex/www remain closed.
+[Operation/verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40273968410) succeeded; all fourteen operation tests passed. Sanitized record: `.github/operations/render-client-keys/karl-20261026.json`. The key is stored only in Render and the private local delivery file; future website toggles/Yifu rotations must preserve it. Encrypted artifact retention does not define API-key lifetime.
+
+
 ## Standalone long-lived client keys, separate from website issuance
 
 The add workflow now supports `use_custom_key=true`, a prefix and 6–12 random digits, requiring `publish=false`. It writes no CF Secret, does not reopen the website and sets no automatic expiry. The recipient supplies an RSA public key; Actions retains only the encrypted key while the private key stays local. Logs/source record fingerprints only.
