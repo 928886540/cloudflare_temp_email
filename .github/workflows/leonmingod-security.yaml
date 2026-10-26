@@ -1,0 +1,25 @@
+name: Configure LeonMinGod human verification
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [inspect, setup]
+        default: inspect
+permissions:
+  contents: read
+concurrency:
+  group: free-token-home-production
+  cancel-in-progress: false
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      SECURITY_MODE: ${{ inputs.mode }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: python .github/scripts/leonmingod_security.py
