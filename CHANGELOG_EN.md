@@ -30,6 +30,8 @@
 
 ### Improvements
 
+- feat: |Jade Trial| Extend runs to 45 seconds and 24 jade with two shields; trigger rage with five jade remaining, then pure survival after collection; add ten emoji defeat taunts and a direct oath-claim link while preserving uninterrupted play and legacy replay
+
 - feat: |Star-night artwork| Refresh four adult-character homepage/token posters with native image_gen, emphasizing bare shoulders, a deeper neckline and fuller figure through versioned desktop/mobile assets
 
 - feat: |Jade Trial| Upgrade v3 to two shields, ending on the second damaging hit; increase hazard speed and later double swords while sharing server/client rules and preserving in-flight older runs

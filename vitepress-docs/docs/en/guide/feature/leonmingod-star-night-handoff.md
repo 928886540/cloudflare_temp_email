@@ -1,5 +1,15 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## v4: rage on the final five jade and defeat taunts (2026-10-26)
+
+New runs use `engine-v4.mjs` / `app-v5.mjs`: 45 seconds, 24 jade, two shields and no pause.
+**Rage begins at 19 collected jade, with five remaining; it is unrelated to the remaining seconds.**
+Rage adds aimed pairs, crossing swords and wall formations with gaps. At 24 jade, drops stop and existing jade clears; denser pure survival continues until the full 45 seconds.
+Defeats randomly show one of ten emoji taunts, including the user's three lines and playful Chinese poem adaptations, with retry and a direct `/free-token/claim/` link. Exit still returns to the choice page. Flavor text does not change reward/key lifetime.
+Server elapsed-time validation is versioned: v4 requires 45 seconds; in-flight v1/v2/v3 retain original replay and 30-second checks. No migrations, keys or artwork change.
+The offline planner in `scripts/planner.mjs` never ships to browsers or the Worker. A winning trace is stored in `verification/difficulty-v4-fixture.json`; it is not a human pass-rate claim.
+
+
 This is the latest website handoff and supersedes historical page, directory, and deployment assumptions. This handoff did not deploy website code or rotate keys.
 
 ## Published: all pause behavior removed (2026-10-25 23:50 UTC)
