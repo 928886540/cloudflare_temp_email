@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "d93ec9bd-702c-4379-9ac3-922b7919130d",
+  "baseline_parent": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Isolate delayed live-progress responses across mobile game restarts; preserve verified security and reward",
+  "message": "Remember verified browsers for two hours across game restarts and oath claims; retain live protocol and reward",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -42,7 +42,9 @@
     "free-token/game/app-v9.mjs",
     "free-token/human-v1.mjs",
     "free-token/claim-v2.mjs",
-    "free-token/game/app-v10.mjs"
-  ],
-  "staged_version": "0c98caa6-334b-4b4c-ac1f-694ec95e8879"
+    "free-token/game/app-v10.mjs",
+    "free-token/human-v2.mjs",
+    "free-token/claim-v3.mjs",
+    "free-token/game/app-v11.mjs"
+  ]
 }

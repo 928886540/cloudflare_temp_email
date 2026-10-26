@@ -17,7 +17,7 @@ The game uses native image_gen raster art, optimized as WebP. The shared v7 live
 
 Production release: parent `0c98caa6-334b-4b4c-ac1f-694ec95e8879`, forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Its unchanged forwarding code now binds `SITE` to the parent's named `Site` entrypoint so existing HTML reaches the current handler before the retained asset set. Preserve this binding and the more specific routes. New root-level resources should use versioned URLs. Acceptance evidence lives in `verification/`.
 
-The live page loads `app-v10.mjs`. Pause/resume controls, keyboard pause and automatic focus/background pause are removed by explicit user request. Advance combat/countdown by real elapsed time and settle hidden frames before accepting new input. Do not restore pause behavior from historical clients.
+The live page loads `app-v11.mjs`. Pause/resume controls, keyboard pause and automatic focus/background pause are removed by explicit user request. Advance combat/countdown by real elapsed time and settle hidden frames before accepting new input. Do not restore pause behavior from historical clients.
 
 Fairness: v5 uses constant sword paths without ricochet and stable three-lane wall gaps protected from overlapping swords. Public instructions list only win conditions; do not reveal upcoming final-five mechanics.
 
@@ -30,3 +30,5 @@ Current issuance is OPEN: a new Yifu key (`a6bbe9c75913e4ec`, fingerprint only) 
 Security v7 requires server-verified Turnstile for game starts and oath claims, immutable timed input prefixes and fresh staged server entropy. A full trace submitted only at the end cannot win. See the root instructions and bilingual operations record for private signing setup, test boundaries, live verification and remaining live-automation/shared-key limits.
 
 Client v10 isolates stale success/error responses across weak-network restarts. Targeted browser cases and 40 public source resources passed; see verification/security-v7-client-v10-release.json.
+
+After successful Turnstile verification, the server issues a fixed two-hour HttpOnly/Secure signed browser pass shared across restarts, refreshes, oath claims and apex/www. It is not IP-bound, so mobile network changes do not force another challenge. Visits do not extend expiry; expired, cleared, tampered or browser-mismatched passes require verification again. The server checks the pass independently; raw Turnstile tokens remain single-use, and live gameplay, reward conditions, rate limits, closed-state handling and private operations probes remain enforced.

@@ -120,13 +120,15 @@ export async function handleGame(request, env) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return json(400, { error: '请求格式不正确。' });
   if (action === 'start') {
     const limited = await rateLimit(verificationRequest, env, 'start'); if (limited) return limited;
-    const denied = await verifyHuman(verificationRequest, env, body.humanToken, 'game_start'); if (denied) return denied;
+    const headers = new Headers();
+    const denied = await verifyHuman(verificationRequest, env, body.humanToken, 'game_start', headers); if (denied) return denied;
     const id = crypto.randomUUID(), secret = crypto.randomUUID() + crypto.randomUUID();
     const sessionHash = await hash(secret + ':' + await sessionIdentity(request));
     const response = await env.GAME_RUNS.get(env.GAME_RUNS.idFromName(id)).fetch('https://game.internal/init', { method: 'POST', body: JSON.stringify({ sessionHash }) });
     const challenge = await response.json();
-    if (!response.ok) return json(response.status, challenge);
-    return json(200, { id, ...challenge }, { 'Set-Cookie': `lmg_game=${secret}; HttpOnly; SameSite=Strict; Path=/api/free-token/game; Max-Age=180${url.protocol === 'https:' ? '; Secure' : ''}` });
+    if (!response.ok) return json(response.status, challenge, headers);
+    headers.append('Set-Cookie', `lmg_game=${secret}; HttpOnly; SameSite=Strict; Path=/api/free-token/game; Max-Age=180${url.protocol === 'https:' ? '; Secure' : ''}`);
+    return json(200, { id, ...challenge }, headers);
   }
   if (!ID.test(body.id || '') || !['progress', 'finish'].includes(action)) return json(400, { error: '这一局的信息无效，请重新开局。' });
   const secret = request.headers.get('Cookie')?.match(/(?:^|;\s*)lmg_game=([a-f0-9-]{72})(?:;|$)/)?.[1];

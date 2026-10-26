@@ -1,5 +1,11 @@
 # Free Token integration with Render
 
+## Two-hour browser verification pass (2026-10-26)
+
+After successful Turnstile verification, the server issues a fixed two-hour HttpOnly/Secure signed browser pass shared across restarts, refreshes, oath claims and apex/www. It is not IP-bound, so mobile network changes do not force another challenge. Visits do not extend expiry; expired, cleared, tampered or browser-mismatched passes require verification again. The server checks the pass independently; raw Turnstile tokens remain single-use, and live gameplay, reward conditions, rate limits, closed-state handling and private operations probes remain enforced.
+
+Domain-separated HMAC uses the existing verification Secret; no new credentials or Render changes. Clients are human-v2 / claim-v3 / app-v11; older immutable assets remain available.
+
 ## Final release: isolate delayed responses across runs (2026-10-26 16:19 Asia/Shanghai)
 
 Current CF parent/source `0c98caa6-334b-4b4c-ac1f-694ec95e8879`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Client app-v10.mjs retains live protocol v7. Delayed success/error/cleanup from a prior run cannot overwrite a new receipt, stop the new game or clear its pending submission.

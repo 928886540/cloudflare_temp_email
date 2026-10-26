@@ -1,6 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { handleGame } from './game.js';
-import { securityConfig, verifyHuman, rateLimit } from './security.js';
+import { json, securityConfig, verifyHuman, rateLimit } from './security.js';
 import { staticResponse } from './static.js';
 export { GameRun } from './game.js';
 
@@ -43,12 +43,13 @@ const site = {
       }
       if (!env.FREE_TOKEN_RENDER_KEY) return reply(503, { error: '暂未开放，请稍后再来。' });
       const limited = await rateLimit(verificationRequest, env, 'claim'); if (limited) return limited;
-      const denied = await verifyHuman(verificationRequest, env, body.humanToken, 'oath_claim'); if (denied) return denied;
-      return reply(200, {
+      const headers = new Headers();
+      const denied = await verifyHuman(verificationRequest, env, body.humanToken, 'oath_claim', headers); if (denied) return denied;
+      return json(200, {
         baseUrl: 'https://cpa-dhke.onrender.com/v1',
         apiKey: env.FREE_TOKEN_RENDER_KEY,
         label: 'Leon🌙 贵宾密钥',
-      });
+      }, headers);
     }
     if (url.pathname === '/image' || url.pathname === '/img' || url.pathname === '/bg' || url.pathname === '/wallpaper.png') {
       const userAgent = request.headers.get('user-agent') || '';
