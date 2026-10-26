@@ -42,5 +42,6 @@
     "free-token/game/app-v9.mjs",
     "free-token/human-v1.mjs",
     "free-token/claim-v2.mjs"
-  ]
+  ],
+  "staged_version": "c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a"
 }
