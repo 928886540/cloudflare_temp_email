@@ -22,6 +22,8 @@
 
 ### Bug Fixes
 
+- fix: |Yifu Token| Remember verified browsers for two hours across refreshes, retries and claim paths while retaining signed server checks, live gameplay and rate limits
+
 - fix: |Jade Trial| Ignore delayed progress responses from prior runs and preserve the current live submission task after restarting on weak networks
 
 - fix: |Yifu Token| Replace full-seed wait-and-replay rewards with immutable live inputs, staged server entropy and human verification; block offline solved traces/direct scripts while retaining uninterrupted mobile play

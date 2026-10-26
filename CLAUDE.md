@@ -14,7 +14,7 @@ Worker `leonmingod-home` now at `0c98caa6-334b-4b4c-ac1f-694ec95e8879`
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v10.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v11.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
 Current trial is v7 (unchanged v6 physics): 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
@@ -55,8 +55,12 @@ block, revealed only after a live commitment. The server stores authoritative
 state and validates elapsed time, receipt order, immutable prefixes, identity,
 short connection gaps and single-use rewards. Finish accepts the current receipt,
 not a full trace. Exact progress retries are idempotent. Old v1-v6 runs must restart.
-Both game starts and oath claims require server-verified Turnstile (hostname/action
-and single-use token checks), with per-source rate limits. Keep test-token bypass
+Both game starts and oath claims require a server-verified human check: accept a
+valid fixed two-hour signed browser cookie or fresh Turnstile (hostname/action and
+single-use token checks). Preserve per-source rate limits. The HttpOnly/Secure pass
+is shared by apex/www and both claim paths, bound to browser UA, not IP; do not
+renew it on ordinary visits or store/reuse raw Cloudflare tokens. Client human-v2 /
+claim-v3 / app-v11 checks no-store security status before displaying the widget. Keep test-token bypass
 restricted to an explicit local-only binding AND localhost; never enable it on a
 production hostname. Real public mobile widgets have been visually checked.
 CF bindings: FREE_TOKEN_TURNSTILE_SITEKEY, FREE_TOKEN_TURNSTILE_SECRET,

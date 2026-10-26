@@ -1,0 +1,27 @@
+{
+  "scope": "Real local browser/Worker/SQLite; only Turnstile widget and siteverify mocked. Dummy reward only.",
+  "results": [
+    {
+      "width": 393,
+      "height": 580,
+      "first_verification": true,
+      "restart_without_prompt": true,
+      "cross_path_without_prompt": true,
+      "live_progress_http": 200,
+      "cleared_cookies_require_verification": true,
+      "http_only": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "first_verification": true,
+      "restart_without_prompt": true,
+      "cross_path_without_prompt": true,
+      "live_progress_http": 200,
+      "cleared_cookies_require_verification": true,
+      "http_only": true,
+      "errors": []
+    }
+  ]
+}
