@@ -31,5 +31,6 @@
     "free-token/game/taunts-v1.mjs",
     "free-token/game/engine-v5.mjs",
     "free-token/game/app-v6.mjs"
-  ]
+  ],
+  "staged_version": "8a812fa0-2aec-4ebb-ba29-bff5442ff8d0"
 }
