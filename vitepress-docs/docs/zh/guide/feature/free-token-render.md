@@ -1,5 +1,13 @@
 # 免费 Token 的 Render 对接
 
+## 已添加：Karl 独立长期 Key（北京时间 2026-10-26 13:24）
+
+按用户指定格式创建 `sk-karl-` 加 8 位随机数字，完整 Key 不写源码/日志；识别指纹为 `162618109a2dc43b`。
+这是 Render 单独使用的客户端 Key，不设置自动过期，与义父网页发放无关。新 Key 的 models 返回 200 / 34 模型；Render 共 3 把 Key，原 2 把保留，10 份登录已备份恢复。
+部署 `dep-dbfe7q8473hc73crcqr0`，沿用原构建；CF 主站 `096277f9-58f3-4671-a137-b4cb2cdcd21b`、入口 `51a33be8-6ca4-4b4f-886f-613bfea996b0`、所有模块和页面均未改，`FREE_TOKEN_RENDER_KEY` 仍缺失，主域名/www 的状态均未开放。
+[操作与验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40273968410)成功；14 项运维测试通过。脱敏记录 `.github/operations/render-client-keys/karl-20261026.json`。Key 仅在 Render 与本地私密交付文件中，以后网站开关或义父 Key 轮换不能删除 Karl Key。加密交付产物的保留期不是 API Key 有效期。
+
+
 ## 独立长期客户端 Key：与网页发放隔离
 
 默认添加流程现支持 `use_custom_key=true`、前缀和 6–12 位随机数字，必须 `publish=false`，不写 CF Secret、不开放网页，也不设置自动过期。接收方提供 RSA 公钥，Actions 仅保存加密 Key，私钥留在本地，日志与源码只记录指纹。

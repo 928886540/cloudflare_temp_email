@@ -61,8 +61,11 @@ Existing Actions CF/Render credentials remain usable. Re-read live versions befo
 
 Current Yifu issuance is CLOSED. No active/published Yifu key remains.
 `01db29c9e73f5fba` was revoked (401), run `40268141055`; prior
-`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbfd805g1s2s73fbrr7g`.
-Two other original client keys and ten login files remain intact.
+`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbfe7q8473hc73crcqr0`.
+Three non-website client keys now exist: the two originals plus a standalone Karl
+key (`sk-karl-` + eight random digits), fingerprint `162618109a2dc43b`. Karl has no
+automatic expiry and is UNRELATED to Yifu website issuance: preserve it across all
+website opening/closing/rotation operations. Ten login files remain intact.
 Use default add/remove dry-run workflows to inspect a closed service; the historical
 `issue-yifu-key` inspect assumes an open claim endpoint.
 
