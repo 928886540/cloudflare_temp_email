@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "origin": "https://leonmingod.com",
+      "viewport": "393x580",
+      "real_turnstile_widget_loaded": true,
+      "widget_fits_viewport": true,
+      "human_challenge_not_automated": true,
+      "errors": []
+    },
+    {
+      "origin": "https://www.leonmingod.com",
+      "viewport": "393x580",
+      "real_turnstile_widget_loaded": true,
+      "widget_fits_viewport": true,
+      "human_challenge_not_automated": true,
+      "errors": []
+    }
+  ]
+}

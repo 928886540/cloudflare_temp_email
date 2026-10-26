@@ -9,8 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`
-(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`).
+Worker `leonmingod-home` now at `98a305ea-8544-45ec-809a-3c1f26ccaf5e`
+(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `98a305ea-8544-45ec-809a-3c1f26ccaf5e`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
@@ -92,6 +92,12 @@ Turnstile single-use checks remain. Evidence: `verification/human-pass-*.json`.
 The cookie only remembers verification; live-v7 gameplay and rate limits still apply.
 
 ### Gameplay v8: ward contact and readable feedback
+
+Released: stage 40349972406 / publish 40350193310 / live acceptance 40350258134.
+27 checks, four layout/effect fixtures, three local touch/live sessions and 48
+resources per production host passed. Owner-signed start then 45 live packets won
+24 jade/two shields, two gold pickups, 20 deflections and six near misses. Reward
+concurrency 200/409/409, same existing key, models 200. See `verification/feel-v8-*.json`.
 
 Gold ward lasts five seconds. While active, BOTH jade and gold pickups use the
 radius-108 circle, and every touching red sword is removed by the shared engine
