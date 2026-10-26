@@ -1,0 +1,22 @@
+{
+  "https://leonmingod.com": {
+    "source_resources_match": 48,
+    "unsigned_requests": {
+      "claim": 403,
+      "game/start": 403,
+      "claim-fake": 403
+    },
+    "human_verification_required": true,
+    "production_local_bypass_disabled": true
+  },
+  "https://www.leonmingod.com": {
+    "source_resources_match": 48,
+    "unsigned_requests": {
+      "claim": 403,
+      "game/start": 403,
+      "claim-fake": 403
+    },
+    "human_verification_required": true,
+    "production_local_bypass_disabled": true
+  }
+}

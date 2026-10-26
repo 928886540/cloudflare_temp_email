@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Shanghai",
+  "inspect_run": 40348780739,
+  "stage_run": 40349972406,
+  "publish_run": 40350193310,
+  "live_verification_run": 40350258134,
+  "tests_passed": 27,
+  "stage": {
+    "mode": "stage",
+    "version_id": "98a305ea-8544-45ec-809a-3c1f26ccaf5e",
+    "production_unchanged": true,
+    "parent_version": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "1bc9323e7652e799068c6adc4c28fd8f35bef66f58c3f938e3ec9b5822ffb7af",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_OPS_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SECRET",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_TURNSTILE_SITEKEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "98a305ea-8544-45ec-809a-3c1f26ccaf5e",
+    "previous_version": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  },
+  "live": {
+    "protocol": "live-v1",
+    "rules_version": 8,
+    "owner_signed_QA_not_a_human_bypass_test": true,
+    "attempts": [
+      {
+        "jade": 24,
+        "shields": 2,
+        "frames": 2700,
+        "won": true,
+        "live_packets": 45,
+        "feedback": {
+          "gold": 2,
+          "deflect": 20,
+          "pickup": 24,
+          "near": 6
+        }
+      }
+    ],
+    "unsigned_direct_claim_and_start_rejected": true,
+    "concurrent_finish_statuses": [
+      200,
+      409,
+      409
+    ],
+    "wait_then_finish_and_single_batch_rejected": true,
+    "same_reward": true,
+    "fingerprint": "a6bbe9c75913e4ec",
+    "models_http": 200,
+    "model_count": 33
+  }
+}
