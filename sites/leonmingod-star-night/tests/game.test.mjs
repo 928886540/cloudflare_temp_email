@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare';
-import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v5.mjs';
+import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v6.mjs';
 import { verifyRun } from '../src/game.js';
 import { play } from '../scripts/calibrate.mjs';
 import { playPlanned } from '../scripts/planner.mjs';
@@ -57,7 +57,7 @@ test('real Durable Object grants one reward for concurrent finish requests',asyn
       const response=await send('start',{});assert.equal(response.status,200);assert.match(response.headers.get('set-cookie'),/HttpOnly; SameSite=Strict/);
       cookie=response.headers.get('set-cookie').split(';')[0];run=await response.json();trace=winning(run.seed)?.trace;
     }
-    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,5);assert.equal(run.rules.shields,2);
+    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,6);assert.equal(run.rules.shields,2);
     assert.equal((await send('finish',{id:run.id,trace},cookie)).status,400);
     assert.equal((await send('finish',{id:run.id,trace})).status,403);
     await new Promise(resolve=>setTimeout(resolve,44500));
@@ -96,7 +96,7 @@ test('collecting the goal stops jade drops but requires full survival time',()=>
 
 test('45-second current runs reject early wins while v3 runs keep 30-second rules',async()=>{
   const now=Date.now(),seed=27399508,trace=winning(seed).trace;
-  const run={seed,rulesVersion:5,sessionHash:'duration',started:now-31000,expires:now+90000,claimed:false};
+  const run={seed,rulesVersion:6,sessionHash:'duration',started:now-31000,expires:now+90000,claimed:false};
   assert.equal(verifyRun(run,{sessionHash:'duration',trace},now).status,400);
   const old=await import('../public/free-token/game/engine-v3.mjs'),fixture=winning(6849877,old);assert.ok(fixture);
   assert.equal(verifyRun({...run,seed:6849877,rulesVersion:3},{sessionHash:'duration',trace:fixture.trace},now).status,200);
@@ -139,4 +139,36 @@ test('wall gaps remain reachable and clear of crossing swords throughout passage
 test('in-flight v4 traces retain their original replay after fairness update',async()=>{
   const fixture=JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../verification/difficulty-v4-fixture.json',import.meta.url),'utf8'));
   const now=Date.now();assert.equal(verifyRun({seed:fixture.seed,rulesVersion:4,sessionHash:'v4',started:now-46000,expires:now+60000,claimed:false},{sessionHash:'v4',trace:fixture.trace},now).status,200);
+});
+
+
+test('jade is collected at the visible sword tip and along the blade',()=>{
+  for(const y of [RULES.playerY-RULES.pickupReach-30,RULES.playerY-48,RULES.playerY]){
+    const state=createGame(1);state.frame=100;
+    state.objects=[{id:999,type:'jade',x:state.x,y:y-7,speed:7,vx:0,radius:19}];step(state,500);
+    assert.equal(state.collected,1);assert.equal(state.jade,1);assert.ok(state.pickupY<=RULES.playerY);
+  }
+  const state=createGame(1);state.frame=100;state.objects=[{id:999,type:'jade',x:state.x+36,y:RULES.playerY-70-7,speed:7,vx:0,radius:19}];step(state,500);assert.equal(state.collected,0);
+});
+
+test('extending pickup to the tip does not enlarge the damage hitbox',()=>{
+  const state=createGame(1);state.frame=100;state.objects=[{id:999,type:'hazard',x:state.x,y:RULES.playerY-RULES.pickupReach-30-7,speed:7,vx:0,radius:26}];step(state,500);assert.equal(state.shields,2);assert.equal(state.hit,0);
+});
+
+test('gold grants five seconds without counting as jade and beats same-frame damage',()=>{
+  const state=createGame(1);state.frame=100;
+  const hazard=()=>({id:998,type:'hazard',x:state.x,y:RULES.playerY-1,speed:1,vx:0,radius:26});
+  state.objects=[hazard(),{id:999,type:'ward',x:state.x,y:RULES.playerY-RULES.pickupReach-30-7,speed:7,vx:0,radius:24}];step(state,500);
+  assert.equal(state.wardCollected,1);assert.equal(state.wardUntil,400);assert.equal(state.jade,0);assert.equal(state.shields,2);assert.equal(state.blocked,1);
+  state.objects=[];state.frame=399;state.objects=[hazard()];step(state,500);assert.equal(state.shields,2);
+  state.objects=[hazard()];step(state,500);assert.equal(state.shields,1,'Damage resumes exactly at expiry');
+});
+
+test('a second gold pickup refreshes five seconds instead of stacking time',()=>{
+  const state=createGame(1);state.frame=200;state.wardUntil=450;state.objects=[{id:999,type:'ward',x:state.x,y:RULES.playerY-70-7,speed:7,vx:0,radius:24}];step(state,500);assert.equal(state.wardUntil,500);
+});
+
+test('in-flight v5 traces preserve pre-tip pickup and no-powerup replay',async()=>{
+  const fixture=JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../verification/difficulty-v5-fixture.json',import.meta.url),'utf8'));
+  const now=Date.now();assert.equal(verifyRun({seed:fixture.seed,rulesVersion:5,sessionHash:'v5',started:now-46000,expires:now+60000,claimed:false},{sessionHash:'v5',trace:fixture.trace},now).status,200);
 });

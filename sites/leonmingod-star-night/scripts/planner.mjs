@@ -1,5 +1,5 @@
 // Offline verification controller: short-horizon path planning, never shipped in the app.
-import * as engine from '../public/free-token/game/engine-v5.mjs';
+import * as engine from '../public/free-token/game/engine-v6.mjs';
 
 export function playPlanned(seed,{reaction=6,horizon=96}={}){
   const {RULES,createGame,step,replay}=engine,state=createGame(seed),trace=[];
@@ -11,16 +11,18 @@ export function playPlanned(seed,{reaction=6,horizon=96}={}){
       for(let k=1;k<costs.length;k++){
         const t=k*reaction/2;
         for(const o of state.objects){
-          const y=o.y+o.speed*t,dy=RULES.playerY-y;
+          const y=o.y+o.speed*t;
+          const nearestY=o.type==='hazard'?RULES.playerY:Math.max(RULES.playerY-RULES.pickupReach,Math.min(RULES.playerY,y));
+          const dy=nearestY-y;
           if(Math.abs(dy)>100)continue;
           const ox=o.x+o.vx*t;
-          if(o.type==='hazard'&&t<state.cooldown-2)continue;
+          if(o.type==='hazard'&&(t<state.cooldown-2||state.frame+t<state.wardUntil))continue;
           for(let i=0;i<N;i++){
             const distance=Math.hypot(xs[i]-ox,dy);
             if(o.type==='hazard'){
               if(distance<o.radius+18)costs[k][i]+=1e6;
               else costs[k][i]+=Math.max(0,1-distance/78)*30;
-            }else if(state.jade<RULES.goal&&Math.abs(dy)<o.speed*reaction/2&&distance<o.radius+18){costs[k][i]-=90;}
+            }else if((o.type==='ward'||state.jade<RULES.goal)&&Math.abs(dy)<o.speed*reaction/2&&distance<o.radius+18){costs[k][i]-=o.type==='ward'?130:90;}
           }
         }
       }

@@ -34,6 +34,9 @@
 
 ### Improvements
 
+- feat: |Jade Trial| Add native-generated gold-token/barrier art and five-second invincibility with shared server replay and legacy support
+- fix: |Jade Trial| Collect jade on sword-tip/blade contact with aligned feedback while retaining the ordinary damage hitbox
+
 - docs: |Yifu Token| Define key refresh as rotation: publish/verify the new key, then revoke the old fingerprint without deleting the current key
 
 - docs: |Yifu Token| Record a new website-issued key, current CF/Render versions and verification; preserve all three previous keys, ten login files and website/game code
