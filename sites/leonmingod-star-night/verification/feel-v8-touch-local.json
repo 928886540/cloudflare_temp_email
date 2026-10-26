@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "width": 393,
+      "height": 580,
+      "real_live_progress_http": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "claim_ui": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "real_live_progress_http": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "claim_ui": true,
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "real_live_progress_http": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "claim_ui": true,
+      "errors": []
+    }
+  ]
+}

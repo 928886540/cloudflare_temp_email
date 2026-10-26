@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { createHmac, createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
-import { RULES, createGame, step, installEntropy } from '../public/free-token/game/engine-v7.mjs';
+import { RULES, createGame, step, installEntropy } from '../public/free-token/game/engine-v8.mjs';
 import { planTarget } from './planner.mjs';
 const origin=process.env.TEST_ORIGIN||'https://leonmingod.com';
 const local=['localhost','127.0.0.1'].includes(new URL(origin).hostname);
@@ -21,7 +21,7 @@ assert.equal((await api('game/start',{})).status,local?503:403);
 result.unsigned_direct_claim_and_start_rejected=true;
 const startBody=local?{humanToken:'local-test'}:{};
 const abandoned=await api('game/start',startBody,'',true);assert.equal(abandoned.status,200);
-assert.equal(abandoned.data.rules.version,7);assert.equal(abandoned.data.protocol,'live-v1');assert.equal(abandoned.data.entropy,undefined);
+assert.equal(abandoned.data.rules.version,8);assert.equal(abandoned.data.protocol,'live-v1');assert.equal(abandoned.data.entropy,undefined);
 const finishedEarly=await api('game/finish',{id:abandoned.data.id,receipt:abandoned.data.receipt,trace:[[0,500]]},abandoned.cookie);assert.equal(finishedEarly.status,400);
 let won;
 for(let attempt=0;attempt<4&&!won;attempt++){

@@ -75,7 +75,7 @@ test('real SQLite Durable Object locks prefixes, supports exact retries and gran
   const send=(action,body,cookie)=>mf.dispatchFetch(origin+'/api/free-token/game/'+action,{method:'POST',headers:{...headers,...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(body)});
   try{
     const initial=await send('start',{humanToken:'local-test'});assert.equal(initial.status,200);
-    const challenge=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];assert.equal(challenge.rules.version,7);assert.equal(challenge.protocol,'live-v1');assert.equal(challenge.entropy,undefined);
+    const challenge=await initial.json(),cookie=initial.headers.get('set-cookie').split(';')[0];assert.equal(challenge.rules.version,8);assert.equal(challenge.protocol,'live-v1');assert.equal(challenge.entropy,undefined);
     const ns=await mf.getDurableObjectNamespace('GAME_RUNS'),stub=ns.get(ns.idFromName(challenge.id));
     const stored=await (await stub.fetch('https://game.internal/test-read')).json();stored.started=Date.now()-1100;stored.lastSeen=stored.started;
     await stub.fetch('https://game.internal/test-put',{method:'POST',body:JSON.stringify(stored)});
