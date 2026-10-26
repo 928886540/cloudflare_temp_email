@@ -1,0 +1,24 @@
+[
+  {
+    "source": "/workspace/generated_images/exec-66103eb6-d2ad-461d-b516-cc0346a1ccf6.png",
+    "asset": "public/free-token/game/golden-token-v1.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bytes": 155572,
+    "sha256": "1758f68d544b37f163a8ae303265fb703d80c6e6c9882e4405f611bb34a8e5d5",
+    "method": "native image_gen; WebP encoding only; original PNG retained"
+  },
+  {
+    "source": "/workspace/generated_images/exec-ff85e15b-90c0-4397-a0dc-f7ff50e94f0f.png",
+    "asset": "public/free-token/game/golden-ward-v1.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bytes": 452340,
+    "sha256": "bc4bed7f1e49a0b62cd57751e37fe5879dca6f5eeb504e65e1d2913148f78d35",
+    "method": "native image_gen; WebP encoding only; original PNG retained"
+  }
+]

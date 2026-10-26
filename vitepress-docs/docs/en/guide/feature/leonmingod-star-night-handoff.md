@@ -1,5 +1,13 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## v6: sword-tip pickups and a five-second golden barrier
+
+Fix jade collecting only near the hilt: extend pickup geometry 70 units from the tip through the blade and place collection feedback at contact. The ordinary damage hitbox stays small.
+Both the gold talisman and transparent ornate barrier use native image_gen art, encoded as WebP with original PNGs retained. Gold does not count toward the 24 jade. Collecting it grants five seconds of invincibility, surrounds the sword with the generated gold aura and shows a HUD countdown. Pickup wins same-frame damage; another refreshes five seconds without stacking. Two spawn opportunities per run; collection still works during post-goal survival.
+Browser/server share `engine-v6.mjs`; client `app-v8.mjs`; in-flight v1-v5 replay stays intact. Keep 45 seconds, 24 jade, two shields, no pause, protected wall openings, ten taunts and no floating gap boxes.
+Art provenance: `verification/golden-ward-art.json`. Mobile checks cover early tip contact, same-frame blocking, expiry, and transparent barrier rendering without revealing later difficulty mechanics.
+
+
 ## Published: remove floating rectangles and gap labels (2026-10-26 01:30 UTC)
 
 Parent `190a247f-8f89-4437-b41d-137cf2760145`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`; client `app-v7.mjs`.
