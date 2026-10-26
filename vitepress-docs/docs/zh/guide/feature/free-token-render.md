@@ -2,6 +2,10 @@
 
 ## 2 小时免重复验证（2026-10-26）
 
+已于北京时间 2026-10-26 23:07 发布：主站/代码版本 `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。发布前只读核对实时基线 `0c98caa6-334b-4b4c-ac1f-694ec95e8879`。20 项检查、两种手机尺寸刷新/重开/切换领取实测通过；主域名/www 各 43 项资源与源码一致。公网管理方临时签名凭证验证连续开局 200、相同奖励领取 200、固定两小时有效期；缺失/过期/篡改凭证均 403。该公网验收使用管理权限签名，不是自动通过真人挑战；真实手机验证控件另行加载检查通过。
+
+[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40345932586) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346185218) · [Acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346269266)
+
 验证通过后由服务器签发固定 2 小时的 HttpOnly/Secure 签名凭证，同一浏览器刷新、重开游戏、切换义父领取及主域名/www 不再重复弹 Turnstile。凭证不绑定 IP，手机切网不会因此重验；访问不续期，过期、清除 Cookie、签名或浏览器不匹配时重新验证。服务端独立核验凭证，CF 原 token 仍单次使用，实时游戏、领奖条件、限频、关闭状态与私密运维验收继续生效。
 
 沿用现有验证 Secret 进行用途隔离的 HMAC 签名，无需新增凭据或修改 Render。客户端 human-v2 / claim-v3 / app-v11；已有静态版本保留，避免缓存混用。

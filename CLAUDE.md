@@ -9,8 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `0c98caa6-334b-4b4c-ac1f-694ec95e8879`
-(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `0c98caa6-334b-4b4c-ac1f-694ec95e8879`).
+Worker `leonmingod-home` now at `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`
+(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
@@ -81,6 +81,15 @@ cannot overwrite the new receipt, stop a new game, or clear its pending submissi
 Both delayed-response browser scenarios passed; stage 40291321848 (18 checks),
 publish 40291450251 and 40 source resources on apex/www passed. Protocol/keys,
 gameplay/artwork and the real public 45-packet acceptance above remain unchanged.
+
+Two-hour browser-pass release (2026-10-26): stage 40345932586, publish 40346185218,
+owner-signed public acceptance 40346269266. Twenty checks, two local mobile browser
+sizes and 43 source resources per production host passed. Private acceptance checks
+repeat starts and same rewards using in-memory signed passes, never automatic human
+challenge solving. `leonmingod-security.yaml` mode `verify-pass` reproduces this check
+without changing config. Missing/expired/tampered cookies still fail; original
+Turnstile single-use checks remain. Evidence: `verification/human-pass-*.json`.
+The cookie only remembers verification; live-v7 gameplay and rate limits still apply.
 
 ### User-defined shorthand
 

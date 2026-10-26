@@ -2,6 +2,10 @@
 
 ## Two-hour browser verification pass (2026-10-26)
 
+Published at 23:07 Asia/Shanghai on 2026-10-26: parent/source `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`, unchanged forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Read-only inspection confirmed the live baseline `0c98caa6-334b-4b4c-ac1f-694ec95e8879` before publication. Twenty checks and two mobile browser sizes passed refresh/restart/cross-path reuse; 43 assets matched on both apex/www. Owner-signed temporary passes passed live repeat starts and identical reward claims (200), fixed expiry, and missing/expired/tampered rejection (403). This administrative probe does not automate a human challenge; actual mobile widgets were separately loaded and checked.
+
+[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40345932586) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346185218) · [Acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346269266)
+
 After successful Turnstile verification, the server issues a fixed two-hour HttpOnly/Secure signed browser pass shared across restarts, refreshes, oath claims and apex/www. It is not IP-bound, so mobile network changes do not force another challenge. Visits do not extend expiry; expired, cleared, tampered or browser-mismatched passes require verification again. The server checks the pass independently; raw Turnstile tokens remain single-use, and live gameplay, reward conditions, rate limits, closed-state handling and private operations probes remain enforced.
 
 Domain-separated HMAC uses the existing verification Secret; no new credentials or Render changes. Clients are human-v2 / claim-v3 / app-v11; older immutable assets remain available.
