@@ -1,5 +1,15 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## v5 adjustment: readable patterns and protected wall openings
+
+The user found v4 unfair; the goal is a challenging, dodgeable game rather than forced losses.
+New `engine-v5.mjs` / `app-v6.mjs` keep swords on their initial straight trajectories and remove them offscreen without ricochet. Walls leave three stable empty lanes near a reachable position. Predicted crossing swords cannot block the opening during passage; a small moving gap marker makes it readable.
+Normal cadence/pair rates ease slightly. Late pairs change from 20/14 to 28/24 frames and walls from 108/72 to 180/156 frames; speeds/drift ease and hit protection rises from 48 to 60 frames.
+Keep 45 seconds, 24 jade, two shields, final-five progression, survival after collection, no pause, ten taunts, choice-page exit and in-flight v1/v2/v3/v4 replay.
+**Public pages explain only the win conditions, without revealing the final-five or later mechanics.** The original claim page's game summary now also says 45 seconds/24 jade.
+Ninety seed/phase scenarios verify at least 900 walls and 30000 protected frames: gaps are reachable after a 300ms reaction budget and remain clear of crossing swords. Artwork and the current key stay unchanged.
+
+
 ## Yesterday's Yifu key revoked (2026-10-26 00:46 UTC)
 
 The user explicitly clarified that refreshing means replacing and revoking the prior Yifu key. [Revocation and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250878059) passed.

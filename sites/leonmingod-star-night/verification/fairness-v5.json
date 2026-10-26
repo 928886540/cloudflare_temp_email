@@ -1,0 +1,22 @@
+{
+  "rule_version": 5,
+  "duration": 45,
+  "goal": 24,
+  "shields": 2,
+  "edge_ricochet": false,
+  "wall_empty_lanes": 3,
+  "protected_gap_width": 164,
+  "tested_seeds_per_phase": 30,
+  "tested_starting_jade_counts": [
+    0,
+    19,
+    24
+  ],
+  "cases": 90,
+  "minimum_walls_checked": 900,
+  "minimum_protected_frames_checked": 30000,
+  "reaction_budget_ms": 300,
+  "gap_reachable_and_not_blocked": true,
+  "legacy_v4_replay_verified": true,
+  "public_copy_shows_only_win_conditions": true
+}

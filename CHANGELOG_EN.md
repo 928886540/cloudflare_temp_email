@@ -18,6 +18,8 @@
 
 ### Bug Fixes
 
+- fix: |Jade Trial| Remove ricochets, protect reachable stable three-lane wall gaps, ease density/speed, and show only win conditions without mechanic spoilers; retain legacy replay
+
 - fix: |Jade Trial| Remove pause/resume controls, shortcuts, and focus/background auto-pause; advance by real elapsed time and catch up hidden frames to prevent touch-drag pauses
 
 - fix: |Deployment| Skip backend deployment after failed or skipped upstream syncs; validate required secrets before setup and explain how to view deployment error logs

@@ -1,4 +1,5 @@
-import { RULES, replay } from '../public/free-token/game/engine-v4.mjs';
+import { RULES, replay } from '../public/free-token/game/engine-v5.mjs';
+import { replay as replayV4 } from '../public/free-token/game/engine-v4.mjs';
 import * as engineV3 from '../public/free-token/game/engine-v3.mjs';
 import { replay as replayV2 } from '../public/free-token/game/engine-v2.mjs';
 import { replay as replayV1 } from '../public/free-token/game/engine.mjs';
@@ -18,7 +19,7 @@ export function verifyRun(run, body, now) {
   if (run.claimed) return { status: 409, error: '这一局已经领取过奖励。' };
   const duration = (run.rulesVersion ?? 1) >= 4 ? RULES.frames / RULES.fps * 1000 : 30000;
   if (now - run.started < duration - 700) return { status: 400, error: `请完整完成 ${duration / 1000} 秒挑战后再领取。` };
-  const replayRun = { 1: replayV1, 2: replayV2, 3: engineV3.replay, 4: replay }[run.rulesVersion ?? 1];
+  const replayRun = { 1: replayV1, 2: replayV2, 3: engineV3.replay, 4: replayV4, 5: replay }[run.rulesVersion ?? 1];
   const result = replayRun?.(run.seed, body.trace);
   if (!result?.won) return { status: 400, error: '尚未破阵成功，再挑战一次吧。' };
   return { status: 200, result };
