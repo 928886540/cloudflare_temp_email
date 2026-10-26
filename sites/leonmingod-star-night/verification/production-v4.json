@@ -1,0 +1,163 @@
+[
+  {
+    "path": "/index.html",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/home-orb-v3.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/index.html",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/layout-v3.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/choose/index.html",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/choose-v1.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/claim/index.html",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/claim-compact-v4.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/index.html",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/app-v2.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/style-v2.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/engine-v2.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/jade-atlas-v1.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/mountain-night-v1.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/app-v3.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/engine-v3.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/home-hero-desktop-v6.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/home-hero-mobile-v6.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/welcome-desktop-v4.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/welcome-mobile-v4.webp",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/choose-v2.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/app-v4.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/engine-v4.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/app-v5.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/style-v3.css",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "path": "/free-token/game/taunts-v1.mjs",
+    "http": 200,
+    "matches_source": true
+  },
+  {
+    "protected_artwork_scripts": 8,
+    "unchanged": true
+  },
+  {
+    "apex_www_pages": 4,
+    "matched": true
+  },
+  {
+    "old_claim_http": 200,
+    "base_url": "https://cpa-dhke.onrender.com/v1",
+    "key_fingerprint": "7fa19b84ca57a2ba",
+    "models_http": 200,
+    "model_count": 34
+  },
+  {
+    "game_rules_version": 4,
+    "duration_seconds": 45,
+    "rage_at_collected": 19,
+    "rage_remaining": 5,
+    "initial_shields": 2,
+    "game_goal": 24,
+    "game_reward_same_key": true,
+    "concurrent_finish_statuses": [
+      409,
+      409,
+      200
+    ],
+    "jade": 24,
+    "shields": 1
+  }
+]
