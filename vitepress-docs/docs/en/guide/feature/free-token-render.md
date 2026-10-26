@@ -1,5 +1,15 @@
 # Free Token integration with Render
 
+## Current issued key refreshed (2026-10-26 00:39 UTC)
+
+Completed the requested new Yifu client key using default-branch `yifu-add-key.yaml`, `publish=true`.
+The new key fingerprint is `01db29c9e73f5fba` (not a credential). Render now has four keys: all three prior keys remain valid, and all ten login files were backed up and restored.
+Render deploy `dep-dbfa25cs728c73elg030` reuses commit `f9cee393e5360db6b47dd18d6c2747a2e6c6cbb7`. Old/new key model checks passed; the new key returned models HTTP 200 with 34 models.
+Website `FREE_TOKEN_RENDER_KEY` issues that same new key; the API base remains `https://cpa-dhke.onrender.com/v1`.
+Current parent version is `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`. This operation only changed the Secret: all Worker modules, pages/effects, v4 game rules, other bindings and Render environment settings remain intact.
+[Operation and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250335029); sanitized result: `verification/key-rotation-20261026.json`. Keep using the fixed workflow and live version reads for future key changes. Sections below are historical.
+
+
 ## Published: v4 final-five rage and ten taunts (2026-10-26 00:24 UTC)
 
 Parent `ad78a420-ae8e-4df3-86b4-8b2f3d3edca3`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0` with SITE → Site intact.
