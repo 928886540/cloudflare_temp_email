@@ -44,6 +44,8 @@
 
 ### Improvements
 
+- docs: |Yifu Token| Record a newly registered key and reopened website, live CF/Render versions and verification while preserving standalone Karl and original logins
+
 - feat: |Jade Trial| Add native-generated gold-token/barrier art and five-second invincibility with shared server replay and legacy support
 - fix: |Jade Trial| Collect jade on sword-tip/blade contact with aligned feedback while retaining the ordinary damage hitbox
 

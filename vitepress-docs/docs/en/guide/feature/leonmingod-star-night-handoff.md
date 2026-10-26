@@ -1,5 +1,13 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Current state: new Yifu key synchronized, website reopened (2026-10-26 15:00 Asia/Shanghai)
+
+Registered and verified a new Yifu client key, fingerprint `69ba11c6809909d7` (not a credential), then published the same value through CF `FREE_TOKEN_RENDER_KEY`. Apex/www claims both return `https://cpa-dhke.onrender.com/v1` with that key; models HTTP 200 / 34 models.
+Actual mobile token clicks at 393x580 on both domains restore the original transition to `/free-token/choose/`, with no script errors. Availability is open; pages, artwork, game rules and Worker modules are unchanged.
+Current parent `fd79879f-4dbc-43c9-b5fa-d9cf240b9b59`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Render deploy `dep-dbffl1cs728c73f95fqg` reuses the existing code.
+Four Render keys remain: this sole Yifu issuance key, the two original keys and standalone Karl (`162618109a2dc43b`, independently reverified models HTTP 200). All ten login files are preserved. Previously revoked Yifu keys stay revoked; future refreshes must revoke the replaced key while preserving Karl.
+[Operation and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40283102427) succeeded. Sanitized evidence: `.github/operations/render-client-keys/yifu-open-20261026.json`; no raw key is recorded. Sections below are historical.
+
 ## Current state: temporarily closed, Yifu key revoked (2026-10-26 04:16 UTC)
 
 The requested two-state click behavior is implemented and currently CLOSED. Yifu fingerprint `01db29c9e73f5fba` was removed from Render and returns models HTTP 401; CF `FREE_TOKEN_RENDER_KEY` is absent.

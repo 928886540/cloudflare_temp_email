@@ -9,8 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `096277f9-58f3-4671-a137-b4cb2cdcd21b`
-(closed: no `FREE_TOKEN_RENDER_KEY`; source release `51310ec6-e00b-4308-b729-bcfc7af6f111`).
+Worker `leonmingod-home` now at `fd79879f-4dbc-43c9-b5fa-d9cf240b9b59`
+(OPEN: `FREE_TOKEN_RENDER_KEY` restored with a new key; source release `51310ec6-e00b-4308-b729-bcfc7af6f111`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
@@ -59,9 +59,13 @@ Existing Actions CF/Render credentials remain usable. Re-read live versions befo
   Preserve this behavior and the unrelated original keys/login files. Website
   stage/publish must retain a closed state if its issuance Secret is absent.
 
-Current Yifu issuance is CLOSED. No active/published Yifu key remains.
+Current Yifu issuance is OPEN. The sole published Yifu key fingerprint is
+`69ba11c6809909d7`, created and synchronized by run `40283102427` on 2026-10-26.
 `01db29c9e73f5fba` was revoked (401), run `40268141055`; prior
-`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbfe7q8473hc73crcqr0`.
+`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbffl1cs728c73f95fqg`.
+Render has four keys in total: this Yifu key plus the three unrelated keys below.
+Both apex/www claim the same new key (models 200 / 34 models); actual mobile token
+clicks restore the original transition to `/free-token/choose/` without page changes.
 Three non-website client keys now exist: the two originals plus a standalone Karl
 key (`sk-karl-` + eight random digits), fingerprint `162618109a2dc43b`. Karl has no
 automatic expiry and is UNRELATED to Yifu website issuance: preserve it across all

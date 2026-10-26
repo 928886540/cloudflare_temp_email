@@ -1,5 +1,13 @@
 # 免费 Token 的 Render 对接
 
+## 当前状态：新义父 Key 已同步，网页重新开放（北京时间 2026-10-26 15:00）
+
+已新建并验证义父客户端 Key，识别指纹为 `69ba11c6809909d7`（非凭据）；同一把 Key 已写入 CF `FREE_TOKEN_RENDER_KEY`。主域名/www 领取均返回 `https://cpa-dhke.onrender.com/v1` 和该 Key，models 200 / 34 模型。
+令牌入口已恢复原转场与 `/free-token/choose/`；手机 393×580 的主域名/www 实际点击通过，无脚本异常。网页状态为 open，未修改页面、图片、游戏规则或 Worker 模块。
+主站当前版本 `fd79879f-4dbc-43c9-b5fa-d9cf240b9b59`；入口仍为 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。Render 部署 `dep-dbffl1cs728c73f95fqg`，沿用原代码。
+Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独立 Karl Key（`162618109a2dc43b`，再次验证 models 200）。10 份登录保留。已撤销的旧义父 Key 不恢复；以后更新义父 Key 仍须撤销被替换的那把，Karl 不参与网页轮换。
+[操作与验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40283102427)成功。脱敏结果 `.github/operations/render-client-keys/yifu-open-20261026.json`；不记录 Key 原值。以下为历史记录。
+
 ## 已添加：Karl 独立长期 Key（北京时间 2026-10-26 13:24）
 
 按用户指定格式创建 `sk-karl-` 加 8 位随机数字，完整 Key 不写源码/日志；识别指纹为 `162618109a2dc43b`。
