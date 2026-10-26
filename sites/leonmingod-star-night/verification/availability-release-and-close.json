@@ -1,0 +1,70 @@
+{
+  "website_stage_run": 40267876360,
+  "website_publish_run": 40268031184,
+  "key_removal_run": 40268141055,
+  "backend_checks": {
+    "passed": 18,
+    "failed": 0
+  },
+  "key_workflow_tests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "stage": {
+    "mode": "stage",
+    "version_id": "51310ec6-e00b-4308-b729-bcfc7af6f111",
+    "production_unchanged": true,
+    "parent_version": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "b6e0efb90109b1de08fb7b20021a1d117e73e840ae55d8fa7119a23b80aa3c34",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "51310ec6-e00b-4308-b729-bcfc7af6f111",
+    "previous_version": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  },
+  "closure": {
+    "operation": "remove",
+    "fingerprint": "01db29c9e73f5fba",
+    "render_key_count": 2,
+    "credentials_preserved": 10,
+    "website_enabled": false,
+    "model_count": null,
+    "render_deploy": "dep-dbfd805g1s2s73fbrr7g",
+    "parent_version": "096277f9-58f3-4671-a137-b4cb2cdcd21b",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "revoked_models_http": 401,
+  "active_yifu_key": null,
+  "ordinary_client_keys_preserved": 2
+}

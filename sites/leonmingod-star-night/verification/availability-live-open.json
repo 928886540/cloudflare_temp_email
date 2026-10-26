@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "origin": "https://leonmingod.com",
+      "actual_status_api": true,
+      "open": true,
+      "click_result": "original choice page",
+      "claim_and_game_503_verified": false,
+      "errors": []
+    },
+    {
+      "origin": "https://www.leonmingod.com",
+      "actual_status_api": true,
+      "open": true,
+      "click_result": "original choice page",
+      "claim_and_game_503_verified": false,
+      "errors": []
+    }
+  ]
+}

@@ -9,7 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`.
+Worker `leonmingod-home` now at `096277f9-58f3-4671-a137-b4cb2cdcd21b`
+(closed: no `FREE_TOKEN_RENDER_KEY`; source release `51310ec6-e00b-4308-b729-bcfc7af6f111`).
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
@@ -47,9 +48,23 @@ Existing Actions CF/Render credentials remain usable. Re-read live versions befo
 
 ### User-defined shorthand
 
-Current Yifu issuance fingerprint: `01db29c9e73f5fba` (models 200). Prior
-`7fa19b84ca57a2ba` is REVOKED (401), confirmed by run `40250878059`.
+- **“暂时去掉 / 关闭义父 Token” means revoke the currently issued Yifu key in
+  Render and remove `FREE_TOKEN_RENDER_KEY`. Token clicks must stay on the token
+  artwork and show “暂未开放”. “开放 / 打开给别人用” means register/verify a new key
+  and publish that Secret; clicks automatically restore the original animation
+  and `/free-token/choose/` entry.** The frontend checks no-store
+  `GET /api/free-token/status` on every click, including reduced-motion/keyboard.
+  No new artwork/page redeploy is needed for routine open/close operations. Do not
+  restore a revoked old key or roll back an enabled Worker version to reopen.
+  Preserve this behavior and the unrelated original keys/login files. Website
+  stage/publish must retain a closed state if its issuance Secret is absent.
+
+Current Yifu issuance is CLOSED. No active/published Yifu key remains.
+`01db29c9e73f5fba` was revoked (401), run `40268141055`; prior
+`7fa19b84ca57a2ba` remains revoked. Render deploy `dep-dbfd805g1s2s73fbrr7g`.
 Two other original client keys and ten login files remain intact.
+Use default add/remove dry-run workflows to inspect a closed service; the historical
+`issue-yifu-key` inspect assumes an open claim endpoint.
 
 - **“更新义父 Key” / “换个新的义父 key” means ROTATE, not append-only.**
   The user corrected this explicitly on 2026-10-26: retain only the newest Yifu

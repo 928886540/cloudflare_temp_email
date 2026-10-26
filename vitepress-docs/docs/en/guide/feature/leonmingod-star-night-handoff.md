@@ -1,5 +1,20 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Current state: temporarily closed, Yifu key revoked (2026-10-26 04:16 UTC)
+
+The requested two-state click behavior is implemented and currently CLOSED. Yifu fingerprint `01db29c9e73f5fba` was removed from Render and returns models HTTP 401; CF `FREE_TOKEN_RENDER_KEY` is absent.
+Current parent `096277f9-58f3-4671-a137-b4cb2cdcd21b` is the Secret-disabled version of source release `51310ec6-e00b-4308-b729-bcfc7af6f111`. Entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Render deploy `dep-dbfd805g1s2s73fbrr7g` preserves the two other client keys and all ten login files.
+
+- Closed: the token remains clickable, showing only “暂未开放” without transition/navigation; both reward paths return 503 without a key.
+- Open: default `yifu-add-key.yaml` registers/verifies/publishes a new key; the next click restores the original animation and choice-page entry, with no page deployment or refresh needed.
+- Close: default `yifu-remove-key.yaml` removes the currently issued key and closes the entrance automatically. No automatic reopening schedule; never restore a revoked key/old Worker version to reopen.
+
+No-store `GET /api/free-token/status` contains no key and follows only the issuance Secret. Add/remove workflows verify it, and website releases preserve a missing-Secret closed state. Historical inspect assumes open claims; use default add/remove dry runs while closed.
+[Entrance publication](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268031184) passed, along with eighteen backend checks and ten key-operation tests. [Revocation](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268141055) succeeded.
+Real apex/www open clicks and subsequent real closed clicks were verified separately; both reward paths are now 503. Five layout/input scenarios with mocked availability verified closed clicks, reopening without refresh, touch, keyboard and reduced motion. Artwork, v6 game/barrier mechanics, corridor protection and forwarding remain intact.
+Evidence: `verification/availability-release-and-close.json`, `availability-live-*.json`, `availability-browser-*.json`. Sections below are historical.
+
+
 ## Published: sword-tip pickup and generated golden barrier v6 (2026-10-26 02:02 UTC)
 
 Parent `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`; client `app-v8.mjs`, shared rules v6.

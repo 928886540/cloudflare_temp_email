@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "origin": "https://leonmingod.com",
+      "actual_status_api": true,
+      "open": false,
+      "click_result": "暂未开放 without navigation",
+      "claim_and_game_503_verified": true,
+      "errors": []
+    },
+    {
+      "origin": "https://www.leonmingod.com",
+      "actual_status_api": true,
+      "open": false,
+      "click_result": "暂未开放 without navigation",
+      "claim_and_game_503_verified": true,
+      "errors": []
+    }
+  ]
+}
