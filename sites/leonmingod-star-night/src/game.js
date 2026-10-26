@@ -60,7 +60,7 @@ export async function handleGame(request, env) {
   if (request.method !== 'POST') return json(405, { error: '请通过游戏页面发起挑战。' }, { Allow: 'POST' });
   if (request.headers.get('Origin') !== url.origin) return json(403, { error: '请在本站完成挑战。' });
   if (!request.headers.get('Content-Type')?.toLowerCase().includes('application/json')) return json(415, { error: '请求格式不正确。' });
-  if (!env.FREE_TOKEN_RENDER_KEY || !env.GAME_RUNS) return json(503, { error: '奖励正在准备，请稍后再来。' });
+  if (!env.FREE_TOKEN_RENDER_KEY || !env.GAME_RUNS) return json(503, { error: '暂未开放，请稍后再来。' });
   const text = await request.text();
   if (text.length > 50000) return json(413, { error: '操作记录过长，请重新挑战。' });
   let body;

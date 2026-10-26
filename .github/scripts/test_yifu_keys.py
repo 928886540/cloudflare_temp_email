@@ -119,7 +119,7 @@ class KeyOperationsTest(unittest.TestCase):
              patch.object(tool, 'Path', lambda name: Path(directory) / name), \
              patch.multiple(tool.api, render=render, cf=cf, management_request=management, models=models,
                             active=lambda worker: current['parent'] if worker == 'leonmingod-home' else state['entrance'],
-                            latest_deploy=lambda: current['deploy'], request=lambda *a, **kw: (200, {}, b'{}')), \
+                            latest_deploy=lambda: current['deploy'], request=lambda url, *a, **kw: (200, {}, json.dumps({'open': current['claim'] is not None}).encode() if url.endswith('/api/free-token/status') else b'{}')), \
              contextlib.redirect_stdout(io.StringIO()):
             if concurrent:
                 with self.assertRaises(AssertionError):

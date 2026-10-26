@@ -6,6 +6,12 @@ export { GameRun } from './game.js';
 const site = {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/free-token/status') {
+      const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+      if (!['GET', 'HEAD'].includes(request.method)) return Response.json({ error: 'Method not allowed' }, { status: 405, headers: { ...headers, Allow: 'GET, HEAD' } });
+      const open = Boolean(env.FREE_TOKEN_RENDER_KEY);
+      return new Response(request.method === 'HEAD' ? null : JSON.stringify({ open, message: open ? '' : '暂未开放' }), { headers: { ...headers, 'Content-Type': 'application/json; charset=utf-8' } });
+    }
     const page = staticResponse(request);
     if (page) return page;
     if (url.pathname === '/api/free-token/game/start' || url.pathname === '/api/free-token/game/finish') {
@@ -32,7 +38,7 @@ const site = {
       if (typeof body?.oath !== 'string' || body.oath.trim() !== '义父' || body.confirmed !== true) {
         return reply(400, { error: '请先输入「义父」，再完成二次确认。' });
       }
-      if (!env.FREE_TOKEN_RENDER_KEY) return reply(503, { error: '见面礼正在准备，请稍后再来。' });
+      if (!env.FREE_TOKEN_RENDER_KEY) return reply(503, { error: '暂未开放，请稍后再来。' });
       return reply(200, {
         baseUrl: 'https://cpa-dhke.onrender.com/v1',
         apiKey: env.FREE_TOKEN_RENDER_KEY,

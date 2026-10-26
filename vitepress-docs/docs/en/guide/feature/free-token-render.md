@@ -1,5 +1,13 @@
 # Free Token integration with Render
 
+## Token entrance: open and temporarily closed states
+
+New `GET /api/free-token/status` exposes only an open boolean and message, never a key, with no-store caching. Its single source of truth is whether `FREE_TOKEN_RENDER_KEY` exists; no separate toggle is added.
+`token-passage-v2.js` reads fresh state on every click. Closed clicks stay on the full-token artwork and show “暂未开放”; open clicks retain the original transition and `/free-token/choose/` destination. Touch, keyboard and reduced-motion paths are gated too. Reopening works on the next click without refreshing an old page.
+Removing the current Yifu key revokes it in Render and removes the CF issuance Secret, automatically closing the entrance and returning 503 for both reward paths. Adding/publishing a new key restores the original entrance. Other client keys, logins and artwork remain intact.
+Key workflows verify entrance state, and website releases now preserve either open or closed state without recreating a missing Secret. Reopen by registering a new key, never restoring an old revoked key/version.
+
+
 ## Published: sword-tip pickup and generated golden barrier v6 (2026-10-26 02:02 UTC)
 
 Parent `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`; client `app-v8.mjs`, shared rules v6.

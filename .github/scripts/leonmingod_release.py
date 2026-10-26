@@ -25,15 +25,21 @@ settings = api.cf(worker + '/settings')
 bindings = settings['bindings']
 game = [b for b in bindings if b['name'] == 'GAME_RUNS']
 assert len(game) == 1 and game[0]['class_name'] == 'GameRun' and game[0]['namespace_id'] == '2dffacc2783647f0bec81263501de5e1'
-assert any(b['name'] == 'FREE_TOKEN_RENDER_KEY' and b['type'] == 'secret_text' for b in bindings)
+has_reward_binding = any(b['name'] == 'FREE_TOKEN_RENDER_KEY' and b['type'] == 'secret_text' for b in bindings)
 assert any(b['name'] == 'ASSETS' and b['type'] == 'assets' for b in bindings)
 
 def claim():
-    data = json.loads(api.request(api.ORIGIN + '/api/free-token/claim', 'POST', {'oath':'义父','confirmed':True}, {'Origin':api.ORIGIN})[2])
+    try:
+        data = json.loads(api.request(api.ORIGIN + '/api/free-token/claim', 'POST', {'oath':'义父','confirmed':True}, {'Origin':api.ORIGIN})[2])
+    except RuntimeError as error:
+        if str(error).endswith('HTTP 503'):
+            return None
+        raise
     assert data['baseUrl'] == api.RENDER_ORIGIN + '/v1' and data['apiKey']
     return data
 
 before_claim = claim()
+assert bool(before_claim) == has_reward_binding, 'Claim state differs from the live reward binding'
 mode = os.environ.get('WEBSITE_MODE', 'stage')
 
 def activate_forwarder():
@@ -129,7 +135,10 @@ elif mode == 'publish':
                             print('PAGE_DIAGNOSTIC='+json.dumps({'path':path,'new_marker':'home-orb-v3.css' in body,'fresh_marker':'home-orb-v3.css' in fresh,'expected_bytes':len(expected),'actual_bytes':len(body),'first_difference':next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),None)}),flush=True)
                         raise AssertionError('Published page differs: '+path)
                 assert claim() == before_claim, 'Reward changed during website publication'
-                assert api.models(before_claim['apiKey']) > 0
+                if before_claim:
+                    assert api.models(before_claim['apiKey']) > 0
+                status = json.loads(api.request(api.ORIGIN + '/api/free-token/status')[2])
+                assert status['open'] is bool(before_claim), 'Token click availability differs from issuance state'
                 after=api.cf(worker+'/settings')['bindings']
                 assert {(b['name'],b['type']) for b in after} == {(b['name'],b['type']) for b in bindings}
                 assert [b for b in after if b['name']=='GAME_RUNS'] == game
@@ -138,7 +147,7 @@ elif mode == 'publish':
             except (AssertionError,RuntimeError):
                 if attempt == 11:raise
                 time.sleep(5)
-        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'same_reward_confirmed':True,'models_http':200,'game_namespace_preserved':True,'source_pages_verified':5}
+        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'same_reward_confirmed':bool(before_claim),'website_open':bool(before_claim),'issuance_state_preserved':True,'models_http':200 if before_claim else None,'game_namespace_preserved':True,'source_pages_verified':5}
     except Exception:
         if api.active('leonmingod-free-token') != entrance:
             api.cf('leonmingod-free-token/deployments','POST',{'strategy':'percentage','versions':[{'version_id':entrance,'percentage':100}],'annotations':{'workers/message':'Restore original forwarder after failed website publication'}})
