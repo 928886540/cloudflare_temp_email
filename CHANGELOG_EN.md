@@ -22,6 +22,8 @@
 
 ### Bug Fixes
 
+- fix: |Jade Trial| Remove ricochets, protect reachable stable three-lane wall gaps, ease density/speed, and show only win conditions without mechanic spoilers; retain legacy replay
+
 - fix: |Jade Trial| Remove pause/resume controls, shortcuts, and focus/background auto-pause; advance by real elapsed time and catch up hidden frames to prevent touch-drag pauses
 
 - fix: |Free Token| Reduce mobile fluid resolution, cap drawing at 24–30 FPS, pause promptly when idle, remove costly touch blur layers, and debounce canvas resizing while retaining desktop quality

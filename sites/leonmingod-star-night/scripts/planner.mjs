@@ -1,7 +1,5 @@
 // Offline verification controller: short-horizon path planning, never shipped in the app.
-import * as engine from '../public/free-token/game/engine-v4.mjs';
-
-function reflect(x){const q=((x-35)%1300+1300)%1300;return 35+(q<=650?q:1300-q);}
+import * as engine from '../public/free-token/game/engine-v5.mjs';
 
 export function playPlanned(seed,{reaction=6,horizon=96}={}){
   const {RULES,createGame,step,replay}=engine,state=createGame(seed),trace=[];
@@ -15,7 +13,7 @@ export function playPlanned(seed,{reaction=6,horizon=96}={}){
         for(const o of state.objects){
           const y=o.y+o.speed*t,dy=RULES.playerY-y;
           if(Math.abs(dy)>100)continue;
-          const ox=reflect(o.x+o.vx*t);
+          const ox=o.x+o.vx*t;
           if(o.type==='hazard'&&t<state.cooldown-2)continue;
           for(let i=0;i<N;i++){
             const distance=Math.hypot(xs[i]-ox,dy);
@@ -48,7 +46,7 @@ export function playPlanned(seed,{reaction=6,horizon=96}={}){
   return {state,trace,result:replay(seed,trace)};
 }
 
-if(process.argv[1].endsWith('planner.mjs')){
+if(process.argv[1]?.endsWith('planner.mjs')){
   const count=Number(process.argv[2]||12);let best={jade:0,frame:0};
   for(let i=1;i<=count;i++){
     const seed=i*6849877,r=playPlanned(seed);best={jade:Math.max(best.jade,r.state.jade),frame:Math.max(best.frame,r.state.frame)};

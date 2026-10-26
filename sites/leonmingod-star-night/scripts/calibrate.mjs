@@ -1,4 +1,4 @@
-import * as currentEngine from '../public/free-token/game/engine-v4.mjs';
+import * as currentEngine from '../public/free-token/game/engine-v5.mjs';
 const { RULES } = currentEngine;
 
 export function play(seed, reaction = 9, lookahead = 30, engine = currentEngine) {
@@ -36,7 +36,7 @@ export function play(seed, reaction = 9, lookahead = 30, engine = currentEngine)
   return { state, trace, result: replay(seed, trace) };
 }
 
-if (process.argv[1].endsWith('calibrate.mjs')) {
+if (process.argv[1]?.endsWith('calibrate.mjs')) {
   const summary = [];
   for (const [label, reaction, lookahead] of [['new',18,18],['regular',10,30],['expert',4,55]]) {
     let wins = 0, jade = 0, shields = 0;

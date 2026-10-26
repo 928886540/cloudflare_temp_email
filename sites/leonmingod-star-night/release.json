@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "423d9f41-8557-4716-92d1-9b0035f63719",
+  "baseline_parent": "c6a75a10-b1bd-4a93-ba54-8d4ba2236408",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Extend trial to 45 seconds, rage on final five jade, pure survival after collection, and ten defeat taunts",
+  "message": "Make sword patterns fair: stable wide protected gaps, no ricochet, lighter final-five pressure",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -28,7 +28,8 @@
     "free-token/game/engine-v4.mjs",
     "free-token/game/app-v5.mjs",
     "free-token/game/style-v3.css",
-    "free-token/game/taunts-v1.mjs"
-  ],
-  "staged_version": "ad78a420-ae8e-4df3-86b4-8b2f3d3edca3"
+    "free-token/game/taunts-v1.mjs",
+    "free-token/game/engine-v5.mjs",
+    "free-token/game/app-v6.mjs"
+  ]
 }

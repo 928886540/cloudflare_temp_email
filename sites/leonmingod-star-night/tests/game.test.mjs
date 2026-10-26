@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare';
-import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v4.mjs';
+import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v5.mjs';
 import { verifyRun } from '../src/game.js';
 import { play } from '../scripts/calibrate.mjs';
 import { playPlanned } from '../scripts/planner.mjs';
@@ -57,7 +57,7 @@ test('real Durable Object grants one reward for concurrent finish requests',asyn
       const response=await send('start',{});assert.equal(response.status,200);assert.match(response.headers.get('set-cookie'),/HttpOnly; SameSite=Strict/);
       cookie=response.headers.get('set-cookie').split(';')[0];run=await response.json();trace=winning(run.seed)?.trace;
     }
-    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,4);assert.equal(run.rules.shields,2);
+    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,5);assert.equal(run.rules.shields,2);
     assert.equal((await send('finish',{id:run.id,trace},cookie)).status,400);
     assert.equal((await send('finish',{id:run.id,trace})).status,403);
     await new Promise(resolve=>setTimeout(resolve,44500));
@@ -96,8 +96,47 @@ test('collecting the goal stops jade drops but requires full survival time',()=>
 
 test('45-second current runs reject early wins while v3 runs keep 30-second rules',async()=>{
   const now=Date.now(),seed=27399508,trace=winning(seed).trace;
-  const run={seed,rulesVersion:4,sessionHash:'duration',started:now-31000,expires:now+90000,claimed:false};
+  const run={seed,rulesVersion:5,sessionHash:'duration',started:now-31000,expires:now+90000,claimed:false};
   assert.equal(verifyRun(run,{sessionHash:'duration',trace},now).status,400);
   const old=await import('../public/free-token/game/engine-v3.mjs'),fixture=winning(6849877,old);assert.ok(fixture);
   assert.equal(verifyRun({...run,seed:6849877,rulesVersion:3},{sessionHash:'duration',trace:fixture.trace},now).status,200);
+});
+
+
+test('swords keep their initial trajectory at the edge instead of ricocheting',()=>{
+  const state=createGame(1);state.objects=[{id:999,type:'hazard',x:36,y:0,speed:10,vx:-4,radius:26}];
+  step(state);assert.equal(state.objects[0].vx,-4);assert.equal(state.objects[0].x,32);
+  for(let i=0;i<21;i++)step(state);
+  assert.ok(!state.objects.some(o=>o.id===999),'Offscreen swords leave instead of turning back');
+});
+
+test('wall gaps remain reachable and clear of crossing swords throughout passage',()=>{
+  let walls=0,protectedFrames=0;
+  for(const jade of [0,19,24])for(let seed=1;seed<=30;seed++){
+    const state=createGame(seed*6849877),seen=new Set();state.cooldown=RULES.frames+10;
+    while(!state.done){
+      state.jade=jade;step(state,Math.round(500+480*Math.sin(state.frame/133)));
+      const frame=state.frame-1;
+      for(const gap of state.corridors){
+        if(!seen.has(gap.spawned)){
+          seen.add(gap.spawned);walls++;assert.ok(gap.right-gap.left>=160);
+          const distance=Math.max(gap.left-state.x,state.x-gap.right,0);
+          assert.ok(18+Math.ceil(distance/RULES.maxMove)<gap.from-gap.spawned,'Gap is reachable after 300ms reaction');
+        }
+        if(frame<gap.from||frame>gap.until)continue;
+        protectedFrames++;
+        for(const o of state.objects){
+          if(o.type!=='hazard')continue;
+          const nearest=Math.max(gap.left,Math.min(gap.right,o.x));
+          assert.ok(Math.hypot(nearest-o.x,RULES.playerY-o.y)>=o.radius+15,`Closed gap at seed ${seed}, frame ${frame}`);
+        }
+      }
+    }
+  }
+  assert.ok(walls>900);assert.ok(protectedFrames>30000);
+});
+
+test('in-flight v4 traces retain their original replay after fairness update',async()=>{
+  const fixture=JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../verification/difficulty-v4-fixture.json',import.meta.url),'utf8'));
+  const now=Date.now();assert.equal(verifyRun({seed:fixture.seed,rulesVersion:4,sessionHash:'v4',started:now-46000,expires:now+60000,claimed:false},{sessionHash:'v4',trace:fixture.trace},now).status,200);
 });
