@@ -1,4 +1,4 @@
-import * as currentEngine from '../public/free-token/game/engine-v3.mjs';
+import * as currentEngine from '../public/free-token/game/engine-v4.mjs';
 const { RULES } = currentEngine;
 
 export function play(seed, reaction = 9, lookahead = 30, engine = currentEngine) {

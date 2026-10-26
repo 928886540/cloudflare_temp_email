@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07161b">
-  <meta name="description" content="御剑破阵：30秒躲避剑煞，收集16枚灵玉，凭实力领取免费Token。">
+  <meta name="description" content="御剑破阵：45秒躲避剑煞，收集24枚灵玉，凭实力领取免费Token。">
   <title>御剑破阵 · 凭实力领 Token | LeonMinGod</title>
   <link rel="icon" type="image/svg+xml" href="/assets/logo-v2.svg">
-  <link rel="stylesheet" href="/free-token/game/style-v2.css">
-  <script type="module" src="/free-token/game/app-v4.mjs"></script>
+  <link rel="stylesheet" href="/free-token/game/style-v3.css">
+  <script type="module" src="/free-token/game/app-v5.mjs"></script>
 </head>
 <body>
   <header class="top"><a href="/" class="brand"><img src="/assets/logo-v2.svg" width="32" height="32" alt=""><span>LeonMinGod<small>一念风起，万境星垂</small></span></a><a class="back" href="/free-token/choose/">退出 · 返回选择 ↗</a></header>
@@ -17,16 +17,16 @@
       <p class="eyebrow">THE JADE TRIAL · 第一境</p>
       <h1 id="title">御剑<span>破阵</span><i>凭实力，拿令牌。</i></h1>
       <p class="description">不必叫义父。<br>一剑入星河，过关自有礼。</p>
-      <ol class="rules"><li><b>01</b><span>左右御剑<small>手指拖动 / 鼠标移动 / ← → 或 A D</small></span></li><li><b>02</b><span>集齐 <em>16</em> 枚灵玉<small>接住青玉，躲开红色剑煞</small></span></li><li><b>03</b><span>守住 <em>30</em> 秒<small>两点护盾，开局不停</small></span></li></ol>
+      <ol class="rules"><li><b>01</b><span>左右御剑<small>手指拖动 / 鼠标移动 / ← → 或 A D</small></span></li><li><b>02</b><span>集齐 <em>24</em> 枚灵玉<small>接住青玉，躲开红色剑煞</small></span></li><li><b>03</b><span>守住 <em>45</em> 秒<small>两点护盾，开局不停</small></span></li></ol>
       <p class="reward-note"><span>令</span>通关领取 API 地址与共享密钥<br><small>和「叫声义父」领取的是同一份奖励</small></p>
       <a class="other-path" href="/free-token/choose/">也可以走人情路线 →</a>
     </section>
     <section class="arena" aria-label="御剑破阵游戏">
-      <div class="hud"><div><small>剩余时间</small><strong id="time">30<span>s</span></strong></div><div><small>灵玉</small><strong id="jade">0<span> / 16</span></strong></div><div><small>护盾</small><strong id="shields" aria-label="2点护盾">◇ ◇</strong></div></div>
+      <div class="hud"><div><small>剩余时间</small><strong id="time">45<span>s</span></strong></div><div><small>灵玉</small><strong id="jade">0<span> / 24</span></strong></div><div><small>护盾</small><strong id="shields" aria-label="2点护盾">◇ ◇</strong></div></div>
       <div class="field" id="field">
         <canvas id="game" width="720" height="1000" tabindex="0" aria-label="御剑破阵，左右移动收集青玉，避开红色剑煞。">请使用支持 Canvas 的浏览器。</canvas>
         <div class="phase" id="phase" aria-hidden="true">第一阵 · 风起</div>
-        <div class="screen" id="screen"><div class="seal" aria-hidden="true"><span class="seal-sword"></span></div><p class="eyebrow" id="screen-kicker">两点护盾 · 剑阵再加码</p><h2 id="screen-title">准备入阵？</h2><p id="screen-description">收集 16 枚灵玉，守住 30 秒。<br>两点护盾，开局不停。别贪最后一枚。</p><button class="primary" id="start" type="button">执剑 · 开始挑战 <span>→</span></button><p class="notice" id="notice" role="status"></p></div>
+        <div class="screen" id="screen"><div class="seal" aria-hidden="true"><span class="seal-sword"></span></div><p class="eyebrow" id="screen-kicker">最后五颗狂暴 · 吃满后纯躲避</p><h2 id="screen-title">准备入阵？</h2><p id="screen-description">24 枚灵玉，45 秒，两点护盾。<br>还差最后五颗时狂暴；吃满后只管活下来。</p><p class="loss-taunt" id="loss-taunt" hidden></p><button class="primary" id="start" type="button">执剑 · 开始挑战 <span>→</span></button><a class="oath-detour" id="oath-detour" href="/free-token/claim/" hidden>行，去叫义父领礼 →</a><p class="notice" id="notice" role="status"></p></div>
         <div class="countdown" id="countdown" hidden aria-live="polite"></div>
       </div>
       <div class="arena-foot"><span><i class="jade-dot"></i> 灵玉</span><span><i class="hazard-dot"></i> 剑煞</span><small id="control-hint">左右移动 · 触屏可按住任意位置拖动</small></div>

@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare';
-import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v3.mjs';
+import { RULES, replay, validateTrace, createGame, step } from '../public/free-token/game/engine-v4.mjs';
 import { verifyRun } from '../src/game.js';
 import { play } from '../scripts/calibrate.mjs';
+import { playPlanned } from '../scripts/planner.mjs';
 
 function winning(seed, engine) {
+  if(!engine){for(const options of [{reaction:6,horizon:96},{reaction:4,horizon:120},{reaction:5,horizon:100}]){const result=playPlanned(seed,options);if(result.state.won)return result;}return null;}
   for (const reaction of [4,7,10,14]) for (const foresight of [20,30,45,60]) {
     const result=play(seed,reaction,foresight,engine);
     if(result.state.won)return result;
@@ -14,15 +16,15 @@ function winning(seed, engine) {
 }
 
 test('server replay agrees with completed client actions and rejects malformed traces',()=>{
-  const {state,trace}=winning(6849877);
-  assert.deepEqual(replay(6849877,trace),{won:true,jade:state.jade,shields:state.shields,frames:1800});
-  for(const invalid of [[],[[1,500]],[[0,500],[0,600]],[[0,1001]],[[0,NaN]],[[0,1.5]],[[0,500],[1800,100]]])assert.equal(validateTrace(invalid),false);
+  const {state,trace}=winning(27399508);
+  assert.deepEqual(replay(27399508,trace),{won:true,jade:state.jade,shields:state.shields,frames:2700});
+  for(const invalid of [[],[[1,500]],[[0,500],[0,600]],[[0,1001]],[[0,NaN]],[[0,1.5]],[[0,500],[2700,100]]])assert.equal(validateTrace(invalid),false);
   assert.equal(replay(1,[[0,500]]).won,false);
 });
 
 test('session, expiry, elapsed time and duplicate checks protect rewards',()=>{
-  const now=Date.now(), seed=6849877, trace=winning(seed).trace;
-  const run={seed,rulesVersion:RULES.version,sessionHash:'browser-a',started:now-31000,expires:now+90000,claimed:false};
+  const now=Date.now(), seed=27399508, trace=winning(seed).trace;
+  const run={seed,rulesVersion:RULES.version,sessionHash:'browser-a',started:now-46000,expires:now+90000,claimed:false};
   const body={sessionHash:'browser-a',trace};
   assert.equal(verifyRun(run,body,now).status,200);
   assert.equal(verifyRun({...run,claimed:true},body,now).status,409);
@@ -55,10 +57,10 @@ test('real Durable Object grants one reward for concurrent finish requests',asyn
       const response=await send('start',{});assert.equal(response.status,200);assert.match(response.headers.get('set-cookie'),/HttpOnly; SameSite=Strict/);
       cookie=response.headers.get('set-cookie').split(';')[0];run=await response.json();trace=winning(run.seed)?.trace;
     }
-    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,3);assert.equal(run.rules.shields,2);
+    assert.ok(trace,'A replayable successful run was found');assert.equal(run.rules.version,4);assert.equal(run.rules.shields,2);
     assert.equal((await send('finish',{id:run.id,trace},cookie)).status,400);
     assert.equal((await send('finish',{id:run.id,trace})).status,403);
-    await new Promise(resolve=>setTimeout(resolve,29500));
+    await new Promise(resolve=>setTimeout(resolve,44500));
     assert.equal((await send('finish',{id:run.id,trace:[[0,500]]},cookie)).status,400);
     const responses=await Promise.all(Array.from({length:6},()=>send('finish',{id:run.id,trace},cookie)));
     assert.equal(responses.filter(r=>r.status===200).length,1);assert.equal(responses.filter(r=>r.status===409).length,5);
@@ -78,4 +80,24 @@ test('the second damaging hit ends the two-shield run',()=>{
 test('in-flight v2 runs retain their original three-shield replay',async()=>{
   const engine=await import('../public/free-token/game/engine-v2.mjs');const seed=6849877;const trace=winning(seed,engine).trace;const now=Date.now();
   assert.equal(verifyRun({seed,rulesVersion:2,sessionHash:'v2',started:now-31000,expires:now+60000,claimed:false},{sessionHash:'v2',trace},now).status,200);
+});
+
+
+test('rage begins on the last five jade, not on remaining seconds',()=>{
+  const late=createGame(1);late.frame=RULES.frames-300;late.jade=RULES.goal-6;step(late);assert.equal(late.rageAt,-1);
+  const early=createGame(1);early.frame=100;early.jade=RULES.goal-5;step(early);assert.equal(early.rageAt,100);
+});
+
+test('collecting the goal stops jade drops but requires full survival time',()=>{
+  const state=createGame(1);state.jade=RULES.goal;state.objects=[{id:1,type:'jade',x:100,y:0,vx:0,speed:7,radius:19}];step(state);
+  assert.equal(state.done,false);assert.equal(state.won,false);assert.ok(state.objects.every(o=>o.type!=='jade'));
+  state.objects=[];state.frame=RULES.frames-2;step(state);assert.equal(state.done,false);step(state);assert.equal(state.won,true);
+});
+
+test('45-second current runs reject early wins while v3 runs keep 30-second rules',async()=>{
+  const now=Date.now(),seed=27399508,trace=winning(seed).trace;
+  const run={seed,rulesVersion:4,sessionHash:'duration',started:now-31000,expires:now+90000,claimed:false};
+  assert.equal(verifyRun(run,{sessionHash:'duration',trace},now).status,400);
+  const old=await import('../public/free-token/game/engine-v3.mjs'),fixture=winning(6849877,old);assert.ok(fixture);
+  assert.equal(verifyRun({...run,seed:6849877,rulesVersion:3},{sessionHash:'duration',trace:fixture.trace},now).status,200);
 });
