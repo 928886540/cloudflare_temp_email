@@ -15,7 +15,7 @@ Deploy through `.github/workflows/leonmingod-star-night.yaml`, staging before pu
 
 The game uses native image_gen raster art, optimized as WebP. The shared v6 engine drives 45-second, 24-jade, two-shield browser play and server replay. Rage begins at 19 collected jade (five remaining); at 24, pure survival continues to 45 seconds. Defeats show one of ten emoji/poetic taunts with a direct oath-claim link. v1/v2/v3/v4/v5 runs remain replayable during their existing three-minute credential lifetime. Offline simulated win rates are calibration evidence, not measured human pass rates.
 
-Production release: parent `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`, forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Its unchanged forwarding code now binds `SITE` to the parent's named `Site` entrypoint so existing HTML reaches the current handler before the retained asset set. Preserve this binding and the more specific routes. New root-level resources should use versioned URLs. Acceptance evidence lives in `verification/`.
+Production release: parent `096277f9-58f3-4671-a137-b4cb2cdcd21b`, forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Its unchanged forwarding code now binds `SITE` to the parent's named `Site` entrypoint so existing HTML reaches the current handler before the retained asset set. Preserve this binding and the more specific routes. New root-level resources should use versioned URLs. Acceptance evidence lives in `verification/`.
 
 The live page loads `app-v8.mjs`. Pause/resume controls, keyboard pause and automatic focus/background pause are removed by explicit user request. Advance combat/countdown by real elapsed time and settle hidden frames before accepting new input. Do not restore pause behavior from historical clients.
 
@@ -24,3 +24,5 @@ Fairness: v5 uses constant sword paths without ricochet and stable three-lane wa
 Visual preference: do not render floating gap rectangles, dashed outlines or gap labels. The empty sword lanes provide the visual cue; actual corridor protection remains active.
 
 Pickups use the sword tip/blade capsule while normal damage stays at the original body hitbox. The separate gold talisman grants five seconds of server-replayed invincibility, displayed with native-generated token/ring art and a HUD countdown. Gold does not count toward the jade goal.
+
+Current issuance is CLOSED: `FREE_TOKEN_RENDER_KEY` is absent and the prior Yifu key is revoked. Token clicks check no-store `/api/free-token/status`; closed shows “暂未开放”, open restores the original animated choice-page entry. Use existing add/publish or remove workflows to change state; never restore an old revoked key to reopen.

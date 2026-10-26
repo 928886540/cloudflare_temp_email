@@ -1,5 +1,20 @@
 # LeonMinGod 网站更新记录
 
+## 当前状态：暂未开放，义父 Key 已撤销（2026-10-26 04:16 UTC）
+
+用户要求固定两种点击形态，本轮已实现并关闭：当前义父 Key `01db29c9e73f5fba` 从 Render 删除，models 401；CF `FREE_TOKEN_RENDER_KEY` 已移除。
+主站当前版本 `096277f9-58f3-4671-a137-b4cb2cdcd21b`（关闭 Secret），代码版本 `51310ec6-e00b-4308-b729-bcfc7af6f111`；入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。Render 部署 `dep-dbfd805g1s2s73fbrr7g`，其余 2 把客户端 Key、10 份登录保留。
+
+- 未开放：令牌仍可点，只显示“暂未开放”，不转场、不进入选择页；原领取与游戏发放均 503 且不返回 Key。
+- 开放：用默认 `yifu-add-key.yaml` 新建并发布有效新 Key 后，下一次点击自动恢复原转场及选择页，不用重新部署页面，也不必刷新已打开的令牌页。
+- 关闭：默认 `yifu-remove-key.yaml` 移除当前 Key，入口自动关闭。不设置自动开放时间，不用恢复旧 Key/旧 Worker 版本来开放。
+
+`GET /api/free-token/status` 不返回 Key、no-store；状态只跟随当前发放 Secret。添加/删除流程已校验此状态，网站发布流程支持 Secret 缺失并保持关闭。历史 inspect 假定领取开放，关闭后用默认 add/remove 的 dry_run 检查。
+[入口发布](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268031184)通过，18 项后端检查及 10 项 Key 运维测试通过；[撤销记录](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268141055)成功。
+主域名/www 实际开放点击与实际关闭点击分别验收；关闭时两条发放接口均 503。五种布局/交互用模拟状态验证关闭不跳转、原页无需刷新重新开放、触屏、键盘及减少动画模式。图片、游戏 v6/金刚罩、实际通道保护和转发结构均保留。
+证据：`verification/availability-release-and-close.json`、`availability-live-*.json`、`availability-browser-*.json`。以下为历史记录。
+
+
 ## 令牌入口开放 / 未开放两种状态
 
 新增 `GET /api/free-token/status`，只返回开放布尔值和提示，不返回 Key，并禁止缓存。它仅由当前 `FREE_TOKEN_RENDER_KEY` 是否存在决定，不新增独立开关。
