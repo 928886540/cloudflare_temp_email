@@ -36,6 +36,8 @@
 
 ### Improvements
 
+- docs: |Yifu Token| Record a new website-issued key, current CF/Render versions and verification; preserve all three previous keys, ten login files and website/game code
+
 - feat: |Jade Trial| Extend runs to 45 seconds and 24 jade with two shields; trigger rage with five jade remaining, then pure survival after collection; add ten emoji defeat taunts and a direct oath-claim link while preserving uninterrupted play and legacy replay
 
 - feat: |Star-night artwork| Refresh four adult-character homepage/token posters with native image_gen, emphasizing bare shoulders, a deeper neckline and fuller figure through versioned desktop/mobile assets
