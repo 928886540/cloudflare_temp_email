@@ -1,5 +1,17 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Published: v4 final-five rage and ten taunts (2026-10-26 00:24 UTC)
+
+Parent `ad78a420-ae8e-4df3-86b4-8b2f3d3edca3`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0` with SITE → Site intact.
+[Publication acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40249180162) passed; all nine backend stage tests passed.
+New v4 / app-v5 runs use 45 seconds, 24 jade and two shields. Rage starts at 19 collected (five remaining), independently of remaining time. At 24, jade stops and pure survival continues to 45 seconds.
+Defeats choose one of ten emoji taunts, including the user's three lines and playful Chinese poem adaptations, with retry and direct oath claim. No pause; exit returns to choices.
+
+A real public v4 reward succeeded with 24 jade and one shield; concurrent finishes returned 409/409/200. Original/game claims share the existing key; models returned 200 with 34 models.
+All 26 release resources match source, eight protected original assets/scripts remain intact, and apex/www match. Public browser tests at 320x480, 393x580 and 844x390 mocked start to verify short screens, uninterrupted drag/background settlement, visible taunts/controls, and 19/24-jade states with no script errors. Real redemption was verified separately through public APIs.
+Keys, Render configuration, star-night artwork, ASSETS, GAME_RUNS namespace and v1/v2/v3 in-flight replay are preserved. See `verification/production-v4.json`, `rage-browser-*.json` and `release-v4.json`. Sections below are historical.
+
+
 ## v4: rage on the final five jade and defeat taunts (2026-10-26)
 
 New runs use `engine-v4.mjs` / `app-v5.mjs`: 45 seconds, 24 jade, two shields and no pause.

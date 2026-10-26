@@ -1,0 +1,49 @@
+{
+  "stage_run": 40249057271,
+  "publish_run": 40249180162,
+  "backend_tests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "stage": {
+    "mode": "stage",
+    "version_id": "ad78a420-ae8e-4df3-86b4-8b2f3d3edca3",
+    "production_unchanged": true,
+    "parent_version": "423d9f41-8557-4716-92d1-9b0035f63719",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "module_sha256": "cad91c7fb68f00b6c3d8e3a95b5f1b3c0e782fb81e6369f51f386da42f80799e",
+    "resources_summary": {
+      "bindings": [
+        {
+          "name": "ASSETS",
+          "type": "assets"
+        },
+        {
+          "name": "FREE_TOKEN_CPA_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "FREE_TOKEN_RENDER_KEY",
+          "type": "secret_text"
+        },
+        {
+          "name": "GAME_RUNS",
+          "type": "durable_object_namespace"
+        }
+      ],
+      "assets_config": null
+    }
+  },
+  "publish": {
+    "mode": "publish",
+    "version_id": "ad78a420-ae8e-4df3-86b4-8b2f3d3edca3",
+    "previous_version": "423d9f41-8557-4716-92d1-9b0035f63719",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "same_reward_confirmed": true,
+    "models_http": 200,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 5
+  }
+}

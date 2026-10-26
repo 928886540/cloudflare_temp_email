@@ -9,15 +9,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `423d9f41-8557-4716-92d1-9b0035f63719`.
+Worker `leonmingod-home` now at `ad78a420-ae8e-4df3-86b4-8b2f3d3edca3`.
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v4.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v5.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
-Current trial is v3 with TWO shields; keep browser/server rule versions aligned and
-retain replay for in-flight older runs. Current poster URLs are home v6 / token v4.
+Current trial is v4: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
+(five remaining), NEVER at a remaining-seconds threshold. At 24, stop jade and survive
+the full duration. Defeat shows one of ten emoji/poetic oath taunts and a direct claim
+link. Keep browser/server aligned and retain v1/v2/v3 in-flight replay. Current poster URLs are home v6 / token v4.
 Current cloud maintenance source has now been recovered from production source maps
 and public assets into `sites/leonmingod-star-night/` (`/workspace/leonmingod-home`
 is a convenience symlink). Read its `WEBSITE_UPDATE_CN.md` and `README.md`. This is
