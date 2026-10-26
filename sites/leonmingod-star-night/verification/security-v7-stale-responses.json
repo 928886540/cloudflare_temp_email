@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "delayed_response": "200 success",
+      "new_run_progress_http": [
+        200,
+        200,
+        200
+      ],
+      "old_response_ignored": true,
+      "errors": []
+    },
+    {
+      "delayed_response": "503 error",
+      "new_run_progress_http": [
+        200,
+        200,
+        200
+      ],
+      "old_response_ignored": true,
+      "errors": []
+    }
+  ]
+}
