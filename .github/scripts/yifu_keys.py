@@ -113,7 +113,9 @@ def read_state():
             files = json.loads(api.management_request(key, 'credentials'))['files']
             management = key
             break
-        except RuntimeError:
+        except RuntimeError as error:
+            # API helper errors contain only method/path/status, never response bodies.
+            print('MANAGEMENT_PREFLIGHT_ERROR=' + str(error), flush=True)
             continue
     assert management is not None and files is not None, 'Cannot preserve login files without management access'
     deploy = api.latest_deploy()
