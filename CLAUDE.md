@@ -9,17 +9,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `190a247f-8f89-4437-b41d-137cf2760145`.
+Worker `leonmingod-home` now at `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`.
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v7.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v8.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
-Current trial is v5: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
+Current trial is v6: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
 (five remaining), NEVER at a remaining-seconds threshold. At 24, stop jade and survive
 the full duration. Defeat shows one of ten emoji/poetic oath taunts and a direct claim
-link. Keep browser/server aligned and retain v1/v2/v3/v4 in-flight replay. Current poster URLs are home v6 / token v4.
+link. Keep browser/server aligned and retain v1/v2/v3/v4/v5 in-flight replay. Current poster URLs are home v6 / token v4.
+Sword-tip pickup fix: v6 collects jade/gold along the visible tip-to-body capsule
+(70 units above playerY); never shift/enlarge the ordinary damage hitbox to match it.
+Gold is a separate native-image_gen talisman, NOT goal jade. It grants exactly five
+seconds of a generated transparent golden barrier with HUD countdown; same-frame
+pickup precedes damage, expiry restores damage, another pickup refreshes without
+stacking. Preserve the new WebP token/ring art and actual-time expiry without pause.
 Fairness correction (2026-10-26): make challenges dodgeable, not forced losses.
 Keep constant sword trajectories without edge ricochet, reachable stable three-lane
 wall openings protected against overlapping swords, and the eased v5 cadence.

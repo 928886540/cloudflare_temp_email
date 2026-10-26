@@ -1,5 +1,15 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Published: sword-tip pickup and generated golden barrier v6 (2026-10-26 02:02 UTC)
+
+Parent `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`; entrance stays `51a33be8-6ca4-4b4f-886f-613bfea996b0`; client `app-v8.mjs`, shared rules v6.
+[Publication acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40257121629) and all seventeen backend checks passed: tip/blade pickup, unchanged damage hitbox, same-frame gold blocking, five-second expiry, refresh without stacking, and in-flight v1-v5 replay.
+The token and transparent ornate gold barrier are native image_gen art (about 152KB/442KB WebP). Pickup feedback follows the actual tip contact. Gold is separate from jade, grants five seconds of invincibility and a HUD countdown, and does not heal lost shields.
+A real public v6 replay collected two gold tokens and blocked seventeen swords, finishing with 24 jade/one shield. Concurrent rewards returned 409/200/409. Current fingerprint remains `01db29c9e73f5fba`, models HTTP 200 (22 models this time); Render/keys are unchanged and the revoked key stays revoked.
+All 33 release resources match source, eight protected originals remain intact, and apex/www match. Public mobile/short/landscape browser fixtures verify tip-before-hilt pickup, same-frame blocking, five-second expiry and both generated transparent assets without script errors; real redemption is verified separately through public APIs.
+Keep uninterrupted play, fair v5 sword patterns, natural open lanes, no floating gap boxes, win-condition-only start copy and ten taunts. Evidence: `verification/release-v6.json`, `production-v6.json`, `tip-ward-browser-*.json`, `golden-ward-art.json`, `difficulty-v6-fixture.json`. Sections below are historical.
+
+
 ## v6: sword-tip pickups and a five-second golden barrier
 
 Fix jade collecting only near the hilt: extend pickup geometry 70 units from the tip through the blade and place collection feedback at contact. The ordinary damage hitbox stays small.
