@@ -1,0 +1,63 @@
+{
+  "workflow_run": 40283102427,
+  "completed_at": "2026-10-26T15:00:50+08:00",
+  "role": "sole active Yifu website issuance key; independent Karl preserved",
+  "result": {
+    "operation": "add",
+    "fingerprint": "69ba11c6809909d7",
+    "render_key_count": 4,
+    "credentials_preserved": 10,
+    "website_enabled": true,
+    "model_count": 34,
+    "render_deploy": "dep-dbffl1cs728c73f95fqg",
+    "parent_version": "fd79879f-4dbc-43c9-b5fa-d9cf240b9b59",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0"
+  },
+  "previous_website_state": "closed",
+  "previous_parent_version": "096277f9-58f3-4671-a137-b4cb2cdcd21b",
+  "website_code_changed": false,
+  "render_code_changed": false,
+  "preserved_non_website_keys": 3,
+  "prior_revoked_yifu_keys_restored": false,
+  "public_verification": {
+    "https://leonmingod.com": {
+      "claim_http": 200,
+      "base_url": "https://cpa-dhke.onrender.com/v1",
+      "fingerprint": "69ba11c6809909d7",
+      "models_http": 200,
+      "model_count": 34
+    },
+    "https://www.leonmingod.com": {
+      "claim_http": 200,
+      "base_url": "https://cpa-dhke.onrender.com/v1",
+      "fingerprint": "69ba11c6809909d7",
+      "models_http": 200,
+      "model_count": 34
+    },
+    "standalone_karl": {
+      "fingerprint": "162618109a2dc43b",
+      "models_http": 200,
+      "model_count": 34
+    }
+  },
+  "mobile_browser_verification": {
+    "results": [
+      {
+        "origin": "https://leonmingod.com",
+        "actual_status_api": true,
+        "open": true,
+        "click_result": "original choice page",
+        "claim_and_game_503_verified": false,
+        "errors": []
+      },
+      {
+        "origin": "https://www.leonmingod.com",
+        "actual_status_api": true,
+        "open": true,
+        "click_result": "original choice page",
+        "claim_and_game_503_verified": false,
+        "errors": []
+      }
+    ]
+  }
+}
