@@ -2,6 +2,10 @@ name: 添加义父 Key
 on:
   workflow_dispatch:
     inputs:
+      expected_current_fingerprint:
+        description: 可选保护值；等待后只替换这把网页 Key，发生变化则停止
+        type: string
+        default: ''
       publish:
         description: 同时把新 Key 挂到网页给别人领取
         type: boolean
@@ -44,6 +48,7 @@ jobs:
       YIFU_CUSTOM_DIGITS: ${{ inputs.suffix_digits }}
       YIFU_RECIPIENT_PUBLIC_KEY: ${{ inputs.recipient_public_key }}
       YIFU_OPERATION: add
+      YIFU_EXPECT_CURRENT: ${{ inputs.expected_current_fingerprint }}
       YIFU_DRY_RUN: ${{ inputs.dry_run }}
       YIFU_PUBLISH: ${{ inputs.publish }}
     steps:
