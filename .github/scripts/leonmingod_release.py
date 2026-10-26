@@ -30,7 +30,7 @@ assert any(b['name'] == 'ASSETS' and b['type'] == 'assets' for b in bindings)
 
 def claim():
     try:
-        data = json.loads(api.request(api.ORIGIN + '/api/free-token/claim', 'POST', {'oath':'义父','confirmed':True}, {'Origin':api.ORIGIN})[2])
+        data = api.site_claim()
     except RuntimeError as error:
         if str(error).endswith('HTTP 503'):
             return None

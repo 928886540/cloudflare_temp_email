@@ -1,12 +1,9 @@
 // Offline verification controller: short-horizon path planning, never shipped in the app.
 import * as engine from '../public/free-token/game/engine-v6.mjs';
 
-export function playPlanned(seed,{reaction=6,horizon=96}={}){
-  const {RULES,createGame,step,replay}=engine,state=createGame(seed),trace=[];
+export function planTarget(state,{reaction=6,horizon=96}={}){
+  const {RULES}=engine;
   const xs=Array.from({length:54},(_,i)=>42+i*12),N=xs.length,steps=Math.ceil(horizon/reaction);
-  let target=500,previous=-1;
-  while(!state.done){
-    if(state.frame%reaction===0){
       const costs=Array.from({length:steps*2+1},()=>new Float64Array(N));
       for(let k=1;k<costs.length;k++){
         const t=k*reaction/2;
@@ -40,7 +37,16 @@ export function playPlanned(seed,{reaction=6,horizon=96}={}){
       }
       let choice=0;for(let i=1;i<N;i++)if(dp[i]<dp[choice])choice=i;
       for(let k=paths.length-1;k>=0;k--)choice=paths[k][choice];
-      target=Math.round((xs[choice]-38)/644*1000);
+      return Math.round((xs[choice]-38)/644*1000);
+}
+
+export function playPlanned(seed,{reaction=6,horizon=96}={}){
+  const {RULES,createGame,step,replay}=engine,state=createGame(seed),trace=[];
+  const xs=Array.from({length:54},(_,i)=>42+i*12),N=xs.length,steps=Math.ceil(horizon/reaction);
+  let target=500,previous=-1;
+  while(!state.done){
+    if(state.frame%reaction===0){
+      target=planTarget(state,{reaction,horizon});
     }
     if(target!==previous){trace.push([state.frame,target]);previous=target;}
     step(state,target);

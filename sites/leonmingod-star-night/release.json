@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "0e79d9a0-048b-46d8-b109-0b4cde0a76aa",
+  "baseline_parent": "468396f7-8023-4ed8-8339-f835610dabd3",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Switch token clicks automatically between temporarily closed notice and original open entrance",
+  "message": "Reject offline solved/replayed rewards with live immutable inputs, unrevealed encounters and server-verified Turnstile",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -37,7 +37,10 @@
     "free-token/game/golden-token-v1.webp",
     "free-token/game/golden-ward-v1.webp",
     "free-token/token-passage-v2.js",
-    "free-token/availability-v1.css"
-  ],
-  "staged_version": "51310ec6-e00b-4308-b729-bcfc7af6f111"
+    "free-token/availability-v1.css",
+    "free-token/game/engine-v7.mjs",
+    "free-token/game/app-v9.mjs",
+    "free-token/human-v1.mjs",
+    "free-token/claim-v2.mjs"
+  ]
 }

@@ -32,13 +32,11 @@ def fingerprint(key):
 
 def public_claim():
     try:
-        _, _, body = api.request(api.ORIGIN + '/api/free-token/claim', 'POST',
-            {'oath': '义父', 'confirmed': True}, {'Origin': api.ORIGIN})
+        data = api.site_claim()
     except RuntimeError as error:
         if str(error).endswith('HTTP 503'):
             return None
         raise
-    data = json.loads(body)
     assert data.get('baseUrl') == api.RENDER_ORIGIN + '/v1' and isinstance(data.get('apiKey'), str), 'Unexpected claim response'
     return data
 

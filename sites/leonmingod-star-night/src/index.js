@@ -1,11 +1,13 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { handleGame } from './game.js';
+import { securityConfig, verifyHuman, rateLimit } from './security.js';
 import { staticResponse } from './static.js';
 export { GameRun } from './game.js';
 
 const site = {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/free-token/security') return securityConfig(request, env);
     if (url.pathname === '/api/free-token/status') {
       const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
       if (!['GET', 'HEAD'].includes(request.method)) return Response.json({ error: 'Method not allowed' }, { status: 405, headers: { ...headers, Allow: 'GET, HEAD' } });
@@ -14,7 +16,7 @@ const site = {
     }
     const page = staticResponse(request);
     if (page) return page;
-    if (url.pathname === '/api/free-token/game/start' || url.pathname === '/api/free-token/game/finish') {
+    if (['/api/free-token/game/start', '/api/free-token/game/progress', '/api/free-token/game/finish'].includes(url.pathname)) {
       return handleGame(request, env);
     }
     if (url.pathname === '/api/free-token/claim') {
@@ -28,17 +30,20 @@ const site = {
       });
       if (request.method !== 'POST') return reply(405, { error: '请通过领取页面确认后领取。' });
       const origin = request.headers.get('Origin');
-      if (origin && origin !== url.origin) return reply(403, { error: '请在本站领取。' });
+      if (origin !== url.origin) return reply(403, { error: '请在本站领取。' });
       if (!request.headers.get('Content-Type')?.toLowerCase().includes('application/json')) {
         return reply(415, { error: '请求格式不正确，请刷新后重试。' });
       }
+      const verificationRequest = request.clone();
       let body;
-      try { body = await request.json(); }
+      try { const text = await request.text(); if (text.length > 4096) return reply(413, { error: '请求过长。' }); body = JSON.parse(text); }
       catch { return reply(400, { error: '请求格式不正确，请刷新后重试。' }); }
       if (typeof body?.oath !== 'string' || body.oath.trim() !== '义父' || body.confirmed !== true) {
         return reply(400, { error: '请先输入「义父」，再完成二次确认。' });
       }
       if (!env.FREE_TOKEN_RENDER_KEY) return reply(503, { error: '暂未开放，请稍后再来。' });
+      const limited = await rateLimit(verificationRequest, env, 'claim'); if (limited) return limited;
+      const denied = await verifyHuman(verificationRequest, env, body.humanToken, 'oath_claim'); if (denied) return denied;
       return reply(200, {
         baseUrl: 'https://cpa-dhke.onrender.com/v1',
         apiKey: env.FREE_TOKEN_RENDER_KEY,

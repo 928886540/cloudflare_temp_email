@@ -1,0 +1,22 @@
+{
+  "protocol": "live-v1",
+  "owner_signed_QA_not_a_human_bypass_test": true,
+  "attempts": [
+    {
+      "jade": 24,
+      "shields": 1,
+      "frames": 2700,
+      "won": true,
+      "live_packets": 45
+    }
+  ],
+  "unsigned_direct_claim_and_start_rejected": true,
+  "concurrent_finish_statuses": [
+    200,
+    409,
+    409
+  ],
+  "wait_then_finish_and_single_batch_rejected": true,
+  "same_reward": true,
+  "fingerprint": "0721a119cf23a138"
+}
