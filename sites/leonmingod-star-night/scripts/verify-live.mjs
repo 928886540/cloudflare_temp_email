@@ -15,7 +15,7 @@ async function api(action,body={},cookie='',signed=false){
   const response=await fetch(origin+path,{method:'POST',headers,body:text});
   const data=await response.json();return {status:response.status,data,cookie:response.headers.get('set-cookie')?.split(';')[0]||cookie};
 }
-const result={protocol:'live-v1',owner_signed_QA_not_a_human_bypass_test:true,attempts:[]};
+const result={protocol:'live-v1',rules_version:RULES.version,owner_signed_QA_not_a_human_bypass_test:true,attempts:[]};
 assert.equal((await api('claim',{oath:'义父',confirmed:true})).status,local?503:403);
 assert.equal((await api('game/start',{})).status,local?503:403);
 result.unsigned_direct_claim_and_start_rejected=true;
@@ -27,6 +27,7 @@ let won;
 for(let attempt=0;attempt<4&&!won;attempt++){
   const initial=await api('game/start',startBody,'',true);assert.equal(initial.status,200);
   const run=initial.data,state=createGame(run.seed),trace=[];let committed=0,target=500,prior=-1,lastTarget=500,packets=0;
+  const feedback={gold:0,deflect:0,pickup:0,near:0};
   const started=Date.now()+1800;
   async function progress(){
     if(state.frame<=committed)return;
@@ -42,11 +43,12 @@ for(let attempt=0;attempt<4&&!won;attempt++){
       if(state.frame%6===0)target=planTarget(state,{reaction:6,horizon:108});
       if(target!==prior){trace.push([state.frame,target]);prior=target;}
       step(state,target);
+      for(const event of state.events||[])if(event.kind in feedback)feedback[event.kind]++;
     }
     if(state.frame-committed>=60||state.won)await progress();
     if(!state.done)await sleep(15);
   }
-  result.attempts.push({jade:state.jade,shields:state.shields,frames:state.frame,won:state.won,live_packets:packets});
+  result.attempts.push({jade:state.jade,shields:state.shields,frames:state.frame,won:state.won,live_packets:packets,feedback});
   if(state.won){
     const rewards=await Promise.all(Array.from({length:3},()=>api('game/finish',{id:run.id,receipt:run.receipt},initial.cookie)));
     assert.equal(rewards.filter(r=>r.status===200).length,1);assert.equal(rewards.filter(r=>r.status===409).length,2);

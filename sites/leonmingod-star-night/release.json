@@ -51,5 +51,6 @@
     "free-token/game/app-v12.mjs",
     "free-token/game/feedback-v1.mjs",
     "free-token/game/style-v4.css"
-  ]
+  ],
+  "staged_version": "98a305ea-8544-45ec-809a-3c1f26ccaf5e"
 }
