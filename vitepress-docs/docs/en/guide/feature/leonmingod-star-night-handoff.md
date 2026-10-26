@@ -1,5 +1,13 @@
 # LeonMinGod star-night handoff (2026-10-25)
 
+## Live protocol v7: block offline solved traces and automated direct claims
+
+Replace full-seed disclosure and wait-then-submit rewards with live-v1. The server owns game state, commits immutable input prefixes about once per second and supplies fresh unpredictable encounter entropy in three-second blocks only after live commitments. Check timing, sequence, short disconnections, browser identity and single-use rewards; exact lost-response retries are idempotent and cannot rewrite input history.
+Retire v1-v6 reward protocols rather than preserving the vulnerable endpoint: old pages/runs must refresh and restart. Keep 45 seconds, 24 jade, two shields, gold barriers, artwork and uninterrupted play; a lost connection ends the run rather than pausing time.
+Require server-verified Cloudflare Turnstile for both starts and oath claims, checking hostname/action and single-use tokens with fail-closed behavior. Add per-source start/claim rate limits. Local test tokens require both an explicit binding and a localhost URL, never a production hostname.
+CF Secrets: FREE_TOKEN_TURNSTILE_SITEKEY, FREE_TOKEN_TURNSTILE_SECRET, FREE_TOKEN_OPS_SECRET. Existing Actions verify issuance with a private 30-second HMAC signature bound to method/path/raw body. This key is never exposed to clients and does not bypass live game checks; it is derived from existing Render management credentials, so rerun security setup after changing those credentials.
+These controls block the reported offline precomputation and basic direct scripts, not all live automation. An issued shared key can still be copied. Publication evidence follows after acceptance.
+
 ## Current state: new Yifu key synchronized, website reopened (2026-10-26 15:00 Asia/Shanghai)
 
 Registered and verified a new Yifu client key, fingerprint `69ba11c6809909d7` (not a credential), then published the same value through CF `FREE_TOKEN_RENDER_KEY`. Apex/www claims both return `https://cpa-dhke.onrender.com/v1` with that key; models HTTP 200 / 34 models.

@@ -26,6 +26,8 @@
 
 ### Bug Fixes
 
+- fix: |Yifu Token| Replace full-seed wait-and-replay rewards with immutable live inputs, staged server entropy and human verification; block offline solved traces/direct scripts while retaining uninterrupted mobile play
+
 - fix: |Jade Trial| Remove floating dashed gap rectangles and labels; let the sword formation show open space while preserving v5 rules and corridor protection
 
 - fix: |Jade Trial| Remove ricochets, protect reachable stable three-lane wall gaps, ease density/speed, and show only win conditions without mechanic spoilers; retain legacy replay

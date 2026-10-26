@@ -4,7 +4,7 @@ import { resolve, extname } from 'node:path';
 const root=resolve('public');
 const types={'.html':'text/html; charset=utf-8','.js':'application/javascript','.mjs':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp'};
 const mf = new Miniflare({ port:8790, modules:true, scriptPath:'dist/index.js', compatibilityDate:'2025-04-01',
-  bindings: { FREE_TOKEN_RENDER_KEY:'local-preview-key-not-a-credential' },
+  bindings: { FREE_TOKEN_RENDER_KEY:'local-preview-key-not-a-credential', FREE_TOKEN_LOCAL_TEST:'local-test-only' },
   durableObjects: { GAME_RUNS:{className:'GameRun',useSQLite:true} },
   serviceBindings: { ASSETS:async req=>{
     const url=new URL(req.url);let file=resolve(root,'.'+decodeURIComponent(url.pathname));
