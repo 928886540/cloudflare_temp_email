@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "c6a75a10-b1bd-4a93-ba54-8d4ba2236408",
+  "baseline_parent": "8a812fa0-2aec-4ebb-ba29-bff5442ff8d0",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Make sword patterns fair: stable wide protected gaps, no ricochet, lighter final-five pressure",
+  "message": "Remove floating gap rectangles and labels; keep the fair v5 sword patterns",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -30,7 +30,7 @@
     "free-token/game/style-v3.css",
     "free-token/game/taunts-v1.mjs",
     "free-token/game/engine-v5.mjs",
-    "free-token/game/app-v6.mjs"
-  ],
-  "staged_version": "8a812fa0-2aec-4ebb-ba29-bff5442ff8d0"
+    "free-token/game/app-v6.mjs",
+    "free-token/game/app-v7.mjs"
+  ]
 }

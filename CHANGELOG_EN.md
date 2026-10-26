@@ -18,6 +18,8 @@
 
 ### Bug Fixes
 
+- fix: |Jade Trial| Remove floating dashed gap rectangles and labels; let the sword formation show open space while preserving v5 rules and corridor protection
+
 - fix: |Jade Trial| Remove ricochets, protect reachable stable three-lane wall gaps, ease density/speed, and show only win conditions without mechanic spoilers; retain legacy replay
 
 - fix: |Jade Trial| Remove pause/resume controls, shortcuts, and focus/background auto-pause; advance by real elapsed time and catch up hidden frames to prevent touch-drag pauses

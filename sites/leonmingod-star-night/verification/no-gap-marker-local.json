@@ -1,0 +1,50 @@
+{
+  "origin": "http://localhost:8790",
+  "results": [
+    {
+      "viewport": "320x480",
+      "api_start_mocked": true,
+      "no_pause": true,
+      "drag_blur_keys_continue": true,
+      "background_settles": true,
+      "poem_visible": true,
+      "controls_within_viewport": true,
+      "errors": []
+    },
+    {
+      "viewport": "393x580",
+      "api_start_mocked": true,
+      "no_pause": true,
+      "drag_blur_keys_continue": true,
+      "background_settles": true,
+      "poem_visible": true,
+      "controls_within_viewport": true,
+      "errors": []
+    },
+    {
+      "viewport": "844x390",
+      "api_start_mocked": true,
+      "no_pause": true,
+      "drag_blur_keys_continue": true,
+      "background_settles": true,
+      "poem_visible": true,
+      "controls_within_viewport": true,
+      "errors": []
+    },
+    {
+      "fixture_only": true,
+      "jade": 19,
+      "phase": "rage",
+      "instant_win": false
+    },
+    {
+      "fixture_only": true,
+      "jade": 24,
+      "phase": "survival",
+      "instant_win": false
+    }
+  ],
+  "client": "app-v7.mjs",
+  "floating_gap_rectangle_and_label_removed": true,
+  "engine_version_unchanged": 5
+}

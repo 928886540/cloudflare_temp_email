@@ -26,6 +26,8 @@ wall openings protected against overlapping swords, and the eased v5 cadence.
 PUBLIC SCREENS SHOW ONLY WIN CONDITIONS: 24 jade, 45 seconds, two shields. Never
 preannounce final-five/rage/pure-survival mechanics in start copy or HUD warnings.
 The user explicitly rejected that spoiler text. Taunts remain playful flavor.
+The user also rejected floating debug-like gap rectangles/text. Do not draw safe-gap
+boxes, dashed outlines or “缺口” labels; players identify the visible empty space.
 Current cloud maintenance source has now been recovered from production source maps
 and public assets into `sites/leonmingod-star-night/` (`/workspace/leonmingod-home`
 is a convenience symlink). Read its `WEBSITE_UPDATE_CN.md` and `README.md`. This is
