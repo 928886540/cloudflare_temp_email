@@ -1,5 +1,17 @@
 # Free Token integration with Render
 
+## Published: v5 fair sword patterns and concise win conditions (2026-10-26 01:16 UTC)
+
+Parent `8a812fa0-2aec-4ebb-ba29-bff5442ff8d0`; entrance remains `51a33be8-6ca4-4b4f-886f-613bfea996b0`.
+[Publication acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40253418901) passed. All twelve backend tests passed, including ninety reachable/unblocked wall-gap scenarios, no ricochets, v1-v4 compatibility and SQLite concurrent reward protection.
+The game uses v5 / app-v6: lower middle/final density and speed, stable protected three-lane gaps with visible markers. Retain 45 seconds, 24 jade, two shields, uninterrupted play and ten playful taunts.
+Public instructions list only win conditions. Start/HUD copy does not preannounce final-five or later mechanics. The user wants challenge without unavoidable traps or forced losses; preserve this preference.
+
+Real public v5 redemption succeeded with 24 jade/two shields; concurrent finishes returned 409/200/409. The current key fingerprint remains `01db29c9e73f5fba`, models HTTP 200 with 34 models. Render, keys and character artwork are unchanged.
+All 28 release resources match source, eight protected originals remain intact, and apex/www match. Public browser tests at 320x480, 393x580 and 844x390 mock start to verify spoiler-free copy, uninterrupted touch/background progression, failure controls and phase markers without script errors; real redemption is verified separately through public APIs.
+GAME_RUNS, ASSETS, SITE/Site routing and in-flight older runs remain intact; yesterday's revoked key stays revoked. Evidence: `verification/release-v5.json`, `production-v5.json`, `fairness-v5.json`, `fairness-browser-*.json`. Sections below are historical.
+
+
 ## Yesterday's Yifu key revoked (2026-10-26 00:46 UTC)
 
 The user explicitly clarified that refreshing means replacing and revoking the prior Yifu key. [Revocation and verification](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250878059) passed.

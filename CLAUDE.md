@@ -9,17 +9,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
 ([中文](vitepress-docs/docs/zh/guide/feature/leonmingod-star-night-handoff.md)) first.
 Production now includes the star-night artwork and a game reward path, with parent
-Worker `leonmingod-home` now at `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`.
+Worker `leonmingod-home` now at `8a812fa0-2aec-4ebb-ba29-bff5442ff8d0`.
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v5.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v6.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
-Current trial is v4: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
+Current trial is v5: 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
 (five remaining), NEVER at a remaining-seconds threshold. At 24, stop jade and survive
 the full duration. Defeat shows one of ten emoji/poetic oath taunts and a direct claim
-link. Keep browser/server aligned and retain v1/v2/v3 in-flight replay. Current poster URLs are home v6 / token v4.
+link. Keep browser/server aligned and retain v1/v2/v3/v4 in-flight replay. Current poster URLs are home v6 / token v4.
+Fairness correction (2026-10-26): make challenges dodgeable, not forced losses.
+Keep constant sword trajectories without edge ricochet, reachable stable three-lane
+wall openings protected against overlapping swords, and the eased v5 cadence.
+PUBLIC SCREENS SHOW ONLY WIN CONDITIONS: 24 jade, 45 seconds, two shields. Never
+preannounce final-five/rage/pure-survival mechanics in start copy or HUD warnings.
+The user explicitly rejected that spoiler text. Taunts remain playful flavor.
 Current cloud maintenance source has now been recovered from production source maps
 and public assets into `sites/leonmingod-star-night/` (`/workspace/leonmingod-home`
 is a convenience symlink). Read its `WEBSITE_UPDATE_CN.md` and `README.md`. This is
