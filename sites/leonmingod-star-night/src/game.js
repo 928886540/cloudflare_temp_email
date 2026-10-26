@@ -1,4 +1,7 @@
-import { RULES, createGame, step, installEntropy } from '../public/free-token/game/engine-v7.mjs';
+import * as current from '../public/free-token/game/engine-v8.mjs';
+import * as previous from '../public/free-token/game/engine-v7.mjs';
+const { RULES, createGame, installEntropy } = current;
+const engineFor = run => run.rulesVersion === 7 ? previous : run.rulesVersion === 8 ? current : null;
 import { json, hash, sessionIdentity, verifyHuman, rateLimit } from './security.js';
 export { json } from './security.js';
 export const MAX_AGE = 180000;
@@ -8,7 +11,7 @@ const error = (status, message) => ({ status, error: message });
 
 export function verifyRun(run, body, now) {
   if (!run || now > run.expires) return error(410, '这一局已过期，重新开局即可。');
-  if (run.protocol !== 'live-v1') return error(410, '阵法已更新，请刷新后重新挑战。');
+  if (run.protocol !== 'live-v1' || !engineFor(run)) return error(410, '阵法已更新，请刷新后重新挑战。');
   if (body.sessionHash !== run.sessionHash) return error(403, '这一局与当前浏览器不匹配，请重新开局。');
   if (run.claimed) return error(409, '这一局已经领取过奖励。');
   if (body.trace !== undefined) return error(400, '请在游戏中实时完成挑战。');
@@ -22,7 +25,7 @@ export function verifyRun(run, body, now) {
 // Validate each immutable input prefix against server time and server-owned state.
 export function verifyProgress(run, body, now) {
   if (!run || now > run.expires) return error(410, '这一局已过期，重新开局即可。');
-  if (run.protocol !== 'live-v1') return error(410, '阵法已更新，请重新开局。');
+  if (run.protocol !== 'live-v1' || !engineFor(run)) return error(410, '阵法已更新，请重新开局。');
   if (body.sessionHash !== run.sessionHash) return error(403, '这一局与当前浏览器不匹配。');
   if (run.claimed) return error(409, '这一局已经领取过奖励。');
   if (body.receipt !== run.receipt) return error(409, '操作顺序不匹配，请重新开局。');
@@ -42,7 +45,7 @@ export function verifyProgress(run, body, now) {
   try {
     while (state.frame < frame && !state.done) {
       if (trace[index]?.[0] === state.frame) state.target = trace[index++][1];
-      step(state);
+      engineFor(run).step(state);
     }
   } catch { return error(409, '后续阵法尚未下发，请重新挑战。'); }
   if (state.frame !== frame || index !== trace.length) return error(400, '本局操作记录与阵法不符。');

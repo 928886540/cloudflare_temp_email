@@ -1,0 +1,49 @@
+{
+  "scope": "Local browser with presentation fixture injected only by Playwright; production has no fixture hooks.",
+  "results": [
+    {
+      "width": 393,
+      "height": 580,
+      "ward_deflections": 2,
+      "ward_pickup": true,
+      "warning": true,
+      "near_miss": true,
+      "defeat_actions_fit": true,
+      "sound_toggle": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "ward_deflections": 2,
+      "ward_pickup": true,
+      "warning": true,
+      "near_miss": true,
+      "defeat_actions_fit": true,
+      "sound_toggle": true,
+      "errors": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "ward_deflections": 2,
+      "ward_pickup": true,
+      "warning": true,
+      "near_miss": true,
+      "defeat_actions_fit": true,
+      "sound_toggle": true,
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "ward_deflections": 2,
+      "ward_pickup": true,
+      "warning": true,
+      "near_miss": true,
+      "defeat_actions_fit": true,
+      "sound_toggle": true,
+      "errors": []
+    }
+  ]
+}

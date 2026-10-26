@@ -1,5 +1,11 @@
 # Free Token integration with Render
 
+## v8: ward deflection/pickups, arrival glints and feedback
+
+New runs use v8 / app-v12. Sword walls show a 0.4-second arrival glint before launch; protected corridor timing moves with the delay. No safety boxes, labels or mechanic spoilers. During the five-second ward, jade and gold use its radius-108 circular contact area. Red swords are removed authoritatively at ward contact and animate outward with gold sparks. Expiry restores ordinary sword-tip pickups/damage; another gold refreshes five seconds without stacking or healing.
+
+Add capped pickup trails, near-miss sword glints/text and quiet optional audio with a remembered toggle. Defeat shows survived time, jade and remaining requirements before the original ten taunts and two exits. Effects are capped at 48, with no full-screen blur or new image downloads. Preserve 45 seconds, 24 jade, two shields, no pause, two-hour human passes and live-v1 server reward checks. In-flight v7 runs retain original physics; vulnerable v1–v6 reward paths remain retired.
+
 ## Two-hour browser verification pass (2026-10-26)
 
 Published at 23:07 Asia/Shanghai on 2026-10-26: parent/source `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`, unchanged forwarder `51a33be8-6ca4-4b4f-886f-613bfea996b0`. Read-only inspection confirmed the live baseline `0c98caa6-334b-4b4c-ac1f-694ec95e8879` before publication. Twenty checks and two mobile browser sizes passed refresh/restart/cross-path reuse; 43 assets matched on both apex/www. Owner-signed temporary passes passed live repeat starts and identical reward claims (200), fixed expiry, and missing/expired/tampered rejection (403). This administrative probe does not automate a human challenge; actual mobile widgets were separately loaded and checked.

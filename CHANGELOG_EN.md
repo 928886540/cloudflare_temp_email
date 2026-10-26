@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |Jade Trial| Add ward-wide pickups/red-sword deflection, arrival glints, pickup/near-miss feedback and optional audio; show defeat deficits while preserving live checks and in-flight v7 runs
+
 - feat: |Render Client Keys| Support standalone prefix/numeric keys without website publication, encrypt delivery for the recipient, and preserve existing keys, logins and closed website state
 
 - feat: |Yifu Token| Gate token clicks on issued-key availability: closed shows a temporary-unavailable notice, open restores the original transition; block both reward paths while closed and preserve state in key/release operations

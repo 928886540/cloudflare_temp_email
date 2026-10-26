@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "0c98caa6-334b-4b4c-ac1f-694ec95e8879",
+  "baseline_parent": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Remember verified browsers for two hours across game restarts and oath claims; retain live protocol and reward",
+  "message": "Add readable sword glints, ward-wide pickups and red-sword deflection, feedback and clear defeat gaps; preserve live validation",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -45,7 +45,11 @@
     "free-token/game/app-v10.mjs",
     "free-token/human-v2.mjs",
     "free-token/claim-v3.mjs",
-    "free-token/game/app-v11.mjs"
-  ],
-  "staged_version": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e"
+    "free-token/game/app-v11.mjs",
+    "free-token/game/physics-v8.mjs",
+    "free-token/game/engine-v8.mjs",
+    "free-token/game/app-v12.mjs",
+    "free-token/game/feedback-v1.mjs",
+    "free-token/game/style-v4.css"
+  ]
 }

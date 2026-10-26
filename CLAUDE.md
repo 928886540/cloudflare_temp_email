@@ -14,10 +14,10 @@ Worker `leonmingod-home` now at `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`
 Forwarder version is `51a33be8-6ca4-4b4f-886f-613bfea996b0`; retain SITE →
 leonmingod-home / named entrypoint `Site`, plus existing routes. Both claim flows
 and public concurrent reward protection were reverified; see source `verification/`.
-The live browser client is `app-v11.mjs`: NO pause controls, keyboard pause, or
+The live browser client is `app-v12.mjs`: NO pause controls, keyboard pause, or
 auto-pause on blur/visibility/touch. Keep real elapsed-time advancement and catch-up
 on return; the user explicitly requested uninterrupted play.
-Current trial is v7 (unchanged v6 physics): 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
+Current trial is v8 (live-v1; in-flight v7 retained): 45 seconds, 24 jade, TWO shields. Rage starts at 19 collected
 (five remaining), NEVER at a remaining-seconds threshold. At 24, stop jade and survive
 the full duration. Defeat shows one of ten emoji/poetic oath taunts and a direct claim
 link. Keep browser/server aligned; old v1-v6 reward protocols are retired and must return 410. Never restore the vulnerable full-seed/trace finish path. Current poster URLs are home v6 / token v4.
@@ -60,7 +60,7 @@ valid fixed two-hour signed browser cookie or fresh Turnstile (hostname/action a
 single-use token checks). Preserve per-source rate limits. The HttpOnly/Secure pass
 is shared by apex/www and both claim paths, bound to browser UA, not IP; do not
 renew it on ordinary visits or store/reuse raw Cloudflare tokens. Client human-v2 /
-claim-v3 / app-v11 checks no-store security status before displaying the widget. Keep test-token bypass
+claim-v3 / app-v12 checks no-store security status before displaying the widget. Keep test-token bypass
 restricted to an explicit local-only binding AND localhost; never enable it on a
 production hostname. Real public mobile widgets have been visually checked.
 CF bindings: FREE_TOKEN_TURNSTILE_SITEKEY, FREE_TOKEN_TURNSTILE_SECRET,
@@ -90,6 +90,19 @@ challenge solving. `leonmingod-security.yaml` mode `verify-pass` reproduces this
 without changing config. Missing/expired/tampered cookies still fail; original
 Turnstile single-use checks remain. Evidence: `verification/human-pass-*.json`.
 The cookie only remembers verification; live-v7 gameplay and rate limits still apply.
+
+### Gameplay v8: ward contact and readable feedback
+
+Gold ward lasts five seconds. While active, BOTH jade and gold pickups use the
+radius-108 circle, and every touching red sword is removed by the shared engine
+and rendered flying outward; after expiry, restore ordinary sword-tip pickups and
+small damage hitbox. Gold refreshes duration, never stacks or heals. Sword walls
+show 24-frame arrival glints before launch; delay corridor protection accordingly.
+Keep stable reachable gaps, no debug boxes or spoilers. Near misses/pickups have
+capped visual feedback and optional quiet audio. Loss shows elapsed/jade deficits
+then the ten existing taunts. Preserve no pause, two shields, 24 jade, 45 seconds.
+Server dispatches existing v7 runs to their original physics; new runs are v8. Never
+restore v1-v6 full-trace rewards. All verification/pass/receipt guards stay active.
 
 ### User-defined shorthand
 
