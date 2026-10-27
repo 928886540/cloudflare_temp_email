@@ -1,5 +1,10 @@
 # CPA 异常请求防护
 
+当前生产版本：Cloudflare Worker `aa5ad0b9-61a2-4411-bba6-c7d9678a3304`；Render
+部署 `dep-dbgcpsuk1f9s73c08pg0`，CPA 提交
+`194c48ee7f8d8fd05b15bda6a0b1e5836251689e`。发布与真实阈值验收见
+[Actions 40538198918](https://github.com/928886540/cloudflare_temp_email/actions/runs/40538198918)。
+
 ## 范围
 
 本防护只覆盖 `https://cpa-dhke.onrender.com` 的 CPA 模型 API。网站首页、免费
