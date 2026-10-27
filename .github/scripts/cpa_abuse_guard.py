@@ -348,7 +348,6 @@ def deploy():
         update_guard_environment(worker_url())
         deployment = api.render("/services/" + api.SERVICE + "/deploys", "POST", {
             "commitId": expected,
-            "deployMode": "deploy_only",
         })
         wait_deploy(deployment["id"], expected)
         restore_credentials(state, credentials)
