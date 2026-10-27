@@ -22,7 +22,7 @@ def get(item):
     name,path=item
     try:
         result=json.loads(api.request('https://api.cloudflare.com/client/v4/'+path,headers=headers)[2])
-        return name, {'ok':bool(result.get('success')), 'result':result.get('result'), 'error_codes':[e.get('code') for e in result.get('errors',[])]}
+        return name, {'ok':bool(result.get('success')), 'result':result.get('result'), 'error_codes':[e.get('code') for e in (result.get('errors') or [])]}
     except RuntimeError as error:
         return name, {'ok':False,'error':str(error)}
 with ThreadPoolExecutor(max_workers=5) as pool: raw=dict(pool.map(get,paths.items()))
