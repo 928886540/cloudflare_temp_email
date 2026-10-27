@@ -109,11 +109,16 @@ def safe_status(result):
 
 def print_status(result):
     status = safe_status(result)
-    schedules = api.cf(WORKER + "/schedules")
+    schedule_result = api.cf(WORKER + "/schedules")
+    schedules = (schedule_result.get("schedules") or []) \
+        if isinstance(schedule_result, dict) else schedule_result
+    if not isinstance(schedules, list):
+        raise RuntimeError("Unexpected Cloudflare schedules response")
     status["worker"] = {
         "name": WORKER,
         "active_version": api.active(WORKER),
-        "crons": sorted(item["cron"] for item in schedules),
+        "crons": sorted(item["cron"] for item in schedules
+                        if isinstance(item, dict) and item.get("cron")),
     }
     print("CPA_GUARD_STATUS=" + json.dumps(status, separators=(",", ":")), flush=True)
 
