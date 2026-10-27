@@ -108,7 +108,14 @@ def safe_status(result):
 
 
 def print_status(result):
-    print("CPA_GUARD_STATUS=" + json.dumps(safe_status(result), separators=(",", ":")), flush=True)
+    status = safe_status(result)
+    schedules = api.cf(WORKER + "/schedules")
+    status["worker"] = {
+        "name": WORKER,
+        "active_version": api.active(WORKER),
+        "crons": sorted(item["cron"] for item in schedules),
+    }
+    print("CPA_GUARD_STATUS=" + json.dumps(status, separators=(",", ":")), flush=True)
 
 
 def service():
