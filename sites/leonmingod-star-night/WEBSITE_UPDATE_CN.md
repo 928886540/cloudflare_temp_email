@@ -5,7 +5,7 @@
 只保护 `https://cpa-dhke.onrender.com` 的模型 API，网站页面、游戏与义父 Key 均未
 改动。Render 部署 `dep-dbgcpsuk1f9s73c08pg0`，源码提交
 `194c48ee7f8d8fd05b15bda6a0b1e5836251689e`；Cloudflare 控制 Worker
-`cpa-abuse-guard`，版本 `aa5ad0b9-61a2-4411-bba6-c7d9678a3304`。持久封禁状态使用
+`cpa-abuse-guard`，当前活动版本 `49297ea0-0b4c-44ac-904e-b6a9c381d767`。持久封禁状态使用
 Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/healthz`，避免
 免费实例无流量休眠。
 
@@ -22,7 +22,7 @@ Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/he
 来自两份上游 Plus 账号的真实配额冷却，重启 Render 不会增加上游额度。
 
 [发布与公网验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40538198918) ·
-[独立状态复核](https://github.com/928886540/cloudflare_temp_email/actions/runs/40538958450) ·
+[独立状态复核](https://github.com/928886540/cloudflare_temp_email/actions/runs/40539773887) ·
 [运维说明](../api-abuse-guard/README_CN.md)
 
 ## 2026-10-26：v8 金刚罩范围与操作反馈
