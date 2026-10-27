@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [inspect, setup, verify, verify-pass]
+        options: [inspect, setup, verify, verify-pass, audit-api]
         default: inspect
 permissions:
   contents: read
@@ -22,8 +22,18 @@ jobs:
       SECURITY_MODE: ${{ inputs.mode }}
     steps:
       - uses: actions/checkout@v6
-      - if: inputs.mode != 'verify'
+      - if: inputs.mode != 'verify' && inputs.mode != 'audit-api'
         run: python .github/scripts/leonmingod_security.py
+      - if: inputs.mode == 'audit-api'
+        run: |
+          python -m pip install cryptography
+          python .github/scripts/api_abuse_audit.py
+      - if: inputs.mode == 'audit-api' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-abuse-configuration-backup
+          path: api-abuse-audit/
+          retention-days: 30
       - if: inputs.mode == 'verify'
         uses: actions/setup-node@v6
         with:
