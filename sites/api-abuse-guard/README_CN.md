@@ -56,6 +56,14 @@ Worker 每 10 分钟请求一次 `/healthz`，用于避免免费 Render 因无�
 - `guard-unban`：立即解封；默认保留 24 小时重复触发历史，勾选
   `reset_history` 才同时清除历史。
 
+`POST /v1/authorize` 用同一把服务 HMAC 校验客户端 key 的 SHA-256。命中
+`KEYS` 绑定里的 `key:<hash>` 且 `status` 为 `active` 才允许；否则失败即拒绝。
+限流计数在 Durable Object 里，不按请求写 KV。排行榜 `stats:` 和
+`leaderboard:top` 由定时刷新写回，默认每 3 小时、每天最多 120 次 KV 写。
+`KEYS` 必须绑定现有命名空间 `leonmingod-home-kv`
+（`1b02d139375045f7a7d5ce2d994abd2c`）。未设置时该路由返回 503，原有 `/rpc`
+封禁逻辑不变。`guard-disable` 只关闭 IP 封禁，不关闭这条 key 校验。
+
 回滚时先执行 `guard-disable`，CPA 会立即恢复为只观察、不中断流量。删除 Render 的
 `CPA_ABUSE_URL` 和 `CPA_ABUSE_SECRET` 后重新部署即可完全撤下中间件；Worker 和
 Durable Object 可保留以便审计。发布前的 Render Secret File、环境变量和登录凭证

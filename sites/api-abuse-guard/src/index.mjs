@@ -1,5 +1,6 @@
 import { isIP } from 'node:net';
 import { POLICY, initialState, check, observe, prune, metrics } from './policy.mjs';
+import { applyAuthorize, classifyRecord, encodeDecision, limitsFromEnv, parseAuthorizeBody, planFlush, readQuota, responseHeader } from './authorize.mjs';
 const encoder=new TextEncoder();
 const json=(status,data)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export function canonicalIP(value){
@@ -22,9 +23,36 @@ async function authorized(request,env,body,admin){
   const bytes=new Uint8Array(parts[3].match(/../g).map(v=>parseInt(v,16)));
   return await crypto.subtle.verify('HMAC',key,bytes,encoder.encode(message))?parts[2]:null;
 }
+async function authorizeRoute(request,env){
+  if(request.method!=='POST')return json(404,{error:'Not found'});
+  const text=await request.text();
+  if(text.length>4096)return json(413,{error:'Request too large'});
+  const nonce=await authorized(request,env,text,false);
+  if(!nonce)return json(403,{error:'Forbidden'});
+  let body;try{body=JSON.parse(text);}catch{return json(400,{error:'Invalid JSON'});}
+  if(body?.ip!==undefined){body.ip=canonicalIP(body.ip);if(!body.ip)return json(400,{error:'Invalid IP'});}
+  const parsed=parseAuthorizeBody(body);
+  if(parsed.error)return json(400,{error:'Invalid request'});
+  if(!env.KEYS||!env.STATE||!env.SERVICE_SECRET)return json(503,{error:'Key store unavailable'});
+  let record=null;
+  try{
+    const raw=await env.KEYS.get('key:'+parsed.hash);
+    if(raw)record=JSON.parse(raw);
+  }catch{return json(503,{error:'Key store unavailable'});}
+  if(record&&(typeof record!=='object'||Array.isArray(record)))return json(503,{error:'Key store unavailable'});
+  const classified=classifyRecord(record);
+  let response;
+  try{
+    response=await env.STATE.get(env.STATE.idFromName('cpa-v1')).fetch('https://state.internal/authorize',{method:'POST',body:JSON.stringify({nonce,hash:parsed.hash,email:classified.email,active:classified.active,reason:classified.reason,limits:limitsFromEnv(env),now:Date.now()})});
+  }catch{return json(503,{error:'Key store unavailable'});}
+  if(!response.ok)return json(503,{error:'Key store unavailable'});
+  const payload=encodeDecision(await response.json());
+  return new Response(payload,{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-CPA-Guard':await responseHeader(env.SERVICE_SECRET,nonce,'/v1/authorize',200,payload)}});
+}
 export default {
   async fetch(request,env){
     const path=new URL(request.url).pathname,admin=path==='/admin';
+    if(path==='/v1/authorize')return authorizeRoute(request,env);
     if(!['/rpc','/admin'].includes(path)||request.method!=='POST')return json(404,{error:'Not found'});
     const text=await request.text();if(text.length>8192)return json(413,{error:'Request too large'});
     const nonce=await authorized(request,env,text,admin);if(!nonce)return json(403,{error:'Forbidden'});
@@ -46,15 +74,19 @@ export default {
 };
 
 export class AbuseState {
-  constructor(ctx){
-    this.ctx=ctx;this.sql=ctx.storage.sql;
+  constructor(ctx,env){
+    this.ctx=ctx;this.env=env;this.sql=ctx.storage.sql;
     this.sql.exec('CREATE TABLE IF NOT EXISTS peers (ip TEXT PRIMARY KEY,state TEXT NOT NULL,updated INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY,ip TEXT NOT NULL,entry TEXT NOT NULL,created INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS replay (nonce TEXT PRIMARY KEY,response TEXT NOT NULL,created INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS control (id INTEGER PRIMARY KEY,value TEXT NOT NULL)');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS quotas (kind TEXT NOT NULL,id TEXT NOT NULL,minute_start INTEGER NOT NULL,minute_count INTEGER NOT NULL,day_start INTEGER NOT NULL,day_count INTEGER NOT NULL,allowed INTEGER NOT NULL,flushed INTEGER NOT NULL,PRIMARY KEY (kind,id))');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS key_flush (id INTEGER PRIMARY KEY,next INTEGER NOT NULL,top_dirty INTEGER NOT NULL)');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS kv_budget (day TEXT PRIMARY KEY,writes INTEGER NOT NULL)');
   }
   config(){return JSON.parse([...this.sql.exec('SELECT value FROM control WHERE id=1')][0]?.value||'{"enabled":false,"allowlist":[]}');}
   async fetch(request){
+    if(new URL(request.url).pathname==='/authorize')return this.authorize(await request.json());
     const body=await request.json(),now=Date.now(),admin=new URL(request.url).pathname==='/admin';
     const replayKey=(admin?'admin:':'rpc:')+body.nonce;
     const previous=[...this.sql.exec('SELECT response FROM replay WHERE nonce=? AND created>?',replayKey,now-60000)][0];
@@ -98,11 +130,58 @@ export class AbuseState {
     if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
     return json(200,result);
   }
+  async authorize(payload){
+    let result;
+    this.ctx.storage.transactionSync(()=>{result=applyAuthorize(this.sql,payload);});
+    const now=Number(payload.now)||Date.now();
+    if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
+    return json(200,result);
+  }
   async alarm(){
     const now=Date.now();this.sql.exec('DELETE FROM peers WHERE updated<?',now-POLICY.retention);
     this.sql.exec('DELETE FROM audit WHERE created<?',now-POLICY.retention);
     this.sql.exec('DELETE FROM replay WHERE created<?',now-60000);
+    try{await this.flushStats(now);}catch{console.log(JSON.stringify({event:'cpa_stats_flush_failed'}));}
     // Expiry is also checked on every request, independently of alarm scheduling.
     await this.ctx.storage.setAlarm(now+3600000);
+  }
+  async flushStats(now){
+    const kv=this.env?.KEYS;
+    if(!kv)return;
+    const scheduled=[...this.sql.exec('SELECT next,top_dirty FROM key_flush WHERE id=1')][0];
+    if(!scheduled||now<scheduled.next)return;
+    const limits=limitsFromEnv(this.env||{});
+    let index={entries:[]};
+    try{const raw=await kv.get('leaderboard:index');if(raw)index=JSON.parse(raw);}catch{this.sql.exec('INSERT OR REPLACE INTO key_flush (id,next,top_dirty) VALUES (1,?,?)',now+limits.flushMs,scheduled.top_dirty||0);return;}
+    const entries=Array.isArray(index.entries)?index.entries:[];
+    const quotas=new Map(),stats=new Map();
+    for(const entry of entries.slice(0,20)){
+      const hash=entry?.key_sha256;
+      if(typeof hash!=='string')continue;
+      const quota=readQuota(this.sql,'key',hash);
+      if(quota)quotas.set(hash,quota);
+      else{
+        try{const raw=await kv.get('stats:'+hash);const parsed=raw?JSON.parse(raw):null;const value=Number(parsed?.requests??parsed?.score??0);stats.set(hash,Number.isFinite(value)&&value>=0?Math.floor(value):0);}catch{stats.set(hash,0);}
+      }
+    }
+    const day=new Date(now).toISOString().slice(0,10);
+    const used=[...this.sql.exec('SELECT writes FROM kv_budget WHERE day=?',day)][0]?.writes||0;
+    const plan=planFlush(entries,quotas,stats,now,Math.max(0,limits.maxWritesPerDay-used),scheduled.top_dirty===1);
+    let writes=used,topDirty=scheduled.top_dirty===1;
+    for(const item of plan.stats){
+      await kv.put('stats:'+item.hash,JSON.stringify(item.value));
+      this.sql.exec("UPDATE quotas SET flushed=? WHERE kind='key' AND id=?",item.requests,item.hash);
+      writes++;
+      topDirty=1;
+      this.sql.exec('INSERT OR REPLACE INTO key_flush (id,next,top_dirty) VALUES (1,?,1)',scheduled.next);
+    }
+    if(plan.top){
+      await kv.put('leaderboard:top',JSON.stringify(plan.top));
+      writes++;
+      topDirty=0;
+    }
+    this.sql.exec('INSERT OR REPLACE INTO kv_budget (day,writes) VALUES (?,?)',day,writes);
+    this.sql.exec('DELETE FROM kv_budget WHERE day<?',day);
+    this.sql.exec('INSERT OR REPLACE INTO key_flush (id,next,top_dirty) VALUES (1,?,?)',now+limits.flushMs,topDirty?1:0);
   }
 }
