@@ -96,7 +96,7 @@ test('one email mints one key, stores only hashes, and leaderboard orders scores
   assert.equal(escapeHtml(board.entries[0].username), '&lt;Ada&gt;');
 });
 
-test('claim pages link to the game leaderboard and the homepage no longer names the illustration', async () => {
+test('claim pages link to the game leaderboard and the homepage keeps the v5 cover', async () => {
   const claim = await readFile('public/free-token/claim/index.html', 'utf8');
   const game = await readFile('public/free-token/game/index.html', 'utf8');
   const home = await readFile('public/index.html', 'utf8');
@@ -105,7 +105,9 @@ test('claim pages link to the game leaderboard and the homepage no longer names 
   assert.match(game, /id="leaderboard"/);
   assert.match(game, /textContent/);
   assert.doesNotMatch(game, /innerHTML/);
-  assert.doesNotMatch(home, /home-hero|id="leaderboard"|wallpaper\.png/);
+  assert.match(home, /srcset="\/home-hero-desktop-v5\.webp"/);
+  assert.match(home, /src="\/home-hero-mobile-v5\.webp"/);
+  assert.doesNotMatch(home, /id="leaderboard"|wallpaper\.png|home-hero-desktop-v6|home-hero-mobile-v6/);
   assert.doesNotMatch(choose, /leaderboard|home-hero/);
 });
 

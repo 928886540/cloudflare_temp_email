@@ -100,6 +100,16 @@
     "sha256": "5b9597f5a4e5d71370841e97bef157e97531ee73f5738d278dd14177032fb13d"
   },
   {
+    "path": "/home-hero-desktop-v5.webp",
+    "bytes": 584914,
+    "sha256": "d42e33f9ede2f7039195ab669f6cc4e406227d2457934090667de25f98877782"
+  },
+  {
+    "path": "/home-hero-mobile-v5.webp",
+    "bytes": 556450,
+    "sha256": "6caff1e3908c40a786a3fb121c5e4b2639d93288c44b808b0f1218c92687b2dd"
+  },
+  {
     "path": "/home-scene-v5.js?v=20261025-night",
     "bytes": 10338,
     "sha256": "fd9cc91dcf516d3d3208d3e3dd9fa2fae1a9bd3334a443d3d2c5fa9acafa0e62"

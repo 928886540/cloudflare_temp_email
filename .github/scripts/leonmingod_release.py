@@ -57,7 +57,7 @@ def released_claim_has_no_shared_key():
 def released_board_and_hero():
     board = json.loads(api.request(api.ORIGIN + '/api/leaderboard')[2])
     assert isinstance(board.get('entries'), list) and 'email' not in json.dumps(board) and 'apiKey' not in json.dumps(board)
-    for path in ('/home-hero-desktop-v6.webp', '/home-hero-mobile-v6.webp', '/home-hero-desktop-v5.webp', '/home-hero-mobile-v5.webp', '/image', '/img', '/bg', '/wallpaper.png'):
+    for path in ('/home-hero-desktop-v6.webp', '/home-hero-mobile-v6.webp', '/image', '/img', '/bg', '/wallpaper.png'):
         try:
             api.request(api.ORIGIN + path)
         except RuntimeError as error:
