@@ -12,6 +12,12 @@
   "triggers": {
     "crons": ["*/10 * * * *"]
   },
+  "kv_namespaces": [
+    {
+      "binding": "KEYS",
+      "id": "1b02d139375045f7a7d5ce2d994abd2c"
+    }
+  ],
   "durable_objects": {
     "bindings": [
       {
