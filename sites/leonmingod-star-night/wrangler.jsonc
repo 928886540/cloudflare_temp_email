@@ -1,0 +1,35 @@
+{
+  // Local/dry-run description of the LIVE leonmingod-home bindings plus KV.
+  // Do not `wrangler deploy` this file to production: a deploy would upload ./public
+  // as a replacement asset set and can drop illustrations that only exist in the
+  // live ASSETS namespace. Publish with .github/scripts/leonmingod_release.py,
+  // which copies the live bindings and uses keep_assets / keep_bindings.
+  "name": "leonmingod-home",
+  "main": "dist/index.js",
+  "compatibility_date": "2025-04-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    { "binding": "KV", "id": "1b02d139375045f7a7d5ce2d994abd2c" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "GAME_RUNS", "class_name": "GameRun" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1-game-runs", "new_sqlite_classes": ["GameRun"] }
+  ],
+  "vars": {
+    "CLAIM_MAIL_FROM": "noreply@leonmingod.com"
+  }
+  // Secrets are not declared here. Live secret names that must be kept:
+  // FREE_TOKEN_CPA_KEY, FREE_TOKEN_OPS_SECRET, FREE_TOKEN_RENDER_KEY,
+  // FREE_TOKEN_TURNSTILE_SECRET, FREE_TOKEN_TURNSTILE_SITEKEY, RESEND_API_KEY.
+}

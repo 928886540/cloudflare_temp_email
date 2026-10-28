@@ -89,7 +89,7 @@ test('real SQLite Durable Object locks prefixes, supports exact retries and gran
     await stub.fetch('https://game.internal/test-put',{method:'POST',body:JSON.stringify(ready)});
     const responses=await Promise.all(Array.from({length:6},()=>send('finish',{id:challenge.id,receipt:receipt.receipt},cookie)));
     assert.equal(responses.filter(r=>r.status===200).length,1);assert.equal(responses.filter(r=>r.status===409).length,5);
-    const reward=await responses.find(r=>r.status===200).json();assert.equal(reward.apiKey,'test-reward-placeholder');
+    const reward=await responses.find(r=>r.status===200).json();assert.equal(reward.won,true);assert.equal(reward.claimable,true);assert.equal(reward.apiKey,undefined);
   }finally{await mf.dispose();}
 });
 
@@ -195,10 +195,10 @@ test('availability exposes no secret and closed issuance blocks both claim paths
         const signature=createHmac('sha256','test-ops-secret').update(`${timestamp}\nPOST\n/api/free-token/claim\n${body}`).digest('hex');
         const probe=await mf.dispatchFetch('http://localhost/api/free-token/claim',{method:'POST',headers:{...headers,'X-LMG-Operation':timestamp+':'+signature},body});
         assert.equal(probe.status,200,'Operational probes still work after consuming the request body');
-        assert.equal((await probe.json()).apiKey,'availability-test-placeholder');
+        const issued=await probe.json();assert.equal(issued.next,'email');assert.equal(issued.apiKey,undefined);
         const start=await mf.dispatchFetch('http://localhost/api/free-token/game/start',{method:'POST',headers,body:'{}'});assert.equal(start.status,403);
       }
-      if(!enabled){assert.match((await claim.json()).error,/暂未开放/);const start=await mf.dispatchFetch('http://localhost/api/free-token/game/start',{method:'POST',headers,body:'{}'});assert.equal(start.status,503);assert.match((await start.json()).error,/暂未开放/);}
+      if(!enabled){assert.match((await claim.json()).error,/验证暂时不可用/);const start=await mf.dispatchFetch('http://localhost/api/free-token/game/start',{method:'POST',headers,body:'{}'});assert.equal(start.status,503);assert.match((await start.json()).error,/暂未开放/);}
     }finally{await mf.dispose();}
   }
 });

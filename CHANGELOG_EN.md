@@ -10,6 +10,7 @@
 
 ### Features
 
+- feat: |Yifu Token| Claim now sends an email code and reveals a one-time unique key (one claim per email); the trial page lists a usage leaderboard. The homepage xianxia illustration is removed from source pending new art
 - feat: |Jade Trial| Add ward-wide pickups/red-sword deflection, arrival glints, pickup/near-miss feedback and optional audio; show defeat deficits while preserving live checks and in-flight v7 runs
 
 - feat: |Render Client Keys| Support standalone prefix/numeric keys without website publication, encrypt delivery for the recipient, and preserve existing keys, logins and closed website state

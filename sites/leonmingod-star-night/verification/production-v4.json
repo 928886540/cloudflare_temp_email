@@ -80,16 +80,6 @@
     "matches_source": true
   },
   {
-    "path": "/home-hero-desktop-v6.webp",
-    "http": 200,
-    "matches_source": true
-  },
-  {
-    "path": "/home-hero-mobile-v6.webp",
-    "http": 200,
-    "matches_source": true
-  },
-  {
     "path": "/free-token/welcome-desktop-v4.webp",
     "http": 200,
     "matches_source": true

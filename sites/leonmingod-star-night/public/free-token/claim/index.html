@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v3.mjs"></script>
+  <script type="module" src="/free-token/claim-v4.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -368,7 +368,22 @@ document.addEventListener('DOMContentLoaded', function() {
     <label class="credential-label" for="api-key">贵宾密钥 <span>API Key</span></label>
     <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="贵宾密钥" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制密钥</button></div>
     <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
+    <a class="primary copy-all" href="/free-token/game/#leaderboard">查看排行 <span aria-hidden="true">→</span></a>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+  </dialog>
+
+  <dialog id="email-dialog" class="modal" aria-labelledby="email-title">
+    <p class="eyebrow">专属密钥 · 只显示一次</p>
+    <h2 id="email-title" tabindex="-1">留下名字和邮箱</h2>
+    <p class="modal-description">验证码寄到邮箱。同一个邮箱只能领取一次。</p>
+    <label class="credential-label" for="claim-name">名字 <span>1-20 字</span></label>
+    <div class="input-wrap"><input id="claim-name" name="username" type="text" maxlength="40" autocomplete="nickname" required></div>
+    <label class="credential-label" for="claim-email">邮箱</label>
+    <div class="input-wrap"><input id="claim-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
+    <label class="credential-label" for="claim-code">验证码</label>
+    <div class="input-wrap"><input id="claim-code" name="code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 位数字"></div>
+    <p id="email-error" class="error" role="alert" hidden></p>
+    <div class="dialog-actions"><button id="send-code" class="secondary" type="button">发送验证码</button><button id="verify-code" class="primary" type="button">验证并领取</button></div>
   </dialog>
 
 </body>

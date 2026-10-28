@@ -432,7 +432,7 @@ GitHub Actions 的 `Connect Free Token to Render` 工作流使用仓库 Secrets
 | 发布后主站源码 SHA-256 | `1bfd639be2c04996d8e7fac80c2ab42e085acc5200f416b02a2904adc749562a` |
 
 入口 Worker 的根域与 www 路由覆盖首页、`/index.html`、`/free-token`、`/free-token/*`、
-两张 `home-hero-*-v4.webp` 和 `/home-scene-v4.js`。领取 API 由原主站处理。
+`/home-scene-v4.js`。首页主视觉已从站点源码移除。领取 API 由原主站处理。
 不要将主站 Worker 与入口 Worker 混为一个部署目标。
 
 `src/site-original.js` 仍包含旧地址和旧绑定，这是**历史备份**，不能直接覆盖线上主站。
