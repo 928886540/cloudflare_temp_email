@@ -3,6 +3,7 @@ import { handleGame } from './game.js';
 import { handleClaimCode, handleClaimVerify, handleLeaderboard, handleLegacyClaim } from './claim.js';
 import { securityConfig } from './security.js';
 import { staticResponse } from './static.js';
+import { handlePoolStatus } from './pool-status.js';
 export { GameRun } from './game.js';
 
 const RETIRED_HERO = /^\/(?:home-hero-(?:desktop|mobile)-v[23]\.webp|image|img|bg|wallpaper\.png)$/;
@@ -14,6 +15,7 @@ const site = {
       return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     }
     if (url.pathname === '/api/leaderboard') return handleLeaderboard(request, env);
+    if (url.pathname === '/api/pool-status') return handlePoolStatus(request, env);
     if (url.pathname === '/api/free-token/security') return securityConfig(request, env);
     if (url.pathname === '/api/free-token/status') {
       const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };

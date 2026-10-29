@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon-v2.png">
   <link rel="stylesheet" href="scene.css?v=20261023-5">
   <script src="vendor/fluid.js" defer></script>
-  <script src="/home-scene-v5.js?v=20261025-night" defer></script>
+  <script src="/home-scene-v6.js" defer></script>
 <style id="homepage-jade-layout">
 :root { background: #041a16; color: #e4efe2; }
 .cover { filter: brightness(1.03) saturate(.96); }
@@ -216,16 +216,15 @@
   <link rel="stylesheet" href="/home-enhancements.css?v=20261025-1">
   <link rel="stylesheet" href="/jade-portals-v2.css?v=20261025-2">
   <script src="/home-enhancements.js?v=20261025-2" defer></script>
+  <link rel="stylesheet" href="/star-sea-v1.css">
 </head>
-<body data-motion="loading" data-effects="off">
+<body data-motion="loading" data-effects="on">
   <picture class="cover">
-    <source media="(min-width: 768px) and (orientation: landscape)" srcset="/home-hero-desktop-v6.webp">
-    <img src="/home-hero-mobile-v6.webp" alt="LeonMinGod：星河与月下山水之间，青衣仙子掌托玉球。一念风起，万境星垂。" fetchpriority="high" decoding="async">
+    <source media="(min-width: 768px) and (orientation: landscape)" srcset="/home-hero-desktop-v7.webp">
+    <img id="scene-image" src="/home-hero-mobile-v7.webp" alt="LeonMinGod：云海观星台与悬空宫阙之间，青衣仙子托起流光玉球。一念风起，万境星垂。" fetchpriority="high" decoding="async">
   </picture>
-  <picture class="cover cover-palm" aria-hidden="true">
-    <source media="(min-width: 768px) and (orientation: landscape)" srcset="/home-hero-desktop-v6.webp">
-    <img id="palm-image" src="/home-hero-mobile-v6.webp" alt="" decoding="async">
-  </picture>
+  <div class="hero-wordmark" aria-hidden="true"><span class="hero-name">LeonMinGod</span><p class="hero-motto">一念风起，万境星垂</p></div>
+  <div class="astral-currents" aria-hidden="true"><i></i><i></i></div>
   <canvas id="fluid" aria-hidden="true"></canvas>
   <span id="pointer-light" aria-hidden="true"></span>
   <div class="vignette" aria-hidden="true"></div>
@@ -234,7 +233,7 @@
     <a id="spirit-orb" class="spirit-orb" href="/free-token/" aria-label="触碰灵球，进入免费 Token">
       <span class="orb-orbit" aria-hidden="true"></span>
       <span class="orb-orbit orb-orbit-inner" aria-hidden="true"></span>
-      <span class="orb-invitation" aria-hidden="true">轻触 · 免费 Token ↗</span>
+      <span class="orb-float" aria-hidden="true"><img class="orb-art" src="/assets/jade-orb-v4.webp" width="1254" height="1254" alt="" decoding="async" draggable="false"></span>
     </a>
     <span id="orb-status" class="sr-only" role="status" aria-live="polite"></span>
   </main>

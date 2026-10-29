@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "76953781-1d5b-43ff-a91c-d3f01ace76f8",
+  "baseline_parent": "968904cd-207b-4691-863c-d63cc4487640",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v52: remember email/signature, OTP fill/copy action, restore v6 home artwork",
+  "message": "v53: star-sea art, floating orb, vivid default flow, CC Switch import and live pool status",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -66,7 +66,23 @@
     "free-token/verify-flow-v2.mjs",
     "free-token/verify-v2.mjs",
     "free-token/verify-v2.css",
-    "free-token/claim-compact-v5.css"
+    "free-token/claim-compact-v5.css",
+    "home-scene-v6.js",
+    "star-sea-v1.css",
+    "home-hero-desktop-v7.webp",
+    "home-hero-mobile-v7.webp",
+    "assets/jade-orb-v4.webp",
+    "free-token/welcome-desktop-v5.webp",
+    "free-token/welcome-mobile-v5.webp",
+    "free-token/ccswitch-v1.mjs",
+    "free-token/ccswitch-v1.css",
+    "free-token/claim-v10.mjs",
+    "free-token/game/app-v17.mjs",
+    "free-token/game/style-v5.css",
+    "free-token/choose-v3.css",
+    "model-status/index.html",
+    "model-status/status-v1.css",
+    "model-status/status-v1.mjs"
   ],
-  "staged_version": "968904cd-207b-4691-863c-d63cc4487640"
+  "staged_version": ""
 }

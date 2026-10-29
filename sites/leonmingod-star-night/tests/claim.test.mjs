@@ -136,14 +136,14 @@ test('claim grants are signed, browser-scoped, expiring and clearable', async ()
 test('the pages use one clean email step, a dedicated auto-verify page, and no public leaderboard', async () => {
   const [claim, game, verify, claimScript, gameScript, verifyScript, flow, home] = await Promise.all([
     readFile('public/free-token/claim/index.html', 'utf8'), readFile('public/free-token/game/index.html', 'utf8'),
-    readFile('public/free-token/verify/index.html', 'utf8'), readFile('public/free-token/claim-v9.mjs', 'utf8'),
-    readFile('public/free-token/game/app-v16.mjs', 'utf8'), readFile('public/free-token/verify-v2.mjs', 'utf8'),
+    readFile('public/free-token/verify/index.html', 'utf8'), readFile('public/free-token/claim-v10.mjs', 'utf8'),
+    readFile('public/free-token/game/app-v17.mjs', 'utf8'), readFile('public/free-token/verify-v2.mjs', 'utf8'),
     readFile('public/free-token/verify-flow-v2.mjs', 'utf8'), readFile('public/index.html', 'utf8'),
   ]);
-  assert.match(claim, /claim-v9\.mjs/);
+  assert.match(claim, /claim-v10\.mjs/);
   assert.equal((claim.match(/id="send-code"/g) || []).length, 1);
   assert.doesNotMatch(claim, /claim-code|claim-name|leaderboard/);
-  assert.match(game, /app-v16\.mjs/);
+  assert.match(game, /app-v17\.mjs/);
   assert.doesNotMatch(game, /player-name|player-code|reveal-key|id="leaderboard"/);
   assert.match(verify, /maxlength="6"/);
   assert.match(verify, /autocomplete="one-time-code"/);
@@ -151,8 +151,8 @@ test('the pages use one clean email step, a dedicated auto-verify page, and no p
   assert.match(verifyScript, /digits\.length === 6/);
   assert.match(flow, /resendAfter: Math\.max\(1, Number\(resendAfter\) \|\| 120\)/);
   assert.doesNotMatch(claimScript + gameScript, /leaderboard|claim\/verify/);
-  assert.match(home, /home-hero-desktop-v6\.webp/);
-  assert.match(home, /home-hero-mobile-v6\.webp/);
+  assert.match(home, /home-hero-desktop-v7\.webp/);
+  assert.match(home, /home-hero-mobile-v7\.webp/);
 });
 
 test('the Worker enforces eligibility before email and returns the same key to a verified email', async () => {

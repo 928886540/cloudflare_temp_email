@@ -51,8 +51,8 @@ def released_claim_has_no_shared_key():
 def released_board_and_hero():
     board = json.loads(api.request(api.ORIGIN + '/api/leaderboard')[2])
     assert isinstance(board.get('entries'), list) and 'email' not in json.dumps(board) and 'apiKey' not in json.dumps(board)
-    for name in ('home-hero-desktop-v6.webp', 'home-hero-mobile-v6.webp'):
-        assert api.request(api.ORIGIN + '/' + name)[2] == (root/'public'/name).read_bytes(), 'Restored v6 artwork differs: ' + name
+    for name in ('home-hero-desktop-v7.webp', 'home-hero-mobile-v7.webp'):
+        assert api.request(api.ORIGIN + '/' + name)[2] == (root/'public'/name).read_bytes(), 'Current artwork differs: ' + name
     for path in ('/image', '/img', '/bg', '/wallpaper.png'):
         try:
             api.request(api.ORIGIN + path)
@@ -144,7 +144,7 @@ elif mode == 'publish':
         print('ACTIVATED_SITE='+json.dumps({'parent':api.active(worker),'entrance':entrance_after,'exports':version['resources'].get('script',{}).get('named_handlers')}),flush=True)
         for attempt in range(12):
             try:
-                for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/verify/','free-token/verify/index.html'),('/free-token/game/','free-token/game/index.html')]:
+                for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/verify/','free-token/verify/index.html'),('/free-token/game/','free-token/game/index.html'),('/model-status/','model-status/index.html')]:
                     body=api.request(api.ORIGIN+path)[2].decode()
                     expected=(root/'public'/local).read_text()
                     import re
@@ -166,7 +166,7 @@ elif mode == 'publish':
             except (AssertionError,RuntimeError):
                 if attempt == 11:raise
                 time.sleep(5)
-        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'shared_key_not_exposed':True,'website_open':has_reward_binding,'issuance_state_preserved':True,'game_namespace_preserved':True,'source_pages_verified':6}
+        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'shared_key_not_exposed':True,'website_open':has_reward_binding,'issuance_state_preserved':True,'game_namespace_preserved':True,'source_pages_verified':7}
     except Exception:
         if api.active('leonmingod-free-token') != entrance:
             api.cf('leonmingod-free-token/deployments','POST',{'strategy':'percentage','versions':[{'version_id':entrance,'percentage':100}],'annotations':{'workers/message':'Restore original forwarder after failed website publication'}})

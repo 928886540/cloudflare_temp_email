@@ -10,6 +10,8 @@
 
 ### Features
 
+- feat: |LeonMinGod| Add CC Switch import with live models and an anonymous pool dashboard; refresh four star-sea backgrounds, animate an independent jade orb, and enable stronger flow by default
+
 - feat: |Jade Trial| Add ward-wide pickups/red-sword deflection, arrival glints, pickup/near-miss feedback and optional audio; show defeat deficits while preserving live checks and in-flight v7 runs
 
 - feat: |Render Client Keys| Support standalone prefix/numeric keys without website publication, encrypt delivery for the recipient, and preserve existing keys, logins and closed website state

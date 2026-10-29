@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v9.mjs"></script>
+  <script type="module" src="/free-token/claim-v10.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -39,14 +39,14 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: linear-gradient(180deg, rgba(5, 13, 27, 0.48) 0%, rgba(5, 13, 27, 0.78) 100%), url('/free-token/welcome-mobile-v4.webp');
+  background-image: linear-gradient(180deg, rgba(5, 13, 27, 0.48) 0%, rgba(5, 13, 27, 0.78) 100%), url('/free-token/welcome-mobile-v5.webp');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 @media (orientation: landscape) {
   .backdrop {
-    background-image: linear-gradient(90deg, rgba(5, 13, 27, 0.52) 0%, rgba(5, 13, 27, 0.25) 45%, rgba(5, 13, 27, 0.62) 100%), url('/free-token/welcome-desktop-v4.webp');
+    background-image: linear-gradient(90deg, rgba(5, 13, 27, 0.52) 0%, rgba(5, 13, 27, 0.25) 45%, rgba(5, 13, 27, 0.62) 100%), url('/free-token/welcome-desktop-v5.webp');
   }
 }
 
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 点击空白区域（卡片外任意位置）退出
   document.addEventListener('click', function(e) {
-    var openDialog = document.querySelector('dialog[open]');
+    var openDialog = Array.from(document.querySelectorAll('dialog[open]')).at(-1);
     if (openDialog) {
       var rect = openDialog.getBoundingClientRect();
       var inDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
@@ -316,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script><link rel="stylesheet" href="/free-token/claim-compact-v5.css">
+<link rel="stylesheet" href="/free-token/ccswitch-v1.css">
 </head>
 <body><canvas id="token-fluid" aria-hidden="true"></canvas><span id="token-pointer-light" aria-hidden="true"></span>
   <div class="backdrop" aria-hidden="true"></div>
@@ -378,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <label class="credential-label" for="api-key">专属 API Key</label>
     <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="专属 API Key" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制 Key</button></div>
     <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
+    <button id="open-ccswitch" class="ccswitch-entry" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h11v11M19 5 7 17M5 8H3v13h13v-2"/></svg><span>接入 CC Switch</span></button>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
   </dialog>
 
