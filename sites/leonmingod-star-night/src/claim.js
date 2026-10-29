@@ -1,6 +1,7 @@
 import { json, verifyHuman, rateLimit } from './security.js';
-import { RESEND_COOLDOWN_MS, beginCode, cancelCode, completeClaim, importEncKey, normalizeEmail, readLeaderboard, sha256Hex } from './claim-store.js';
+import { RESEND_COOLDOWN_MS, beginCode, cancelCode, completeClaim, importEncKey, normalizeEmail, readLeaderboard, sha256Hex, validateUsername } from './claim-store.js';
 import { clearClaimGrant, issueClaimGrant, readClaimGrant } from './claim-grant.js';
+import { verificationEmail } from './claim-email.js';
 
 const BASE_URL = 'https://cpa-dhke.onrender.com/v1';
 const FROM_DEFAULT = 'noreply@leonmingod.com';
@@ -44,7 +45,7 @@ async function withClaimLock(env, email, run) {
   }
 }
 
-async function sendCode(env, email, code) {
+async function sendCode(env, email, code, origin) {
   const from = env.CLAIM_MAIL_FROM || FROM_DEFAULT;
   const sender = from.includes('<') ? from : `LeonMinGod <${from}>`;
   try {
@@ -54,9 +55,7 @@ async function sendCode(env, email, code) {
       body: JSON.stringify({
         from: sender,
         to: [email],
-        subject: 'LeonMinGod 邮箱验证码',
-        text: `你的验证码是：${code}\n\n验证码 10 分钟内有效。请勿转发或告诉他人。\n\n如果不是你本人操作，请忽略这封邮件。`,
-        html: `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>LeonMinGod 邮箱验证码</title></head><body style="margin:0;background:#07161b;color:#e8f2ea;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><div style="display:none;max-height:0;overflow:hidden">验证码 10 分钟内有效</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#07161b"><tr><td align="center" style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#0c2428;border:1px solid #41685b;border-radius:16px"><tr><td style="padding:32px"><p style="margin:0 0 10px;color:#91bbaa;font-size:13px;letter-spacing:.12em">LEONMINGOD · FREE TOKEN</p><h1 style="margin:0 0 14px;color:#f2ead1;font-size:24px">邮箱验证码</h1><p style="margin:0 0 24px;color:#c6d8cf;font-size:16px;line-height:1.7">请在领取页面输入下面的六位验证码：</p><div style="padding:18px;text-align:center;background:#071a1e;border:1px solid #6aa584;border-radius:12px;color:#f4dda6;font:700 32px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.28em">${code}</div><p style="margin:20px 0 0;color:#a8beb4;font-size:14px;line-height:1.7">验证码 <strong style="color:#e8f2ea">10 分钟</strong>内有效，请勿转发或告诉他人。</p><p style="margin:12px 0 0;color:#78958a;font-size:12px;line-height:1.6">如果不是你本人操作，请忽略这封邮件。</p></td></tr></table></td></tr></table></body></html>`,
+        ...verificationEmail(email, code, origin),
       }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -79,11 +78,15 @@ export async function handleLegacyClaim(request, env) {
   if (typeof body.oath !== 'string' || body.oath.trim() !== '义父' || body.confirmed !== true) {
     return reply(400, { error: '请先输入「义父」，再完成二次确认。' });
   }
+  // Older in-flight clients may have no signature. New clients require it; when
+  // supplied, validate it and bind it into the signed grant, not a later field.
+  const signature = body.username === undefined ? { ok: true, username: '' } : validateUsername(body.username);
+  if (!signature.ok) return reply(400, { error: signature.error });
   if (!env.KEY_ENC_SECRET || !env.GAME_RUNS) return reply(503, { error: '领取暂时不可用，请稍后再试。' });
   const limited = await rateLimit(request, env, 'claim');
   if (limited) return limited;
   const headers = new Headers();
-  const issued = await issueClaimGrant(request, env, 'oath');
+  const issued = await issueClaimGrant(request, env, 'oath', Date.now(), signature.username);
   if (!issued) return reply(503, { error: '领取暂时不可用，请稍后再试。' });
   headers.append('Set-Cookie', issued.cookie);
   return json(200, { ok: true, next: 'email', expires_in: Math.floor((issued.grant.expires_at - Date.now()) / 1000) }, headers);
@@ -111,7 +114,7 @@ export async function handleClaimCode(request, env) {
     // Every reply after a passed human check carries the pass cookie, so the check is not asked again.
     const prepared = await beginCode(env.KV, { email, now: Date.now(), ipHash, code, grantId: grant.id });
     if (!prepared.ok) return reply(prepared.status, { error: prepared.error, retry_after: prepared.retry_after, ...(prepared.cooldown ? { cooldown: true } : {}) }, {}, headers);
-    const sent = await sendCode(env, email, code);
+    const sent = await sendCode(env, email, code, new URL(request.url).origin);
     if (!sent.ok) {
       await cancelCode(env.KV, email);
       return reply(sent.status, { error: sent.error }, {}, headers);
@@ -139,13 +142,13 @@ export async function handleClaimVerify(request, env) {
   const encKey = await importEncKey(env.KEY_ENC_SECRET);
   if (!encKey) return reply(503, { error: '验证暂时不可用，请稍后再试。' });
   return withClaimLock(env, email, async () => {
-    const result = await completeClaim(env.KV, { email, code: body.code, now: Date.now(), encKey, grantId: grant.id });
+    const result = await completeClaim(env.KV, { email, code: body.code, now: Date.now(), encKey, grantId: grant.id, username: grant.username || '' });
     if (!result.ok) {
       const { ok, status, apiKey, ...details } = result;
       return reply(status, details);
     }
     const headers = new Headers({ 'Set-Cookie': clearClaimGrant(request) });
-    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'LeonMinGod 专属 API Key', replaced: Boolean(result.replaced), existing: Boolean(result.existing) }, headers);
+    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, username: result.username || '', label: 'LeonMinGod 专属 API Key', replaced: Boolean(result.replaced), existing: Boolean(result.existing) }, headers);
   });
 }
 

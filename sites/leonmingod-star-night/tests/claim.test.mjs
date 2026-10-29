@@ -136,23 +136,23 @@ test('claim grants are signed, browser-scoped, expiring and clearable', async ()
 test('the pages use one clean email step, a dedicated auto-verify page, and no public leaderboard', async () => {
   const [claim, game, verify, claimScript, gameScript, verifyScript, flow, home] = await Promise.all([
     readFile('public/free-token/claim/index.html', 'utf8'), readFile('public/free-token/game/index.html', 'utf8'),
-    readFile('public/free-token/verify/index.html', 'utf8'), readFile('public/free-token/claim-v8.mjs', 'utf8'),
-    readFile('public/free-token/game/app-v15.mjs', 'utf8'), readFile('public/free-token/verify-v1.mjs', 'utf8'),
-    readFile('public/free-token/verify-flow-v1.mjs', 'utf8'), readFile('public/index.html', 'utf8'),
+    readFile('public/free-token/verify/index.html', 'utf8'), readFile('public/free-token/claim-v9.mjs', 'utf8'),
+    readFile('public/free-token/game/app-v16.mjs', 'utf8'), readFile('public/free-token/verify-v2.mjs', 'utf8'),
+    readFile('public/free-token/verify-flow-v2.mjs', 'utf8'), readFile('public/index.html', 'utf8'),
   ]);
-  assert.match(claim, /claim-v8\.mjs/);
+  assert.match(claim, /claim-v9\.mjs/);
   assert.equal((claim.match(/id="send-code"/g) || []).length, 1);
   assert.doesNotMatch(claim, /claim-code|claim-name|leaderboard/);
-  assert.match(game, /app-v15\.mjs/);
+  assert.match(game, /app-v16\.mjs/);
   assert.doesNotMatch(game, /player-name|player-code|reveal-key|id="leaderboard"/);
   assert.match(verify, /maxlength="6"/);
   assert.match(verify, /autocomplete="one-time-code"/);
   assert.match(verify, /120 秒后可重新发送/);
   assert.match(verifyScript, /digits\.length === 6/);
   assert.match(flow, /resendAfter: Math\.max\(1, Number\(resendAfter\) \|\| 120\)/);
-  assert.doesNotMatch(claimScript + gameScript, /username|leaderboard|claim\/verify/);
-  assert.match(home, /home-hero-desktop-v5\.webp/);
-  assert.doesNotMatch(home, /home-hero-desktop-v6|home-hero-mobile-v6/);
+  assert.doesNotMatch(claimScript + gameScript, /leaderboard|claim\/verify/);
+  assert.match(home, /home-hero-desktop-v6\.webp/);
+  assert.match(home, /home-hero-mobile-v6\.webp/);
 });
 
 test('the Worker enforces eligibility before email and returns the same key to a verified email', async () => {
@@ -183,9 +183,13 @@ test('the Worker enforces eligibility before email and returns the same key to a
     assert.equal((await post('/api/free-token/claim/verify', { email: 'ada@example.com', code: '123456' })).status, 403);
     assert.equal((await post('/api/free-token/claim', { oath: 'wrong', confirmed: true })).status, 400);
 
-    const oath = await post('/api/free-token/claim', { oath: '义父', confirmed: true });
+    assert.equal((await post('/api/free-token/claim', { oath: '义父', confirmed: true, username: ' ' })).status, 400);
+    const oath = await post('/api/free-token/claim', { oath: '义父', confirmed: true, username: ' 青玉客 ' });
     assert.equal(oath.status, 200);
-    assert.deepEqual(await oath.json(), { ok: true, next: 'email', expires_in: 1200 });
+    const oathData = await oath.json();
+    assert.equal(oathData.ok, true);
+    assert.equal(oathData.next, 'email');
+    assert.ok(oathData.expires_in >= 1195 && oathData.expires_in <= 1200);
     const grant = oath.headers.getSetCookie().find(value => value.startsWith('lmg_claim_local=')).split(';')[0];
     assert.equal((await post('/api/free-token/claim/code', { email: 'ada@example.com', humanToken: 'local-test' }, grant, 'other-browser')).status, 403);
 
@@ -196,10 +200,16 @@ test('the Worker enforces eligibility before email and returns the same key to a
     assert.equal(sent[0].from, 'LeonMinGod <noreply@leonmingod.com>');
     assert.match(sent[0].text, /10 分钟内有效/);
     assert.match(sent[0].html, /邮箱验证码|FREE TOKEN/);
+    const emailedLink = new URL(sent[0].text.match(/https:\/\/leonmingod\.com\/free-token\/verify\/#[^\s]+/)[0]);
+    assert.equal(emailedLink.search, '');
+    const emailedParams = new URLSearchParams(emailedLink.hash.slice(1));
+    assert.equal(emailedParams.get('email'), 'ada@example.com');
+    assert.match(emailedParams.get('code'), /^\d{6}$/);
     assert.doesNotMatch(JSON.stringify(sent[0]), /returning|existing|新用户|老用户/);
 
     const kv = await mf.getKVNamespace('KV');
     const pending = JSON.parse(await kv.get('code:ada@example.com'));
+    assert.equal(pending.code_sha256, await sha256Hex(`lmg-claim-code-v1\nada@example.com\n${emailedParams.get('code')}`));
     assert.ok(pending.grant_id);
     assert.equal(pending.username, undefined);
     const code = '246810';
@@ -207,11 +217,14 @@ test('the Worker enforces eligibility before email and returns the same key to a
     await kv.put('code:ada@example.com', JSON.stringify(pending));
     const wrong = await post('/api/free-token/claim/verify', { email: 'ada@example.com', code: '000000' }, grant);
     assert.equal((await wrong.json()).attempts_left, 4);
-    const verified = await post('/api/free-token/claim/verify', { email: 'ada@example.com', code }, grant);
+    const verified = await post('/api/free-token/claim/verify', { email: 'ada@example.com', code, username: '伪造落款' }, grant);
     assert.equal(verified.status, 200);
     assert.match(verified.headers.get('Set-Cookie'), /Max-Age=0/);
     const first = await verified.json();
     assert.match(first.apiKey, /^sk-lm-/);
+    assert.equal(first.username, '青玉客');
+    assert.equal(JSON.parse(await kv.get(emailKey('ada@example.com'))).username, '青玉客');
+    assert.equal(JSON.parse(await kv.get(keyRecordKey(await sha256Hex(first.apiKey)))).username, '青玉客');
     assert.equal(first.baseUrl, 'https://cpa-dhke.onrender.com/v1');
 
     const oathAgain = await post('/api/free-token/claim', { oath: '义父', confirmed: true });
@@ -225,6 +238,7 @@ test('the Worker enforces eligibility before email and returns the same key to a
     const second = await returning.json();
     assert.equal(second.existing, true);
     assert.equal(second.apiKey, first.apiKey);
+    assert.equal(second.username, '青玉客');
     assert.equal(await kv.get('leaderboard:index'), null);
     for (const row of (await kv.list()).keys) assert.equal((await kv.get(row.name)).includes(first.apiKey), false);
   } finally { await mf.dispose(); }

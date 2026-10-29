@@ -5,7 +5,7 @@ import { securityConfig } from './security.js';
 import { staticResponse } from './static.js';
 export { GameRun } from './game.js';
 
-const RETIRED_HERO = /^\/(?:home-hero-(?:desktop|mobile)-v(?:[23]|6)\.webp|image|img|bg|wallpaper\.png)$/;
+const RETIRED_HERO = /^\/(?:home-hero-(?:desktop|mobile)-v[23]\.webp|image|img|bg|wallpaper\.png)$/;
 
 const site = {
   async fetch(request, env) {

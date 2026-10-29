@@ -34,7 +34,7 @@ async function signature(request, env, payload) {
   return bytesToBase64Url(new Uint8Array(await crypto.subtle.sign('HMAC', key, message)));
 }
 
-export async function issueClaimGrant(request, env, source, now = Date.now()) {
+export async function issueClaimGrant(request, env, source, now = Date.now(), username = '') {
   if (!SOURCES.has(source)) return null;
   const grant = {
     v: 1,
@@ -42,6 +42,7 @@ export async function issueClaimGrant(request, env, source, now = Date.now()) {
     id: crypto.randomUUID(),
     issued_at: now,
     expires_at: now + GRANT_SECONDS * 1000,
+    ...(username ? { username } : {}),
   };
   const payload = bytesToBase64Url(encoder.encode(JSON.stringify(grant)));
   const signed = await signature(request, env, payload);

@@ -168,7 +168,7 @@ export async function cancelCode(kv, email) {
   await kv.delete(codeKey(email));
 }
 
-export async function completeClaim(kv, { email, code, now, encKey, grantId }) {
+export async function completeClaim(kv, { email, code, now, encKey, grantId, username = '' }) {
   if (!encKey) return { ok: false, status: 503, error: '验证暂时不可用，请稍后再试。' };
   const pending = await readJson(kv, codeKey(email));
   if (!pending || now >= pending.expires_at) return { ok: false, status: 400, resend: true, error: '验证码已失效，请重新发送。' };
@@ -196,8 +196,13 @@ export async function completeClaim(kv, { email, code, now, encKey, grantId }) {
       // Returning email: show the same key again. Never rotate a key we can decrypt.
       const stored = await openKey(encKey, email, previous.key_enc);
       if (!stored || await sha256Hex(stored) !== oldHash) return { ok: false, status: 503, error: '暂时无法找回密钥，请稍后再试。' };
+      const name = previous.username || username;
+      if (name && !previous.username) {
+        await kv.put(emailKey(email), JSON.stringify({ ...previous, username: name }));
+        if (oldRecord) await kv.put(keyRecordKey(oldHash), JSON.stringify({ ...oldRecord, username: name }));
+      }
       await kv.delete(codeKey(email));
-      return { ok: true, apiKey: stored, existing: true };
+      return { ok: true, apiKey: stored, existing: true, ...(name ? { username: name } : {}) };
     }
   }
   const apiKey = mintKey();
@@ -207,20 +212,20 @@ export async function completeClaim(kv, { email, code, now, encKey, grantId }) {
   if (previous?.key_sha256) {
     // Record from before encryption (no ciphertext): replace once. Revoke the old key first
     // so at most one key per email is active, keep the name, carry the leaderboard entry.
-    const username = typeof previous.username === 'string' ? previous.username : '';
+    username = typeof previous.username === 'string' && previous.username ? previous.username : username;
     const oldHash = previous.key_sha256;
     const oldRecord = await readJson(kv, keyRecordKey(oldHash));
     if (oldRecord) await kv.put(keyRecordKey(oldHash), JSON.stringify({ ...oldRecord, status: 'revoked', revoked_at: createdAt, replaced_by: keyHash }));
     await kv.put(keyRecordKey(keyHash), JSON.stringify({ ...(username ? { username } : {}), email, status: 'active', created_at: createdAt }));
     await kv.put(emailKey(email), JSON.stringify({ ...previous, key_sha256: keyHash, ...(username ? { username } : {}), rotated_at: createdAt, key_enc: keyEnc }));
-    if (username) await replaceInBoard(kv, { username, oldHash, keyHash, createdAt: previous.created_at || createdAt, updatedAt: createdAt });
+    if (previous.username) await replaceInBoard(kv, { username, oldHash, keyHash, createdAt: previous.created_at || createdAt, updatedAt: createdAt });
     await kv.delete(codeKey(email));
-    return { ok: true, apiKey, replaced: true };
+    return { ok: true, apiKey, replaced: true, ...(username ? { username } : {}) };
   }
-  await kv.put(emailKey(email), JSON.stringify({ key_sha256: keyHash, created_at: createdAt, key_enc: keyEnc }));
-  await kv.put(keyRecordKey(keyHash), JSON.stringify({ email, status: 'active', created_at: createdAt }));
+  await kv.put(emailKey(email), JSON.stringify({ key_sha256: keyHash, created_at: createdAt, key_enc: keyEnc, ...(username ? { username } : {}) }));
+  await kv.put(keyRecordKey(keyHash), JSON.stringify({ email, status: 'active', created_at: createdAt, ...(username ? { username } : {}) }));
   await kv.delete(codeKey(email));
-  return { ok: true, apiKey };
+  return { ok: true, apiKey, ...(username ? { username } : {}) };
 }
 
 async function rememberClaim(kv, { username, keyHash, createdAt }) {

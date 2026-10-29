@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v8.mjs"></script>
+  <script type="module" src="/free-token/claim-v9.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -269,9 +269,6 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 #email-dialog .claim-human { margin-top: 12px; }
 #email-dialog .claim-human:empty { display: none; }
 #email-dialog .copy-status { text-align: left; }
-.claim-again-row { margin: 10px 0 0; text-align: center; }
-.claim-again { padding: 4px 6px; color: #9fbfae; background: none; border: 0; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
-.claim-again:hover { color: #e6ca96; }
 .saved-key-row { margin: 9px 0 0; text-align: center; }
 .saved-key-button { border: 0; padding: 5px 8px; color: #b9cdbf; background: none; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .saved-key-button:hover { color: #f1ddb0; }
@@ -318,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-</script><link rel="stylesheet" href="/free-token/claim-compact-v4.css">
+</script><link rel="stylesheet" href="/free-token/claim-compact-v5.css">
 </head>
 <body><canvas id="token-fluid" aria-hidden="true"></canvas><span id="token-pointer-light" aria-hidden="true"></span>
   <div class="backdrop" aria-hidden="true"></div>
@@ -342,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <p class="intro">Token 已备好。<br>只差你一句，咱们就算有缘了。</p>
         <a class="skill-route" href="/free-token/game/">不叫义父？御剑破阵，凭实力拿 →<small>45 秒 · 收集 24 枚灵玉 · 通关领同一份奖励</small></a>
         <form id="oath-form">
+          <div class="signature-row"><label for="signature-name">落款</label><input id="signature-name" name="username" type="text" maxlength="20" autocomplete="nickname" placeholder="江湖怎么称呼你？" required></div>
           <label for="oath-input">先输入这两个字：<strong class="oath-word">义父</strong></label>
           <div class="input-wrap"><input id="oath-input" name="oath" type="text" placeholder="请输入「义父」" maxlength="8" autocomplete="off" spellcheck="false" required aria-describedby="input-hint"><span id="input-check" aria-hidden="true">✓</span></div>
           <p id="input-hint" class="input-hint">不多不少，就这两个字。</p>
@@ -358,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <dialog id="confirm-dialog" class="modal" aria-labelledby="confirm-title">
     <p class="eyebrow">认真的？再确认一下。</p>
     <h2 id="confirm-title" tabindex="-1" autofocus>确认要拜<span class="leon-name">Leon🌙</span><br>为 <strong class="oath-word">义父</strong> 吗？</h2>
-    <p class="modal-description">这一声叫出口，见面礼就归你了。</p>
+    <p class="modal-description"><strong id="confirm-signature"></strong>，这一声叫出口，见面礼就归你了。</p>
     <p id="claim-error" class="error" role="alert" hidden></p>
     <div class="dialog-actions"><button id="reject" class="secondary" type="button">拒绝</button><button id="accept" class="primary" type="button">确认，拜义父</button></div>
   </dialog>
@@ -381,15 +379,14 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="专属 API Key" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制 Key</button></div>
     <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
-    <p class="claim-again-row"><button id="claim-again" class="claim-again" type="button">换个邮箱领取</button></p>
   </dialog>
 
   <dialog id="email-dialog" class="modal" aria-labelledby="email-title">
     <p class="eyebrow">最后一步 · 验证归属</p>
     <h2 id="email-title" tabindex="-1">绑定邮箱</h2>
-    <p class="modal-description">邮箱只用于验证身份和找回同一把 API Key，不会显示在页面上。</p>
+    <p class="modal-description">邮箱用于验证身份和找回同一把 API Key。本浏览器会记住邮箱，下次自动填入。</p>
     <label class="credential-label" for="claim-email">邮箱地址</label>
-    <div class="input-wrap"><input id="claim-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
+    <div class="input-wrap"><input id="claim-email" name="email" type="email" inputmode="email" maxlength="254" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" required></div>
     <div class="dialog-actions send-row"><button id="send-code" class="primary" type="button">发送验证码</button></div>
     <div id="claim-human" class="claim-human" hidden></div>
     <p class="copy-status">发送后会进入独立验证页面；120 秒后可以重新发送。</p>

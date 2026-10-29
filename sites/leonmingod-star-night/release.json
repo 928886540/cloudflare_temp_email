@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "f88d3dde-4134-4542-974f-1c7da29c7e62",
+  "baseline_parent": "76953781-1d5b-43ff-a91c-d3f01ace76f8",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Claim flow: dedicated email verification, 120-second resend, eligibility-bound rewards (v51)",
+  "message": "v52: remember email/signature, OTP fill/copy action, restore v6 home artwork",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -60,7 +60,12 @@
     "free-token/verify/index.html",
     "free-token/verify-v1.css",
     "free-token/verify-v1.mjs",
-    "free-token/game/app-v15.mjs"
-  ],
-  "staged_version": "76953781-1d5b-43ff-a91c-d3f01ace76f8"
+    "free-token/game/app-v15.mjs",
+    "free-token/claim-v9.mjs",
+    "free-token/game/app-v16.mjs",
+    "free-token/verify-flow-v2.mjs",
+    "free-token/verify-v2.mjs",
+    "free-token/verify-v2.css",
+    "free-token/claim-compact-v5.css"
+  ]
 }
