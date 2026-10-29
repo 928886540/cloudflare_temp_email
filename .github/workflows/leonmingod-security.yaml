@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [inspect, setup, verify, verify-pass, audit-api, audit-cpa, pool-setup, guard-hold, guard-deploy, guard-status, guard-enable, guard-disable, guard-allow, guard-unallow, guard-unban]
+        options: [inspect, setup, verify, verify-pass, audit-api, audit-cpa, pool-setup, pool-audit, guard-hold, guard-deploy, guard-status, guard-enable, guard-disable, guard-allow, guard-unallow, guard-unban]
         default: inspect
       expected_commit:
         description: Full CPA commit SHA for guard-deploy
@@ -37,8 +37,12 @@ jobs:
       CPA_RESET_HISTORY: ${{ inputs.reset_history }}
     steps:
       - uses: actions/checkout@v6
-      - if: ${{ !startsWith(inputs.mode, 'guard-') && inputs.mode != 'verify' && inputs.mode != 'audit-api' && inputs.mode != 'audit-cpa' && inputs.mode != 'pool-setup' }}
+      - if: ${{ !startsWith(inputs.mode, 'guard-') && inputs.mode != 'verify' && inputs.mode != 'audit-api' && inputs.mode != 'audit-cpa' && inputs.mode != 'pool-setup' && inputs.mode != 'pool-audit' }}
         run: python .github/scripts/leonmingod_security.py
+      - if: inputs.mode == 'pool-audit'
+        run: |
+          python -m pip install pyyaml
+          python .github/scripts/leonmingod_pool_audit.py
       - if: inputs.mode == 'pool-setup'
         run: |
           python -m pip install pyyaml
