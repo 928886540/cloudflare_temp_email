@@ -37,8 +37,16 @@ def public_claim():
         if str(error).endswith('HTTP 503'):
             return None
         raise
-    assert data.get('baseUrl') == api.RENDER_ORIGIN + '/v1' and isinstance(data.get('apiKey'), str), 'Unexpected claim response'
-    return data
+    if isinstance(data, dict) and data.get('baseUrl') == api.RENDER_ORIGIN + '/v1' and isinstance(data.get('apiKey'), str):
+        return data
+    # The per-user flow (email verification, one key per email) answers {ok: true, next: 'email'} and
+    # never publishes a shared key. Any other shape is reported without values and is not fatal here.
+    if isinstance(data, dict) and data.get('ok') is True and data.get('next') == 'email':
+        print('CLAIM_FLOW=per-user', flush=True)
+    else:
+        shape = sorted(data) if isinstance(data, dict) else type(data).__name__
+        print('::warning::Unexpected claim response shape: ' + json.dumps(shape), flush=True)
+    return None
 
 
 def modules():

@@ -344,6 +344,25 @@ def restore_credentials(state, credentials):
             time.sleep(min(2 ** attempt, 8))
 
 
+def verify_client_keys(state):
+    """Fail closed unless every Render client key from config.yaml lists models after the deploy.
+
+    The website no longer publishes a shared key, so the keys come from the Render secret file
+    already read by read_state(). Only counts are printed, never key values.
+    """
+    keys = state.get("keys") or []
+    if not keys:
+        raise RuntimeError("No Render client keys are available for post-deploy verification")
+    counts = []
+    for key in keys:
+        try:
+            counts.append(api.models(key))
+        except (AssertionError, RuntimeError, urllib.error.URLError, ValueError):
+            raise RuntimeError("Post-deploy models check failed for a Render client key") from None
+    print("CPA_CLIENT_KEYS_VERIFIED=" + str(len(counts)), flush=True)
+    return counts[0]
+
+
 def deploy():
     expected = os.environ.get("CPA_EXPECTED_COMMIT", "").strip()
     if len(expected) != 40 or any(character not in "0123456789abcdef" for character in expected):
@@ -367,9 +386,7 @@ def deploy():
         rpc({"action": "enable"})
         verify_health_exemption()
         verify_enforcement()
-        if not state.get("claim"):
-            raise RuntimeError("The current website client key is unavailable for verification")
-        model_count = api.models(state["claim"]["apiKey"])
+        model_count = verify_client_keys(state)
         health, _ = status_request(api.RENDER_ORIGIN + "/healthz")
         if health != 200:
             raise RuntimeError("Render health check failed after guard deployment")
