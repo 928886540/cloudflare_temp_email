@@ -89,7 +89,7 @@ async function management(path, secret, fetcher, signal) {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 
-export async function handlePoolStatus(request, env, { fetcher = globalThis.fetch, now = Date.now() } = {}) {
+export async function handlePoolStatus(request, env, { fetcher = (url, options) => fetch(url, options), now = Date.now() } = {}) {
   const reply = (status, body) => new Response(request.method === 'HEAD' ? null : JSON.stringify(body), {
     status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(status === 405 ? { Allow: 'GET, HEAD' } : {}) },
   });
@@ -120,7 +120,9 @@ export async function handlePoolStatus(request, env, { fetcher = globalThis.fetc
   } catch (error) {
     if (saved?.schema === 1 && now - timestamp(saved.updated_at) < 600000) return reply(200, { ...saved, stale: true });
     const code = /^CPA_(?:HTTP_\d{3}|INVALID_STATUS)$/.test(error?.code) ? error.code : error?.name === 'TimeoutError' ? 'CPA_TIMEOUT' : 'CPA_STATUS_FAILED';
-    console.warn(JSON.stringify({ event: 'pool_status_unavailable', code, error_type: error?.name }));
+    console.warn(JSON.stringify({ event: 'pool_status_unavailable', code, error_type: error?.name,
+      stack: typeof error?.stack === 'string' ? error.stack.split('\n').slice(1, 4) : [],
+      invocation_error: error?.message?.includes('Illegal invocation') === true }));
     return reply(503, { error: 'CPA 暂未响应，稍后刷新即可。', code });
   }
 }
