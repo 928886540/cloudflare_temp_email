@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v4.mjs"></script>
+  <script type="module" src="/free-token/claim-v5.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -264,6 +264,13 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 .skill-route small { display:block; margin-top:6px; color:#b5c8b5; font-size:10px; }
 .refusal .skill-route { margin-top:20px; }
 @media(max-width:740px){.skill-route{margin-bottom:15px;padding:11px 12px;font-size:12px;}.ritual{padding-top:16px}.gift-art{padding-top:4px;padding-bottom:3px}}
+#email-dialog .send-row { grid-template-columns: 1fr; margin-top: 18px; }
+#email-dialog .send-row .primary { width: 100%; font-variant-numeric: tabular-nums; }
+#email-dialog .claim-human { margin-top: 12px; }
+#email-dialog .claim-human:empty { display: none; }
+#email-dialog #claim-code { letter-spacing: .5em; font-variant-numeric: tabular-nums; }
+#email-dialog #claim-code:disabled { opacity: .55; cursor: not-allowed; }
+#email-dialog .copy-status { text-align: left; }
 </style><script>
 document.addEventListener('DOMContentLoaded', function() {
   function exitToOrigin() {
@@ -380,10 +387,12 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="input-wrap"><input id="claim-name" name="username" type="text" maxlength="40" autocomplete="nickname" required></div>
     <label class="credential-label" for="claim-email">邮箱</label>
     <div class="input-wrap"><input id="claim-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
-    <label class="credential-label" for="claim-code">验证码</label>
-    <div class="input-wrap"><input id="claim-code" name="code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 位数字"></div>
+    <div class="dialog-actions send-row"><button id="send-code" class="primary" type="button">发送验证码</button></div>
+    <div id="claim-human" class="claim-human" hidden></div>
+    <label class="credential-label" for="claim-code">验证码 <span>填满 6 位自动领取</span></label>
+    <div class="input-wrap"><input id="claim-code" name="code" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="6 位数字" disabled></div>
+    <p id="code-status" class="copy-status" role="status" aria-live="polite" hidden></p>
     <p id="email-error" class="error" role="alert" hidden></p>
-    <div class="dialog-actions"><button id="send-code" class="secondary" type="button">发送验证码</button><button id="verify-code" class="primary" type="button">验证并领取</button></div>
   </dialog>
 
 </body>

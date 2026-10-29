@@ -73,9 +73,14 @@ async function scoreFor(kv, keyHash) {
 }
 
 async function throttle(kv, bucket, now, hourLimit, dayLimit) {
-  const stamps = ((await readJson(kv, bucket)) || []).filter(stamp => now - stamp < DAY);
-  if (stamps.filter(stamp => now - stamp < HOUR).length >= hourLimit || stamps.length >= dayLimit) {
-    return { ok: false, retry_after: 60 };
+  const stamps = ((await readJson(kv, bucket)) || []).filter(stamp => now - stamp < DAY).sort((a, b) => a - b);
+  const lastHour = stamps.filter(stamp => now - stamp < HOUR);
+  if (lastHour.length >= hourLimit || stamps.length >= dayLimit) {
+    // Wait until enough old sends age out of the window that is full.
+    const waits = [];
+    if (lastHour.length >= hourLimit) waits.push(lastHour[lastHour.length - hourLimit] + HOUR - now);
+    if (stamps.length >= dayLimit) waits.push(stamps[stamps.length - dayLimit] + DAY - now);
+    return { ok: false, retry_after: Math.max(1, Math.ceil(Math.max(...waits) / 1000)) };
   }
   stamps.push(now);
   await kv.put(bucket, JSON.stringify(stamps), { expirationTtl: 86_400 });
@@ -86,7 +91,7 @@ async function globalThrottle(kv, now) {
   const current = await readJson(kv, 'throttle:resend-day');
   const day = dayStamp(now);
   const count = current?.day === day ? current.count : 0;
-  if (count >= GLOBAL_SENDS_PER_DAY) return { ok: false, retry_after: 3600 };
+  if (count >= GLOBAL_SENDS_PER_DAY) return { ok: false, retry_after: Math.max(1, Math.ceil((Date.parse(`${day}T00:00:00Z`) + DAY - now) / 1000)) };
   await kv.put('throttle:resend-day', JSON.stringify({ day, count: count + 1 }), { expirationTtl: 172_800 });
   return { ok: true };
 }
@@ -95,7 +100,7 @@ export async function beginCode(kv, { email, username, now, ipHash, code }) {
   if (await kv.get(emailKey(email))) return { ok: false, status: 409, error: '这个邮箱已经领取过密钥。' };
   const existing = await readJson(kv, codeKey(email));
   if (existing && now < existing.sent_at + RESEND_COOLDOWN_MS && now < existing.expires_at) {
-    return { ok: false, status: 429, error: '验证码刚发出，请稍后再试。', retry_after: Math.ceil((existing.sent_at + RESEND_COOLDOWN_MS - now) / 1000) };
+    return { ok: false, status: 429, cooldown: true, error: '验证码已发送，请查收邮箱。', retry_after: Math.max(1, Math.ceil((existing.sent_at + RESEND_COOLDOWN_MS - now) / 1000)) };
   }
   for (const check of [
     () => throttle(kv, `throttle:mail:${email}`, now, EMAIL_SENDS_PER_HOUR, EMAIL_SENDS_PER_DAY),
@@ -122,16 +127,16 @@ export async function cancelCode(kv, email) {
 
 export async function completeClaim(kv, { email, code, now }) {
   const pending = await readJson(kv, codeKey(email));
-  if (!pending || now >= pending.expires_at) return { ok: false, status: 400, error: '验证码已过期，请重新发送。' };
+  if (!pending || now >= pending.expires_at) return { ok: false, status: 400, resend: true, error: '验证码已失效，请重新发送。' };
   const expected = await sha256Hex(`lmg-claim-code-v1\n${email}\n${code}`);
   if (pending.code_sha256 !== expected) {
     const attempts = pending.attempts + 1;
     if (attempts >= MAX_ATTEMPTS) {
       await kv.delete(codeKey(email));
-      return { ok: false, status: 400, error: '验证次数用完了，请重新发送验证码。' };
+      return { ok: false, status: 400, resend: true, error: '验证次数用完了，请重新发送验证码。' };
     }
     await kv.put(codeKey(email), JSON.stringify({ ...pending, attempts }), { expirationTtl: remainingTtl(pending.expires_at, now) });
-    return { ok: false, status: 400, error: '验证码不正确。' };
+    return { ok: false, status: 400, wrong_code: true, attempts_left: MAX_ATTEMPTS - attempts, error: '验证码错误，请重新输入。' };
   }
   if (await kv.get(emailKey(email))) {
     await kv.delete(codeKey(email));

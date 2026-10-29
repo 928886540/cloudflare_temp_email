@@ -1,7 +1,7 @@
 {
   "baseline_parent": "7018e442-e644-4bdf-a38f-ca8cf9e31e8e",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "Issue one email-verified key per person and show the game-page leaderboard",
+  "message": "Claim page: one send button with countdown, 6-digit auto-verify, Turnstile only on send",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -52,7 +52,9 @@
     "free-token/game/app-v12.mjs",
     "free-token/game/app-v13.mjs",
     "free-token/game/feedback-v1.mjs",
-    "free-token/game/style-v4.css"
+    "free-token/game/style-v4.css",
+    "free-token/human-v3.mjs",
+    "free-token/claim-v5.mjs"
   ],
   "staged_version": "98a305ea-8544-45ec-809a-3c1f26ccaf5e"
 }

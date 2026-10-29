@@ -1,13 +1,15 @@
 import { json, verifyHuman, rateLimit } from './security.js';
-import { beginCode, cancelCode, completeClaim, normalizeEmail, readLeaderboard, sha256Hex, validateUsername } from './claim-store.js';
+import { RESEND_COOLDOWN_MS, beginCode, cancelCode, completeClaim, normalizeEmail, readLeaderboard, sha256Hex, validateUsername } from './claim-store.js';
 
 const BASE_URL = 'https://cpa-dhke.onrender.com/v1';
 const FROM_DEFAULT = 'noreply@leonmingod.com';
 
-const reply = (status, body, extra = {}) => json(status, body, {
-  ...(status === 405 ? { Allow: extra.allow || 'POST' } : {}),
-  ...(body?.retry_after ? { 'Retry-After': String(body.retry_after) } : {}),
-});
+const reply = (status, body, extra = {}, carry = null) => {
+  const headers = new Headers(carry || undefined);
+  if (status === 405) headers.set('Allow', extra.allow || 'POST');
+  if (body?.retry_after) headers.set('Retry-After', String(body.retry_after));
+  return json(status, body, headers);
+};
 
 async function readBody(request) {
   const text = await request.text();
@@ -101,14 +103,15 @@ export async function handleClaimCode(request, env) {
   const ipHash = await sha256Hex(`ip\n${request.headers.get('CF-Connecting-IP') || 'local'}`);
   const code = sixDigit();
   return withClaimLock(env, email, async () => {
+    // Every reply after a passed human check carries the pass cookie, so the check is not asked again.
     const prepared = await beginCode(env.KV, { email, username: username.username, now: Date.now(), ipHash, code });
-    if (!prepared.ok) return reply(prepared.status, { error: prepared.error, retry_after: prepared.retry_after });
+    if (!prepared.ok) return reply(prepared.status, { error: prepared.error, retry_after: prepared.retry_after, ...(prepared.cooldown ? { cooldown: true } : {}) }, {}, headers);
     const sent = await sendCode(env, email, code);
     if (!sent.ok) {
       await cancelCode(env.KV, email);
-      return reply(sent.status, { error: sent.error });
+      return reply(sent.status, { error: sent.error }, {}, headers);
     }
-    return json(200, { sent: true }, headers);
+    return json(200, { sent: true, resend_after: RESEND_COOLDOWN_MS / 1000 }, headers);
   });
 }
 
@@ -122,15 +125,17 @@ export async function handleClaimVerify(request, env) {
   const email = normalizeEmail(body.email);
   if (!email) return reply(400, { error: '请填写有效的邮箱地址。' });
   if (typeof body.code !== 'string' || !/^\d{6}$/.test(body.code)) return reply(400, { error: '请输入 6 位验证码。' });
+  // No human check here: it guards sending (mail quota). Guessing is bounded by the
+  // per-code attempt limit (MAX_ATTEMPTS, then a new human-checked send) and the rate limit.
   const limited = await rateLimit(verificationRequest, env, 'claim');
   if (limited) return limited;
-  const headers = new Headers();
-  const human = await verifyHuman(verificationRequest, env, body.humanToken, 'claim_verify', headers);
-  if (human) return human;
   return withClaimLock(env, email, async () => {
     const result = await completeClaim(env.KV, { email, code: body.code, now: Date.now() });
-    if (!result.ok) return reply(result.status, { error: result.error });
-    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username }, headers);
+    if (!result.ok) {
+      const { ok, status, apiKey, username, ...details } = result;
+      return reply(status, details);
+    }
+    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username });
   });
 }
 
