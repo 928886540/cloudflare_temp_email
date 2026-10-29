@@ -4,6 +4,7 @@ const { RULES, createGame, installEntropy } = current;
 const engineFor = run => run.rulesVersion === 7 ? previous : run.rulesVersion === 8 ? current : null;
 import { json, hash, sessionIdentity, verifyHuman, rateLimit } from './security.js';
 import { issueClaimGrant } from './claim-grant.js';
+import { PoolStatusCoordinator } from './pool-status.js';
 export { json } from './security.js';
 export const MAX_AGE = 180000;
 const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
@@ -54,9 +55,14 @@ export function verifyProgress(run, body, now) {
 }
 
 export class GameRun {
-  constructor(ctx) { this.ctx = ctx; }
+  constructor(ctx, env) { this.ctx = ctx; this.env = env; }
   async fetch(request) {
-    const path = new URL(request.url).pathname, body = await request.json();
+    const path = new URL(request.url).pathname;
+    if (path === '/pool-status') {
+      this.pool ||= new PoolStatusCoordinator(this.ctx, this.env);
+      return this.pool.fetch(request);
+    }
+    const body = await request.json();
     if (path === '/mutex') {
       const now = Date.now();
       const current = await this.ctx.storage.get('mutex');

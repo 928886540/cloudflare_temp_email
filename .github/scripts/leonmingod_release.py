@@ -60,6 +60,21 @@ def released_board_and_hero():
             assert str(error).endswith('HTTP 404'), path
             continue
         raise AssertionError('Retired illustration still served: ' + path)
+
+def released_pool_read():
+    snapshot=json.loads(api.request(api.ORIGIN+'/api/pool-status')[2])
+    assert snapshot.get('schema') == 1 and isinstance(snapshot.get('accounts'),list)
+    assert isinstance(snapshot.get('models'),list) and snapshot.get('stats_scope') == 'account'
+    forbidden={'email','auth_index','path','status_message','id_token','access_token','refresh_token','apiKey','api_key'}
+    def inspect(value):
+        if isinstance(value,dict):
+            assert not forbidden.intersection(value), 'Private pool field exposed'
+            for k,v in value.items():
+                if k == 'masked_email' and v is not None: assert '***' in v
+                inspect(v)
+        elif isinstance(value,list):
+            for v in value: inspect(v)
+    inspect(snapshot)
 mode = os.environ.get('WEBSITE_MODE', 'stage')
 
 def activate_forwarder():
@@ -159,6 +174,7 @@ elif mode == 'publish':
                         raise AssertionError('Published page differs: '+path)
                 released_claim_has_no_shared_key()
                 released_board_and_hero()
+                released_pool_read()
                 status = json.loads(api.request(api.ORIGIN + '/api/free-token/status')[2])
                 assert status['open'] is has_reward_binding, 'Token click availability differs from issuance state'
                 after=api.cf(worker+'/settings')['bindings']

@@ -15,7 +15,8 @@ const site = {
       return new Response(null, { status: 404, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     }
     if (url.pathname === '/api/leaderboard') return handleLeaderboard(request, env);
-    if (url.pathname === '/api/pool-status') return handlePoolStatus(request, env);
+    // Fixed read-only status routes are deliberately outside claim/game limits.
+    if (['/api/pool-status', '/api/pool-status/quota'].includes(url.pathname)) return handlePoolStatus(request, env);
     if (url.pathname === '/api/free-token/security') return securityConfig(request, env);
     if (url.pathname === '/api/free-token/status') {
       const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };

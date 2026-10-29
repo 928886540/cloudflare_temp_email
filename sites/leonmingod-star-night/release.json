@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "098a0fa1-11ea-4d04-9030-05da0fd66a0e",
+  "baseline_parent": "71cc78b8-48bc-4d9a-ac7b-a5cd73b20386",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v53: star-sea art, floating orb, vivid default flow, CC Switch import and live pool status",
+  "message": "v54: provider tabs, masked credential quota cards, model cards and globally throttled read-only pool status",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -82,7 +82,8 @@
     "free-token/choose-v3.css",
     "model-status/index.html",
     "model-status/status-v1.css",
-    "model-status/status-v1.mjs"
-  ],
-  "staged_version": "71cc78b8-48bc-4d9a-ac7b-a5cd73b20386"
+    "model-status/status-v1.mjs",
+    "model-status/status-v2.mjs",
+    "model-status/status-v2.css"
+  ]
 }

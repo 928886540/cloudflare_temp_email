@@ -1,128 +1,198 @@
-const ORIGIN = 'https://cpa-dhke.onrender.com';
-const SNAPSHOT_KEY = 'public:pool-status:v1';
-const FRESH_MS = 30000;
-const PROVIDERS = new Set(['codex', 'antigravity', 'gemini', 'gemini-cli', 'claude', 'anthropic', 'aistudio', 'vertex', 'openai', 'qwen', 'iflow', 'kiro', 'copilot']);
-const number = value => Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : 0;
-const timestamp = value => { const time = Date.parse(value || ''); return Number.isFinite(time) && time > 0 ? time : 0; };
-const safeModel = value => typeof value === 'string' && value.length <= 256 && value.trim() && !/[\u0000-\u001f\u007f@]/u.test(value);
+import { passiveQuota, parseQuota, quotaProbe } from './pool-quota.js';
 
-export function accountState(file, now) {
-  if (file.disabled || file.status === 'disabled') return 'disabled';
-  const active = (Array.isArray(file.cooldowns) ? file.cooldowns : []).filter(item => timestamp(item.retry_at) > now);
-  if (timestamp(file.next_retry_after) > now || active.some(item => item.scope !== 'model')) return 'cooldown';
-  if (file.unavailable) return active.length ? 'cooldown' : 'error';
-  if (file.status === 'error') return 'error';
-  return file.status === 'active' || file.status === 'ready' ? 'ready' : 'unknown';
+const ORIGIN='https://cpa-dhke.onrender.com';
+export const REFRESH_MS=60_000, QUOTA_MS=300_000, STALE_MS=600_000;
+const PROVIDERS=new Set(['codex','antigravity','gemini','gemini-cli','claude','anthropic','aistudio','vertex','openai','qwen','iflow','kiro','copilot','xai','grok']);
+const number=value=>Number.isFinite(Number(value))&&Number(value)>=0?Number(value):0;
+const timestamp=value=>{const n=Date.parse(value||'');return Number.isFinite(n)&&n>0?n:0;};
+const safeModel=value=>typeof value==='string'&&value.length<=256&&value.trim()&&!/[\u0000-\u001f\u007f@]/u.test(value);
+const providerOf=file=>{const p=String(file.provider||file.type||'').toLowerCase();return PROVIDERS.has(p)?p:'other';};
+const stateOf=row=>row.ready?'ready':row.cooldown?'cooldown':row.error?'error':row.disabled?'disabled':'unknown';
+const counts=()=>({total:0,ready:0,cooldown:0,disabled:0,error:0,unknown:0});
+
+export function maskAccountEmail(file){
+  const raw=typeof file.email==='string'?file.email:typeof file.account==='string'?file.account:'';
+  if(raw.length>254||!/^[-\w.+%]+@[-\w.]+\.[a-z]{2,}$/i.test(raw))return null;
+  const [local,domain]=raw.split('@'),suffix=domain.slice(domain.lastIndexOf('.'));
+  return `${local[0]}***${local.length>3?local.at(-1):''}@${domain[0]}***${suffix.toLowerCase()}`;
 }
 
-function observedQuota(quota) {
-  const signals = Object.fromEntries(Object.entries(quota?.signals || {}).map(([key, value]) => [key.toLowerCase(), value]));
-  const percent = name => {
-    const value = signals[name];
-    if (typeof value !== 'string' && typeof value !== 'number') return null;
-    const used = Number(value);
-    return value !== '' && Number.isFinite(used) && used >= 0 && used <= 100 ? Math.round((100 - used) * 10) / 10 : null;
-  };
-  return {
-    primary_remaining: percent('x-codex-primary-used-percent'),
-    secondary_remaining: percent('x-codex-secondary-used-percent'),
-    observed_at: timestamp(quota?.observed_at) ? new Date(timestamp(quota.observed_at)).toISOString() : null,
-  };
+export function accountState(file,now){
+  if(file.disabled||file.status==='disabled')return 'disabled';
+  const active=(Array.isArray(file.cooldowns)?file.cooldowns:[]).filter(x=>timestamp(x.retry_at)>now);
+  if(timestamp(file.next_retry_after)>now||active.some(x=>x.scope!=='model'))return 'cooldown';
+  if(file.unavailable)return active.length?'cooldown':'error';
+  if(file.status==='error')return 'error';
+  return ['active','ready'].includes(file.status)?'ready':'unknown';
 }
-
-export async function summarizePool(files, inventory, secret, now = Date.now()) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const accounts = [], modelMap = new Map(), providers = new Map();
-  const counts = () => ({ total: 0, ready: 0, cooldown: 0, disabled: 0, error: 0, unknown: 0 });
-  const totals = counts();let successful = 0, failed = 0;
-  for (let index = 0; index < files.length; index++) {
-    const file = files[index];
-    const rawProvider = String(file.provider || file.type || '').toLowerCase();
-    const provider = PROVIDERS.has(rawProvider) ? rawProvider : 'other';
-    const state = accountState(file, now);
-    const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`pool-account-v1\n${file.id || file.name || index}`));
-    const id = Array.from(new Uint8Array(signature).slice(0, 4), byte => byte.toString(16).padStart(2, '0')).join('');
-    const cooldowns = (Array.isArray(file.cooldowns) ? file.cooldowns : []).filter(item => timestamp(item.retry_at) > now);
-    const retry = Math.max(timestamp(file.next_retry_after), ...cooldowns.map(item => timestamp(item.retry_at)), 0);
-    const models = inventory[index];
-    accounts.push({ id, provider, state, models: Array.isArray(models) ? models.length : null,
-      cooldown_models: cooldowns.filter(item => item.scope === 'model').length,
-      retry_at: retry ? new Date(retry).toISOString() : null, quota: observedQuota(file.quota) });
-    totals.total++;totals[state]++;
-    if (!providers.has(provider)) providers.set(provider, { provider, ...counts() });
+export async function accountId(file,secret,index=0){
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const signature=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`pool-account-v1\n${file.id||file.name||index}`));
+  return Array.from(new Uint8Array(signature).slice(0,4),x=>x.toString(16).padStart(2,'0')).join('');
+}
+function recentRequests(file){
+  return (Array.isArray(file.recent_requests)?file.recent_requests:[]).slice(-20).map((row,index)=>({
+    time:typeof row.time==='string'&&/^[\dTZ :+.\-/]{1,50}$/.test(row.time)?row.time:`时间段 ${index+1}`,
+    success:number(row.success),failed:number(row.failed),
+  }));
+}
+export async function summarizePool(files,inventory,secret,now=Date.now()){
+  const accounts=[],modelMap=new Map(),providers=new Map(),totals=counts();let successful=0,failed=0;
+  for(let index=0;index<files.length;index++){
+    const file=files[index],provider=providerOf(file),state=accountState(file,now),id=await accountId(file,secret,index);
+    const cooldowns=(Array.isArray(file.cooldowns)?file.cooldowns:[]).filter(x=>timestamp(x.retry_at)>now);
+    const retry=Math.max(timestamp(file.next_retry_after),...cooldowns.map(x=>timestamp(x.retry_at)),0),models=inventory[index];
+    const success=number(file.success),errors=number(file.failed);
+    accounts.push({id,provider,state,masked_email:maskAccountEmail(file),models:Array.isArray(models)?models.length:null,cooldown_models:cooldowns.filter(x=>x.scope==='model').length,
+      retry_at:retry?new Date(retry).toISOString():null,quota:passiveQuota(file,now),success,failed:errors,success_rate:success+errors?Math.round(success/(success+errors)*1000)/10:null,recent_requests:recentRequests(file)});
+    totals.total++;totals[state]++;successful+=success;failed+=errors;
+    if(!providers.has(provider))providers.set(provider,{provider,...counts()});
     providers.get(provider).total++;providers.get(provider)[state]++;
-    successful += number(file.success);failed += number(file.failed);
-    if (!Array.isArray(models)) continue;
-    for (const model of new Set(models.filter(safeModel))) {
-      if (!modelMap.has(model)) modelMap.set(model, { id: model, ...counts(), providers: new Set(), retry_at: null });
-      const row = modelMap.get(model);
-      const blocked = cooldowns.find(item => item.scope === 'model' && item.model_key === model);
-      const modelState = state === 'ready' && blocked ? 'cooldown' : state;
-      row.total++;row[modelState]++;row.providers.add(provider);
-      if (blocked && (!row.retry_at || timestamp(blocked.retry_at) < timestamp(row.retry_at))) row.retry_at = new Date(timestamp(blocked.retry_at)).toISOString();
+    if(!Array.isArray(models))continue;
+    for(const model of new Set(models.filter(safeModel))){
+      if(!modelMap.has(model))modelMap.set(model,{id:model,...counts(),providers:new Set(),retry_at:null});
+      const row=modelMap.get(model),blocked=cooldowns.find(x=>x.scope==='model'&&x.model_key===model);
+      const stateForModel=state==='ready'&&blocked?'cooldown':state;
+      row.total++;row[stateForModel]++;row.providers.add(provider);
+      if(blocked&&(!row.retry_at||timestamp(blocked.retry_at)<timestamp(row.retry_at)))row.retry_at=new Date(timestamp(blocked.retry_at)).toISOString();
     }
   }
-  const partial = inventory.some(value => !Array.isArray(value));
-  return { schema: 1, updated_at: new Date(now).toISOString(), stale: false, totals, successful, failed,
-    models_partial: partial, providers: [...providers.values()].sort((a, b) => b.total - a.total),
-    models: [...modelMap.values()].map(row => ({ ...row, providers: [...row.providers] })).sort((a, b) => a.id.localeCompare(b.id)),
-    accounts: accounts.sort((a, b) => a.provider.localeCompare(b.provider) || a.id.localeCompare(b.id)) };
+  return {schema:1,updated_at:new Date(now).toISOString(),stale:false,totals,successful,failed,stats_scope:'account',model_metrics_available:false,
+    models_partial:inventory.some(x=>!Array.isArray(x)),providers:[...providers.values()].sort((a,b)=>b.total-a.total),
+    models:[...modelMap.values()].map(row=>({...row,providers:[...row.providers]})).sort((a,b)=>a.id.localeCompare(b.id)),
+    accounts:accounts.sort((a,b)=>a.provider.localeCompare(b.provider)||a.id.localeCompare(b.id))};
 }
 
-async function management(path, secret, fetcher, signal) {
-  const response = await fetcher(`${ORIGIN}/v8/management/${path}`, {
-    method: 'GET', headers: { Authorization: `Bearer ${secret}`, Accept: 'application/json' },
-    redirect: 'manual', signal,
-  });
-  if (!response.ok) throw Object.assign(new Error('CPA status unavailable'), { code: `CPA_HTTP_${response.status}` });
-  const reader = response.body.getReader();
-  const chunks = [];let length = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    length += value.length;
-    if (length > 4 * 1024 * 1024) { await reader.cancel();throw new Error('CPA status too large'); }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(length);let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset);offset += chunk.length; }
+async function management(path,env,fetcher,signal,body){
+  const options={method:body?'POST':'GET',headers:{Authorization:`Bearer ${env.CPA_STATUS_MANAGEMENT_KEY}`,Accept:'application/json'},redirect:'manual',signal};
+  if(body){options.headers['Content-Type']='application/json';options.body=JSON.stringify(body);}
+  const response=await fetcher(`${ORIGIN}/v8/management/${path}`,options);
+  if(!response.ok)throw Object.assign(new Error('CPA status unavailable'),{status:response.status,managementAuth:[401,403].includes(response.status),code:`CPA_HTTP_${response.status}`});
+  const reader=response.body.getReader(),chunks=[];let length=0;
+  for(;;){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>4*1024*1024){await reader.cancel();throw new Error('CPA_RESPONSE_TOO_LARGE');}chunks.push(value);}
+  const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
   return JSON.parse(new TextDecoder().decode(bytes));
 }
+const publicError=error=>[401,403].includes(error?.status)?'authorization_unavailable':error?.status===429?'upstream_busy':error?.message==='QUOTA_NO_DATA'?'not_observed':'temporarily_unavailable';
 
-export async function handlePoolStatus(request, env, { fetcher = (url, options) => fetch(url, options), now = Date.now() } = {}) {
-  const reply = (status, body) => new Response(request.method === 'HEAD' ? null : JSON.stringify(body), {
-    status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(status === 405 ? { Allow: 'GET, HEAD' } : {}) },
-  });
-  if (!['GET', 'HEAD'].includes(request.method)) return reply(405, { error: 'Method not allowed' });
-  if (!env.CPA_STATUS_MANAGEMENT_KEY || !env.FREE_TOKEN_OPS_SECRET || !env.KV) return reply(503, { error: '号池状态正在连接，请稍后刷新。' });
-  let saved;
-  try { saved = await env.KV.get(SNAPSHOT_KEY, 'json'); } catch {}
-  if (saved?.schema === 1 && now - timestamp(saved.updated_at) >= 0 && now - timestamp(saved.updated_at) < FRESH_MS) return reply(200, saved);
-  try {
-    const signal = AbortSignal.timeout(15000);
-    const body = await management('credentials', env.CPA_STATUS_MANAGEMENT_KEY, fetcher, signal);
-    if (!Array.isArray(body.files)) throw Object.assign(new Error('Invalid status'), { code: 'CPA_INVALID_STATUS' });
-    const files = body.files.slice(0, 500), inventory = new Array(files.length).fill(null);
-    let next = 0;
-    await Promise.all(Array.from({ length: Math.min(4, files.length) }, async () => {
-      while (!signal.aborted && next < Math.min(24, files.length)) {
-        const index = next++;
-        if (typeof files[index].name !== 'string') continue;
-        try {
-          const result = await management(`credentials/models?name=${encodeURIComponent(files[index].name)}`, env.CPA_STATUS_MANAGEMENT_KEY, fetcher, signal);
-          if (Array.isArray(result.models)) inventory[index] = result.models.map(item => item.id).filter(safeModel);
-        } catch {}
-      }
-    }));
-    const snapshot = await summarizePool(files, inventory, env.FREE_TOKEN_OPS_SECRET, now);
-    try { await env.KV.put(SNAPSHOT_KEY, JSON.stringify(snapshot), { expirationTtl: 600 }); } catch {}
-    return reply(200, snapshot);
-  } catch (error) {
-    if (saved?.schema === 1 && now - timestamp(saved.updated_at) < 600000) return reply(200, { ...saved, stale: true });
-    const code = /^CPA_(?:HTTP_\d{3}|INVALID_STATUS)$/.test(error?.code) ? error.code : error?.name === 'TimeoutError' ? 'CPA_TIMEOUT' : 'CPA_STATUS_FAILED';
-    console.warn(JSON.stringify({ event: 'pool_status_unavailable', code, error_type: error?.name,
-      stack: typeof error?.stack === 'string' ? error.stack.split('\n').slice(1, 4) : [],
-      invocation_error: error?.message?.includes('Illegal invocation') === true }));
-    return reply(503, { error: 'CPA 暂未响应，稍后刷新即可。', code });
+// One coordination atom for this one CPA pool, outside the model data path.
+// Uses a dedicated named object in the existing namespace, not any game run.
+export class PoolStatusCoordinator{
+  constructor(ctx,env,{fetcher=(url,options)=>fetch(url,options),clock=()=>Date.now()}={}){
+    this.ctx=ctx;this.env=env;this.fetcher=fetcher;this.clock=clock;this.pending=null;this.quotaPending=new Map();this.files=[];this.filesAt=0;
+    this.ready=ctx.storage.get('pool-status-v2').then(value=>{this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};});
   }
+  persist(){return this.ctx.storage.put('pool-status-v2',this.cache);}
+  async credentials(signal){
+    const now=this.clock();if(this.files.length&&now-this.filesAt<REFRESH_MS)return this.files;
+    if(now<(this.cache.managementBlockedUntil||0))throw Object.assign(new Error('Management backoff'),{status:401});
+    if(!this.filesPending)this.filesPending=(async()=>{
+      try{
+        const body=await management('credentials',this.env,this.fetcher,signal);
+        if(!Array.isArray(body.files))throw new Error('CPA_INVALID_STATUS');
+        this.files=body.files.slice(0,500);this.filesAt=now;return this.files;
+      }catch(error){if([401,403].includes(error.status)){this.cache.managementBlockedUntil=now+900_000;await this.persist();}throw error;}
+    })().finally(()=>{this.filesPending=null;});
+    return this.filesPending;
+  }
+  async quota(file,id){
+    const now=this.clock(),probe=quotaProbe(file),cached=this.cache.quotas[id];
+    if(!probe)return passiveQuota(file,now);
+    if(now<(this.cache.managementBlockedUntil||0))return {...(cached?.value||passiveQuota(file,now)),error:'authorization_unavailable',next_refresh_at:new Date(this.cache.managementBlockedUntil).toISOString()};
+    if(this.quotaPending.has(id))return this.quotaPending.get(id);
+    if(cached&&now<cached.next)return {...cached.value,next_refresh_at:new Date(cached.next).toISOString()};
+    const job=(async()=>{
+      const entry={next:now+QUOTA_MS,value:cached?.value||passiveQuota(file,now)};
+      this.cache.quotas[id]=entry;await this.persist();
+      try{
+        const response=await management('requests/api-call',this.env,this.fetcher,AbortSignal.timeout(12_000),probe);
+        if(response.status_code!==200)throw Object.assign(new Error('Quota upstream unavailable'),{status:response.status_code});
+        const raw=typeof response.body==='string'?JSON.parse(response.body):response.body;
+        entry.value={...parseQuota(providerOf(file),raw,now),renew_at:passiveQuota(file,now).renew_at};
+      }catch(error){
+        entry.value={...entry.value,error:publicError(error)};
+        if([401,403].includes(error.status))entry.next=now+900_000;
+        if(error.managementAuth)this.cache.managementBlockedUntil=now+900_000;
+      }
+      await this.persist();return {...entry.value,next_refresh_at:new Date(entry.next).toISOString()};
+    })();
+    this.quotaPending.set(id,job);
+    try{return await job;}finally{this.quotaPending.delete(id);}
+  }
+  async collect(){
+    const now=this.clock();this.cache.next=now+REFRESH_MS;await this.persist();
+    try{
+      const signal=AbortSignal.timeout(18_000),files=await this.credentials(signal),inventory=new Array(files.length).fill(null);
+      const ids=await Promise.all(files.map((f,i)=>accountId(f,this.env.FREE_TOKEN_OPS_SECRET,i)));
+      let next=0,fatal;
+      await Promise.all(Array.from({length:Math.min(3,files.length)},async()=>{
+        while(!fatal&&!signal.aborted&&next<Math.min(32,files.length)){
+          const i=next++,cached=this.cache.inventories[ids[i]];
+          if(cached&&now-cached.at<QUOTA_MS){inventory[i]=cached.models;continue;}
+          if(typeof files[i].name!=='string')continue;
+          try{
+            const body=await management(`credentials/models?name=${encodeURIComponent(files[i].name)}`,this.env,this.fetcher,signal);
+            if(Array.isArray(body.models)){inventory[i]=body.models.map(x=>x.id).filter(safeModel);this.cache.inventories[ids[i]]={at:now,models:inventory[i]};}
+          }catch(error){if([401,403].includes(error.status))fatal=error;else if(cached)inventory[i]=cached.models;}
+        }
+      }));
+      if(fatal)throw fatal;
+      const snapshot=await summarizePool(files,inventory,this.env.FREE_TOKEN_OPS_SECRET,now);
+      // Automatic quota probes are limited to active supported accounts. Disabled
+      // accounts stay disabled and never create recurring upstream quota traffic.
+      const candidates=files.map((file,i)=>({file,id:ids[i]})).filter(x=>accountState(x.file,now)==='ready'&&quotaProbe(x.file)).slice(0,4);
+      await Promise.all(candidates.map(({file,id})=>this.quota(file,id)));
+      for(const account of snapshot.accounts){
+        const cached=this.cache.quotas[account.id];
+        if(cached){const observed=account.quota;account.quota={...cached.value,next_refresh_at:new Date(cached.next).toISOString()};
+          if(timestamp(observed.observed_at)>timestamp(account.quota.observed_at)&&observed.windows.length)account.quota={...observed,next_refresh_at:account.quota.next_refresh_at};}
+      }
+      for(const model of snapshot.models){
+        const history=this.cache.history[model.id]||[];
+        history.push({at:new Date(now).toISOString(),state:stateOf(model)});model.history=history.slice(-60);this.cache.history[model.id]=model.history;
+      }
+      const valid=new Set(ids);for(const id of Object.keys(this.cache.quotas))if(!valid.has(id))delete this.cache.quotas[id];
+      const validModels=new Set(snapshot.models.map(x=>x.id));for(const id of Object.keys(this.cache.history))if(!validModels.has(id))delete this.cache.history[id];
+      this.cache.snapshot=snapshot;this.cache.failures=0;this.cache.next=this.clock()+REFRESH_MS;await this.persist();
+    }catch(error){
+      this.cache.failures++;this.cache.next=this.clock()+([401,403].includes(error.status)?900_000:Math.min(900_000,REFRESH_MS*2**Math.min(this.cache.failures-1,4)));
+      if(error.managementAuth)this.cache.managementBlockedUntil=this.clock()+900_000;
+      this.cache.lastError=publicError(error);await this.persist();
+    }
+  }
+  reply(status,body){return Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Pool-Abuse-Exempt':'read-only-status'}});}
+  async fetch(request){
+    await this.ready;const {kind,id,peek}=await request.json();
+    if(kind==='quota'){
+      if(!/^[a-f0-9]{8}$/.test(id||''))return this.reply(400,{error:'账号编号不正确。'});
+      if(peek){const row=this.cache.quotas[id];return this.reply(row?200:404,row?{id,quota:{...row.value,next_refresh_at:new Date(row.next).toISOString()}}:{error:'额度尚未读取。'});}
+      const files=await this.credentials(AbortSignal.timeout(10_000));
+      let selected;for(let i=0;i<files.length;i++)if(await accountId(files[i],this.env.FREE_TOKEN_OPS_SECRET,i)===id){selected=files[i];break;}
+      if(!selected)return this.reply(404,{error:'账号不存在或已移除。'});
+      const value=await this.quota(selected,id);
+      if(this.cache.snapshot){const account=this.cache.snapshot.accounts.find(x=>x.id===id);if(account)account.quota=value;await this.persist();}
+      return this.reply(200,{id,quota:value});
+    }
+    if(!peek&&this.clock()>=this.cache.next){
+      if(!this.pending)this.pending=this.collect().finally(()=>{this.pending=null;});
+      await this.pending;
+    }else if(this.pending)await this.pending;
+    const snapshot=this.cache.snapshot,now=this.clock();
+    if(!snapshot||now-timestamp(snapshot.updated_at)>STALE_MS)return this.reply(503,{error:'号池暂时无法连接，请稍后再试。',retry_after:Math.max(1,Math.ceil((this.cache.next-now)/1000))});
+    return this.reply(200,{...snapshot,stale:now-timestamp(snapshot.updated_at)>REFRESH_MS,refresh_after:Math.max(1,Math.ceil((this.cache.next-now)/1000)),quota_cooldown_seconds:QUOTA_MS/1000});
+  }
+}
+
+export async function handlePoolStatus(request,env){
+  const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Pool-Abuse-Exempt':'read-only-status'};
+  const reply=(status,body)=>new Response(request.method==='HEAD'?null:JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json; charset=utf-8',...(status===405?{Allow:'GET, HEAD'}:{})}});
+  if(!['GET','HEAD'].includes(request.method))return reply(405,{error:'Method not allowed'});
+  if(!env.CPA_STATUS_MANAGEMENT_KEY||!env.FREE_TOKEN_OPS_SECRET||!env.GAME_RUNS)return reply(503,{error:'号池状态正在连接，请稍后查看。'});
+  const url=new URL(request.url),kind=url.pathname.endsWith('/quota')?'quota':'snapshot',id=url.searchParams.get('id');
+  if(kind==='quota'&&!/^[a-f0-9]{8}$/.test(id||''))return reply(400,{error:'账号编号不正确。'});
+  try{
+    const stub=env.GAME_RUNS.get(env.GAME_RUNS.idFromName('pool-status-cache-v2'));
+    const response=await stub.fetch('https://pool.internal/pool-status',{method:'POST',body:JSON.stringify({kind,id,peek:request.method==='HEAD'})});
+    return new Response(request.method==='HEAD'?null:response.body,{status:response.status,headers:{...headers,'Content-Type':'application/json; charset=utf-8'}});
+  }catch{return reply(503,{error:'号池暂时无法连接，请稍后再试。',retry_after:60});}
 }

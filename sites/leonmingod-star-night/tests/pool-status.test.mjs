@@ -1,67 +1,99 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { summarizePool, accountState, handlePoolStatus } from '../src/pool-status.js';
-import { readFile } from 'node:fs/promises';
+import { summarizePool, accountState, handlePoolStatus, PoolStatusCoordinator, accountId, maskAccountEmail } from '../src/pool-status.js';
+import { passiveQuota, parseQuota, quotaProbe } from '../src/pool-quota.js';
 import { Miniflare } from 'miniflare';
 
-const now = Date.parse('2026-10-29T12:00:00Z');
-const later = new Date(now+60000).toISOString();
-const files = [
-  { id:'private-account@example.com', name:'oauth-private-account@example.com.json', email:'private-account@example.com', path:'/auths/private.json', status_message:'Bearer secret-credential', provider:'codex', status:'active', success:9, failed:1, cooldowns:[{scope:'model', model_key:'gpt-test', retry_at:later}], quota:{signals:{'X-Codex-Primary-Used-Percent':'31','Authorization':'secret-credential'},observed_at:new Date(now).toISOString()} },
-  { id:'private-disabled',name:'disabled.json',provider:'antigravity',status:'disabled',disabled:true },
-  { id:'private-cooling',name:'cooling.json',provider:'codex',status:'error',unavailable:true,next_retry_after:later },
+const now=Date.parse('2026-10-29T12:00:00Z'),later=new Date(now+60000).toISOString();
+const files=[
+ {id:'private-account@example.com',auth_index:'private-index',name:'oauth-private-account@example.com.json',email:'private-account@example.com',path:'/auths/private.json',status_message:'Bearer secret-credential',provider:'codex',status:'active',success:9,failed:1,recent_requests:[{time:'12:00-12:10',success:2,failed:1}],cooldowns:[{scope:'model',model_key:'gpt-test',retry_at:later}],quota:{signals:{'X-Codex-Primary-Used-Percent':'31','X-Codex-Primary-Window-Minutes':'300','X-Codex-Primary-Reset-At':String((now+7200000)/1000),'Authorization':'secret-credential'},observed_at:new Date(now).toISOString()},id_token:{plan_type:'plus',chatgpt_account_id:'secret-account-id',chatgpt_subscription_active_until:'2026-11-25T08:00:00Z'}},
+ {id:'private-disabled',auth_index:'disabled-index',name:'disabled.json',provider:'antigravity',status:'disabled',disabled:true,project_id:'private-project'},
+ {id:'private-cooling',auth_index:'cooling-index',name:'cooling.json',provider:'codex',status:'error',unavailable:true,next_retry_after:later},
 ];
+const usage={email:'never-return@example.com',account_id:'secret-account-id',plan_type:'plus',rate_limit:{primary_window:{used_percent:72,limit_window_seconds:18000,reset_at:(now+7200000)/1000},secondary_window:{used_percent:36,limit_window_seconds:604800,reset_at:(now+432000000)/1000}},credits:{balance:'0'}};
+function harness(){
+ let clock=now;const rows=new Map(),calls=[];let status=200,innerStatus=200;
+ const env={CPA_STATUS_MANAGEMENT_KEY:'management-test-placeholder',FREE_TOKEN_OPS_SECRET:'ops-test-placeholder'};
+ const ctx={storage:{get:async k=>structuredClone(rows.get(k)),put:async(k,v)=>rows.set(k,structuredClone(v))}};
+ const fetcher=async(url,options)=>{
+  calls.push({url,options});assert.equal(options.headers.Authorization,'Bearer management-test-placeholder');assert.equal(options.redirect,'manual');
+  if(status!==200)return new Response('private upstream error',{status});
+  if(url.endsWith('/requests/api-call')){const payload=JSON.parse(options.body);assert.equal(payload.method,'GET');assert.equal(payload.url,'https://chatgpt.com/backend-api/wham/usage');return Response.json({status_code:innerStatus,body:JSON.stringify(usage)});}
+  assert.equal(options.method,'GET');assert(!url.includes('/download'));
+  return Response.json(url.includes('/models?')?{models:[{id:url.includes('disabled')?'gemini-test':'gpt-test'}]}:{files});
+ };
+ const coordinator=new PoolStatusCoordinator(ctx,env,{fetcher,clock:()=>clock});
+ const send=body=>coordinator.fetch(new Request('https://internal/pool-status',{method:'POST',body:JSON.stringify(body)}));
+ return {env,ctx,calls,coordinator,send,advance:ms=>{clock+=ms;},setStatus:value=>{status=value;},setInner:value=>{innerStatus=value;}};
+}
 
-test('pool summaries preserve per-model cooldowns and publish no email, filename, secret, path or upstream error text', async () => {
-  const summary=await summarizePool(files,[['gpt-test','gpt-ready'],['gemini-test'],null],'local-secret',now);
-  assert.equal(summary.totals.total,3);assert.equal(summary.totals.ready,1);assert.equal(summary.totals.cooldown,1);assert.equal(summary.totals.disabled,1);
-  assert.equal(summary.models.find(row=>row.id==='gpt-test').cooldown,1);assert.equal(summary.models.find(row=>row.id==='gpt-ready').ready,1);
-  assert.equal(summary.accounts.find(row=>row.provider==='codex'&&row.state==='ready').quota.primary_remaining,69);
-  assert(summary.models_partial);assert.doesNotMatch(JSON.stringify(summary),/example\.com|oauth-private|private\.json|secret-credential|Authorization|Bearer|\/auths/);
-  assert.equal(accountState({status:'active',cooldowns:files[0].cooldowns},now),'ready');
-  assert.equal(accountState({status:'active',next_retry_after:later},now),'cooldown');
+test('summaries mask email before returning it and retain true credential counters and model cooldowns',async()=>{
+ const summary=await summarizePool(files,[['gpt-test','gpt-ready'],['gemini-test'],null],'local-secret',now);
+ assert.equal(summary.totals.total,3);assert.equal(summary.totals.ready,1);assert.equal(summary.totals.cooldown,1);assert.equal(summary.totals.disabled,1);
+ assert.equal(summary.models.find(x=>x.id==='gpt-test').cooldown,1);assert.equal(summary.models.find(x=>x.id==='gpt-ready').ready,1);
+ const active=summary.accounts.find(x=>x.state==='ready');assert.equal(active.masked_email,'p***t@e***.com');assert.equal(active.success,9);assert.equal(active.failed,1);assert.equal(active.success_rate,90);
+ assert.equal(active.quota.primary_remaining,69);assert.equal(active.quota.windows[0].label,'5 小时限额');assert.equal(active.quota.plan,'plus');
+ assert.doesNotMatch(JSON.stringify(summary),/private-account|example\.com|oauth-private|private\.json|secret-credential|secret-account-id|Authorization|Bearer|\/auths/);
+ assert.equal(summary.model_metrics_available,false);assert.equal(maskAccountEmail({email:'not-email'}),null);
+ assert.equal(accountState({status:'active',cooldowns:files[0].cooldowns},now),'ready');
+ assert.equal(accountState({status:'active',next_retry_after:later},now),'cooldown');
 });
 
-test('live pool reads are server authenticated, restricted to GET metadata, cached and fail without exposing management responses', async () => {
-  const rows=new Map();let calls=0;
-  const env={CPA_STATUS_MANAGEMENT_KEY:'management-test-placeholder',FREE_TOKEN_OPS_SECRET:'ops-test-placeholder',KV:{get:async key=>rows.get(key)||null,put:async(key,value)=>rows.set(key,JSON.parse(value))}};
-  const fetcher=async(url,options)=>{calls++;assert.equal(options.method,'GET');assert.equal(options.headers.Authorization,'Bearer management-test-placeholder');assert(url.startsWith('https://cpa-dhke.onrender.com/v8/management/credentials'));assert(!url.includes('/download'));return Response.json(url.includes('/models?')?{models:[{id:'gpt-test'}]}:{files});};
-  const request=new Request('https://leonmingod.com/api/pool-status');
-  const first=await handlePoolStatus(request,env,{fetcher,now});assert.equal(first.status,200);assert.equal(calls,4);
-  const text=await first.text();assert.doesNotMatch(text,/management-test-placeholder|example\.com|secret-credential/);
-  await handlePoolStatus(request,env,{fetcher,now:now+1000});assert.equal(calls,4);
-  const stale=await handlePoolStatus(request,env,{fetcher:async()=>new Response('secret upstream error',{status:401}),now:now+31000});assert.equal((await stale.json()).stale,true);
-  assert.equal((await handlePoolStatus(request,{}, {fetcher})).status,503);
-  assert.equal((await handlePoolStatus(new Request(request,{method:'POST'}),env,{fetcher})).status,405);
+test('quota parsing preserves real remaining percent and reset times while stripping unrelated upstream data',()=>{
+ const parsed=parseQuota('codex',usage,now);assert.equal(parsed.windows[0].remaining,28);assert.equal(parsed.windows[1].remaining,64);assert.equal(parsed.windows[0].label,'5 小时限额');assert.equal(parsed.windows[1].label,'周限额');assert.equal(parsed.credits,0);
+ assert.doesNotMatch(JSON.stringify(parsed),/email|account_id|never-return|secret-account/);
+ assert.equal(parseQuota('claude',{five_hour:{utilization:100,resets_at:later}},now).windows[0].remaining,0);
+ assert.equal(passiveQuota({quota:{signals:{'X-Codex-Primary-Used-Percent':'bad'}}}).windows.length,0);
+ assert.throws(()=>parseQuota('codex',{rate_limit:{primary_window:{used_percent:102}}},now));
+ assert.equal(quotaProbe({provider:'xai',auth_index:'index'}),null);
+ assert.equal(quotaProbe(files[0]).header.Authorization,'Bearer $TOKEN$');
 });
 
-test('pool requests run in Workers with redirects rejected before credentials can be forwarded', async () => {
-  const source = await readFile(new URL('../src/pool-status.js', import.meta.url), 'utf8');
-  let calls = 0, redirect = true;
-  const runtime = new Miniflare({
-    modules: true, compatibilityDate: '2025-06-01',
-    script: source + '\nexport default { fetch: handlePoolStatus };',
-    kvNamespaces: ['KV'],
-    bindings: { CPA_STATUS_MANAGEMENT_KEY: 'management-runtime-test', FREE_TOKEN_OPS_SECRET: 'ops-runtime-test' },
-    outboundService: request => {
-      calls++;
-      assert.match(request.url, /^https:\/\/cpa-dhke\.onrender\.com\/v8\/management\/credentials(?:\/models\?name=test\.json)?$/);
-      assert.equal(request.headers.get('Authorization'), 'Bearer management-runtime-test');
-      if (redirect) return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example/credentials' } });
-      return Response.json(request.url.includes('/models?') ? { models: [{ id: 'runtime-model' }] } : { files: [{ name: 'test.json', provider: 'codex', status: 'active' }] });
-    },
-  });
-  try {
-    const response = await runtime.dispatchFetch('https://leonmingod.com/api/pool-status');
-    assert.equal(calls, 1);
-    assert.equal(response.status, 503);
-    assert.equal((await response.json()).code, 'CPA_HTTP_302');
-    redirect = false;
-    const success = await runtime.dispatchFetch('https://leonmingod.com/api/pool-status');
-    assert.equal(success.status, 200);
-    const summary = await success.json();
-    assert.equal(summary.totals.ready, 1);
-    assert.equal(summary.models[0].id, 'runtime-model');
-    assert.equal(calls, 3);
-  } finally { await runtime.dispose(); }
+test('twenty concurrent reads coalesce globally; retries cannot bypass snapshot or per-account quota cooldown',async()=>{
+ const h=harness(),responses=await Promise.all(Array.from({length:20},()=>h.send({kind:'snapshot'})));
+ assert(responses.every(r=>r.status===200));assert.equal(h.calls.filter(x=>x.url.endsWith('/credentials')).length,1);
+ assert.equal(h.calls.filter(x=>x.url.includes('/models?')).length,3);assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,1);
+ const body=await responses[0].json();assert.equal(body.models[0].history.length,1);
+ const id=body.accounts.find(x=>x.state==='ready').id;
+ for(let i=0;i<10;i++)await h.send({kind:'quota',id});
+ assert.equal(h.calls.length,5);
+ h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,6);
+ h.advance(300000);await h.send({kind:'quota',id});assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,2);
+});
+
+test('bad management auth backs off for fifteen minutes and cannot be retried through the quota endpoint',async()=>{
+ const h=harness();h.setStatus(401);assert.equal((await h.send({kind:'snapshot'})).status,503);
+ for(let i=0;i<20;i++)await h.send({kind:'snapshot'});assert.equal(h.calls.length,1);
+ await assert.rejects(h.send({kind:'quota',id:await accountId(files[0],h.env.FREE_TOKEN_OPS_SECRET)}));assert.equal(h.calls.length,1);
+ h.advance(900001);h.setStatus(200);assert.equal((await h.send({kind:'snapshot'})).status,200);
+});
+
+test('failed quota preserves the old value and disabled credentials do not produce automatic upstream probes',async()=>{
+ const h=harness();await h.send({kind:'snapshot'});h.advance(300001);h.setInner(429);
+ const id=await accountId(files[0],h.env.FREE_TOKEN_OPS_SECRET),response=await h.send({kind:'quota',id}),body=await response.json();
+ assert.equal(body.quota.windows[0].remaining,28);assert.equal(body.quota.error,'upstream_busy');
+ const probes=h.calls.filter(x=>x.url.endsWith('/requests/api-call'));assert.equal(probes.length,2);assert(probes.every(x=>JSON.parse(x.options.body).auth_index==='private-index'));
+});
+
+test('read-only public routes reject mutations and malformed IDs before touching upstream or claim limits',async()=>{
+ assert.equal((await handlePoolStatus(new Request('https://leonmingod.com/api/pool-status',{method:'POST'}),{})).status,405);
+ assert.equal((await handlePoolStatus(new Request('https://leonmingod.com/api/pool-status'),{})).status,503);
+ const env={CPA_STATUS_MANAGEMENT_KEY:'test',FREE_TOKEN_OPS_SECRET:'test',GAME_RUNS:{get(){throw new Error('must not call');}}};
+ assert.equal((await handlePoolStatus(new Request('https://leonmingod.com/api/pool-status/quota?id=arbitrary-url'),env)).status,400);
+});
+
+test('real Workers runtime coalesces reads and rejects redirects without forwarding the management credential',async()=>{
+ let calls=0;const options={modules:true,scriptPath:'dist/index.js',compatibilityDate:'2025-06-01',bindings:{CPA_STATUS_MANAGEMENT_KEY:'management-runtime-test',FREE_TOKEN_OPS_SECRET:'ops-runtime-test'},durableObjects:{GAME_RUNS:{className:'GameRun',useSQLite:true}},serviceBindings:{ASSETS:()=>new Response('not found',{status:404})}};
+ const blocked=new Miniflare({...options,outboundService:request=>{calls++;assert.equal(request.headers.get('Authorization'),'Bearer management-runtime-test');assert(request.url.startsWith('https://cpa-dhke.onrender.com/'));return new Response(null,{status:302,headers:{Location:'https://untrusted.example/credentials'}});}});
+ try{
+  assert.equal((await blocked.dispatchFetch('https://leonmingod.com/api/pool-status',{method:'HEAD'})).status,503);assert.equal(calls,0);
+  assert.equal((await blocked.dispatchFetch('https://leonmingod.com/api/pool-status')).status,503);assert.equal(calls,1);
+  assert.equal((await blocked.dispatchFetch('https://leonmingod.com/api/pool-status')).status,503);assert.equal(calls,1);
+ }finally{await blocked.dispose();}
+ const fresh=new Miniflare({...options,outboundService:request=>{calls++;return Response.json(request.url.includes('/models?')?{models:[{id:'runtime-model'}]}:{files:[{name:'test.json',provider:'xai',status:'active'}]});}});
+ try{
+  const responses=await Promise.all(Array.from({length:12},()=>fresh.dispatchFetch('https://leonmingod.com/api/pool-status')));assert(responses.every(r=>r.status===200));assert.equal(calls,3);
+  const body=await responses[0].json();assert.equal(body.models[0].id,'runtime-model');assert.equal(body.totals.ready,1);assert.equal(body.models[0].history.length,1);
+  assert.equal((await fresh.dispatchFetch('https://leonmingod.com/api/free-token/claim/code',{method:'POST',headers:{Origin:'https://leonmingod.com','Content-Type':'application/json'},body:JSON.stringify({email:'any@example.com'})})).status,503);
+ }finally{await fresh.dispose();}
 });
