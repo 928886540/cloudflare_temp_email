@@ -230,7 +230,7 @@ async function claimReward(){
     const data=await api('finish',{id:run.id,receipt:run.receipt});
     if(!data.won&&!data.claimable)throw new Error('奖励暂时未准备好，请稍后重试。');
     rewardData=undefined;$('score-note').textContent=`${data.jade} 枚灵玉 · ${data.shields} 点护盾 · 完整 45 秒`;
-    showRewardSteps();show('破阵成功','写下名字，验证邮箱，密钥只显示一次。','再挑战一局 →');
+    showRewardSteps();show('破阵成功','写下名字，验证邮箱，密钥凭邮箱可找回。','再挑战一局 →');
   }catch(error){const expired=[400,403,409,410].includes(error.status);show('破阵成功，领取未完成',error.message,expired?'重新挑战 →':'重试领取 →');if(!expired)start.dataset.retryClaim='true';}
   finally{busy=false;start.disabled=false;}
 }
@@ -302,7 +302,7 @@ $('reveal-key').addEventListener('click',async()=>{
   try{
     const data=await postClaim('claim/verify',{email:$('player-email').value,code:$('player-code').value.trim()},'claim_verify');
     if(!data.apiKey||!data.baseUrl)throw new Error('密钥还没准备好，请稍后重试。');
-    rewardData=data;$('base-url').value=data.baseUrl;$('api-key').value=data.apiKey;$('copy-status').textContent='密钥只显示这一次，请马上复制。';
+    rewardData=data;$('base-url').value=data.baseUrl;$('api-key').value=data.apiKey;$('copy-status').textContent='请复制保存。丢了可用同一邮箱找回。';
     $('reward-steps').hidden=true;$('reward-secret').hidden=false;
     const reopen=document.createElement('button');reopen.type='button';reopen.className='secondary';reopen.textContent='查看通关奖励';reopen.id='reopen-reward';reopen.addEventListener('click',()=>{if(rewardData){$('base-url').value=rewardData.baseUrl;$('api-key').value=rewardData.apiKey;$('reward-steps').hidden=true;$('reward-secret').hidden=false;$('reward').showModal();}});$('reopen-reward')?.remove();screen.append(reopen);
   }catch(error){$('reward-error').textContent=error instanceof TypeError?'网络有些波动，请再试一次。':error.message;}
