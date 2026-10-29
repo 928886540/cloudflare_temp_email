@@ -67,5 +67,6 @@
     "free-token/verify-v2.mjs",
     "free-token/verify-v2.css",
     "free-token/claim-compact-v5.css"
-  ]
+  ],
+  "staged_version": "968904cd-207b-4691-863c-d63cc4487640"
 }
