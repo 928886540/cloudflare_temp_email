@@ -149,7 +149,8 @@ elif mode == 'publish':
                     expected=(root/'public'/local).read_text()
                     import re
                     body=re.sub(r'\n?<script[^>]*src=["\']https://static\.cloudflareinsights\.com/[^>]*>\s*</script>','',body)
-                    if body.replace('\r\n','\n').strip()!=expected.replace('\r\n','\n').strip():
+                    normalize=lambda html: re.sub(r'\s*</body>', '</body>', html.replace('\r\n','\n')).strip()
+                    if normalize(body)!=normalize(expected):
                         if attempt in (0, 11):
                             fresh=api.request(api.ORIGIN+path+'?lmg_verify='+version_id,headers={'Cache-Control':'no-cache'})[2].decode()
                             print('PAGE_DIAGNOSTIC='+json.dumps({'path':path,'new_marker':'home-orb-v3.css' in body,'fresh_marker':'home-orb-v3.css' in fresh,'expected_bytes':len(expected),'actual_bytes':len(body),'first_difference':next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),None)}),flush=True)
