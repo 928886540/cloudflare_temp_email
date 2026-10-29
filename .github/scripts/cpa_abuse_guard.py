@@ -210,6 +210,7 @@ def update_guard_environment(url):
     values = {
         "CPA_ABUSE_URL": url,
         "CPA_ABUSE_SECRET": derive("service"),
+        "CPA_REMOTE_KEY_AUTH": "1",
     }
     for key, value in values.items():
         api.render("/services/" + api.SERVICE + "/env-vars/" + urllib.parse.quote(key, safe=""),
@@ -363,6 +364,21 @@ def verify_client_keys(state):
     return counts[0]
 
 
+def verify_optional_test_client():
+    """Check one extra client key only when an operator set CPA_TEST_CLIENT_KEY.
+
+    CI leaves the variable unset, and that case stays silent. The value is never printed.
+    """
+    key = os.environ.get("CPA_TEST_CLIENT_KEY", "").strip()
+    if not key:
+        return
+    try:
+        api.models(key)
+    except (AssertionError, RuntimeError, urllib.error.URLError, ValueError):
+        raise RuntimeError("Post-deploy test client models check failed") from None
+    print("CPA_TEST_CLIENT_VERIFIED=1", flush=True)
+
+
 def deploy():
     expected = os.environ.get("CPA_EXPECTED_COMMIT", "").strip()
     if len(expected) != 40 or any(character not in "0123456789abcdef" for character in expected):
@@ -387,6 +403,7 @@ def deploy():
         verify_health_exemption()
         verify_enforcement()
         model_count = verify_client_keys(state)
+        verify_optional_test_client()
         health, _ = status_request(api.RENDER_ORIGIN + "/healthz")
         if health != 200:
             raise RuntimeError("Render health check failed after guard deployment")
