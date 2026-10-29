@@ -1,5 +1,53 @@
 # LeonMinGod 网站更新记录
 
+## v54 号池按厂商分组的模型与凭证双视图已上线
+
+主站 `f1872be0-f97d-4890-9800-0f2f3eb19cf5`，可回滚到 v53
+`71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`；入口保持
+`51a33be8-6ca4-4b4f-886f-613bfea996b0`，11 个绑定及原 GAME_RUNS/KV 不变。
+[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915716462) ·
+[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915906456)。
+
+按用户指定参考站的白色卡片方式重做 `/model-status/`，保留手动深色切换。
+顶部为厂商标签，下面可切换“凭证与额度 / 模型状态”；厂商、视图、搜索和状态筛选
+均在当前数据上完成，不额外请求 CPA。凭证显示服务端脱敏邮箱、稳定匿名编号、真实
+累计成功/失败、20 个十分钟请求桶、套餐、续期、Credit、额度进度及重置时间。
+用户本轮明确允许显示脱敏邮箱，覆盖此前只显示编号的约束；完整邮箱、文件名、路径、
+管理密钥与上游账号 ID 仍不下发浏览器。
+
+Codex 额度由 CPA v8 `requests/api-call` 代理固定 GET `wham/usage` 获取；支持
+Claude/Antigravity 固定额度读取，未提供接口的厂商明确提示。浏览器只传匿名账号 ID，
+无法指定上游 URL、auth_index 或 Header。禁用凭证不会自动探测；手动只读查询不启停
+账号。模型卡片显示凭证可用性及实际采样历史；当前未接入单模型请求次数、TTFT、
+输出速度，明确标注未采集，不把账号统计或其他站的数字冒充单模型结果。
+
+刷新：页面最少间隔 60 秒、隐藏即暂停；服务端使用现有 GAME_RUNS 中独立命名对象
+`pool-status-cache-v2` 协调同一 CPA 号池的 60 秒共享缓存与并发合并，原游戏对象
+不受影响，无新迁移。模型清单与每凭证主动额度缓存 5 分钟。失败递增退避；管理
+401/403 全局退避 15 分钟，避免重复错误登录引发 CPA 自身封禁。旧快照最多用
+10 分钟并标 stale。号池快照不再逐次写 KV，避免 30 秒刷新耗尽免费 KV 写额度。
+
+Cloudflare Free zone 新增只读路径 skip 白名单，规则
+`8ff6e55df6f04e189212bef11389cadc`，ruleset `06e73eeed2ba48e5bcaba19d606bddbc`。
+只匹配主域名/www 的 GET/HEAD `/model-status`、`/model-status/*`、
+`/api/pool-status`、`/api/pool-status/quota`，跳过自定义后续规则、受管 WAF/限流及
+BIC/securityLevel/uaBlock。其他路径、POST、领取与模型 API 不在本规则范围。
+CPA 的 v8 管理读取原已由异常 IP 中间件豁免；页面请求不进入领取/游戏限频。
+WAF 修改前后备份在 `verification/v54-waf-*.json`。回滚白名单时仅停用/删除此条规则，
+不要覆盖其后新增的业务规则。
+
+49 项测试通过，含真实 Workers 并发、重定向阻断、隐私脱敏、5 分钟额度闸门和
+15 分钟鉴权退避。320/393 手机与 1440 电脑模拟数据浏览器交互通过；公网 393/1440
+真实数据双视图、厂商切换及额度窗口通过，无脚本异常；切换过程中只读一次状态。
+公网连续 30 次读取全部 200、无挑战、共用一份快照。真实 Codex 5 小时与周额度及
+重置时间均取得；主域名/www 新页面/脚本/样式匹配，Render healthz 200。
+源码与证据见 `src/pool-status.js`、`src/pool-quota.js`、`verification/v54-*.json`。
+
+本轮未重部署 Render、未启停凭证、未轮换客户端 Key。首页 v7、令牌 v5、默认流光、
+CC Switch、邮箱/落款和游戏 v8 全部保留。新增手动 `pool-audit` 仅输出脱敏额度契约
+与汇总，成功记录 [40912892424](https://github.com/928886540/cloudflare_temp_email/actions/runs/40912892424)。
+
+
 ## 2026-10-29：v53 CC Switch、真实号池与星海四幅背景已上线
 
 北京时间 23:48 发布：主站 `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`；入口仍为

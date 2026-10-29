@@ -1,6 +1,6 @@
 # LeonMinGod 网站与 CPA 运维交接
 
-截至 **2026 年 10 月 29 日，北京时间**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
+截至 **v54 本轮线上核对**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
 
 接手先读本文、`sites/leonmingod-star-night/README.md` 和 `WEBSITE_UPDATE_CN.md`，再读取 Cloudflare 与 Render 的实时状态。源码已经在 GitHub；不要重新从旧 Windows 目录或旧首页镜像覆盖生产。
 
@@ -10,16 +10,16 @@
 
 - **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
 - 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
-- 本轮功能提交：`4a11c52`；Workers 运行修复与回归测试：`9d9d699`；固定发布版本提交：`e904012`。验收记录见 `verification/v53-*.json`。
-- 本次 Windows 工作树：`D:\apiWorkSpace\leonmingod-ccswitch`，本地分支 `codex/ccswitch-import-20261029`，修改已推到上述维护分支。后续环境路径可能变化，以 GitHub 为准。
+- 本轮功能提交：`47e061f`；固定发布版本：`8584692`。验收记录见 `verification/v54-*.json`。
+- 当前云端工作树：`/workspace/cf-notification-fix-site`，本地分支 `codex/pool-dashboard-v54-20261030`，修改已推到维护分支。此前 Windows CC Switch 工作树属于 v53；后续以 GitHub 为准。
 - `/workspace/cloudflare_temp_email`、`/workspace/leonmingod-home` 和原 Windows `D:\apiWorkSpace\leonmingod-home` 不能仅凭目录名视为最新代码。
 
 | 项目 | 当前状态 |
 | --- | --- |
-| 网站功能版本 | v53，2026-10-29 23:48 北京时间发布 |
+| 网站功能版本 | v54，号池双视图与统一限频已上线 |
 | 主 Worker | `leonmingod-home` |
-| 主 Worker 活动版本 | `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`，100% 流量 |
-| 稳定旧版回滚参考 | v52 加号池 Secret：`8f82f2d1-4a50-4d5f-be05-2ac71c7e484d`；回滚后无 v53 功能 |
+| 主 Worker 活动版本 | `f1872be0-f97d-4890-9800-0f2f3eb19cf5`，100% 流量 |
+| 直接回滚版本 | v53：`71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`；回滚后无本轮号池重做 |
 | 入口 Worker | `leonmingod-free-token` |
 | 入口活动版本 | `51a33be8-6ca4-4b4f-886f-613bfea996b0` |
 | 图片版本 | 首页 **v7**、令牌入口 **v5**，各有电脑与手机独立构图 |
@@ -42,11 +42,37 @@
 
 ## 2. 现在的产品流程
 
+### 号池双视图与刷新规则（v54）
+
+`/model-status/` 已按参考站重做为白色卡片（可切深色），按厂商标签切换，支持
+“模型状态 / 凭证与额度”两种视图。凭证邮箱在服务端脱敏后返回，并显示真实套餐、
+5 小时/周额度进度条、重置时间、成功/失败与最近请求记录。完整邮箱、auth_index、
+文件名、路径和管理凭据均不公开。模型视图展示真实可调度性与采样历史；单模型
+请求数、TTFT 和输出速度尚未采集，不以账号总计或其他站数据代替。
+
+页面每 60 秒更新、后台暂停。现有 GAME_RUNS 命名空间中独立的
+`pool-status-cache-v2` 对象统一缓存并合并请求，未改游戏规则或存储命名空间。
+模型清单/主动额度最少 5 分钟查一次，自动额度只查启用的受支持凭证；管理鉴权错误
+全局退避 15 分钟，失败快照可用 10 分钟并显示过期状态。不再用 KV 每 30 秒写快照。
+`GET /api/pool-status/quota?id=匿名编号` 只能触发固定厂商只读额度请求，客户端不能
+指定上游 URL、凭证索引或请求头。
+
+CF Free zone 已新增只读 skip 白名单：规则 `8ff6e55df6f04e189212bef11389cadc`，
+ruleset `06e73eeed2ba48e5bcaba19d606bddbc`。仅主域名/www 的 GET/HEAD 看板路径
+`/model-status`、`/model-status/*`、`/api/pool-status` 和 `/api/pool-status/quota`。
+跳过相关 WAF/限流/安全挑战，其他业务和 POST 不在例外内；CPA 管理读取本来就不计
+入异常 IP 统计。备份与回滚依据：`verification/v54-waf-before.json`、
+`v54-waf-after.json`。只停用这条白名单，不要覆盖其他规则。
+
+49 项测试、本地三尺寸交互、公网两尺寸真实双视图及 30 次连续读取通过；未部署
+Render、未启停账号、未换 Key。不要读取 `/observability/usage/queue` 充当无副作用
+统计接口：该 GET 会弹出队列记录。额外遥测需另行设计。
+
 ### CC Switch 与号池状态（v53）
 
 领取结果、已保存 Key 与游戏奖励弹窗均有「接入 CC Switch」。选择 Claude/Codex/Gemini、配置名称与必填主模型；模型使用当前展示的个人 Key 实时读取 CPA `/v1/models`，保留完整别名。提交才创建 `ccswitch://v1/import`，默认不自动启用。必须安装 CC Switch；本轮用模拟模型和虚构 Key 验证弹窗及协议，未在桌面实际唤起原生应用。
 
-令牌入口的「号池状态」进入 `/model-status/`，无需登录 CPA。`/api/pool-status` 在服务端只读 CPA v8 凭证元数据和模型注册列表，返回匿名账号、状态、冷却及已观测额度；不返回邮箱、文件名、路径、管理密钥或凭据内容。最多缓存 30 秒，暂时失败可标注并展示十分钟内旧快照。注册/调度状态不等于实测每个模型生成成功，未上报额度显示「未观测」。
+令牌入口的「号池状态」进入 `/model-status/`，无需登录 CPA。`/api/pool-status` 在服务端只读 CPA v8 凭证元数据和模型注册列表，返回匿名账号、状态、冷却及已观测额度；不返回完整邮箱、文件名、路径、管理密钥或凭据内容；v54 仅返回脱敏邮箱。v53 最多缓存 30 秒；当前已改为上方 v54 的统一 60 秒缓存和五分钟额度闸门。注册/调度状态不等于实测每个模型生成成功，未上报额度显示「未观测」。
 
 本轮实时验收：13 个账号、3 可用、10 停用、35 个模型，完整覆盖、非旧缓存；数字随运行变化。新增 `CPA_STATUS_MANAGEMENT_KEY` 只通过 `pool-setup` 安装于 Cloudflare，Render 配置、部署和 OAuth 文件未修改。Workers 服务端 fetch 必须用 `redirect: 'manual'` 并拒绝非 2xx；`redirect: 'error'` 不受支持。已有真实 Workers 运行回归测试防止再次退回该配置。
 
@@ -176,7 +202,7 @@ Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支
 | `public/home-hero-desktop-v7.webp`、`public/home-hero-mobile-v7.webp` | 当前首页原图 |
 | `public/free-token/claim/index.html`、`public/free-token/claim-v10.mjs`、`public/free-token/claim-compact-v5.css` | 义父、落款、邮箱、已存 Key 与 CC Switch |
 | `public/free-token/ccswitch-v1.mjs`、`public/free-token/ccswitch-v1.css` | 实时模型选择及 CC Switch 导入 |
-| `public/model-status/`、`src/pool-status.js` | 公开匿名号池看板及服务端状态读取 |
+| `public/model-status/`、`src/pool-status.js`、`src/pool-quota.js` | 厂商标签、双视图、脱敏邮箱、真实额度及统一限频 |
 | `public/free-token/verify/index.html`、`public/free-token/verify-v2.mjs`、`public/free-token/verify-v2.css` | 独立验证码与跨浏览器复制页 |
 | `public/free-token/verify-flow-v2.mjs` | 本地记忆、跨标签流程、邮件片段、验证码请求 |
 | `public/free-token/game/app-v17.mjs`、`public/free-token/game/engine-v8.mjs`、`public/free-token/game/physics-v8.mjs` | 当前游戏客户端及共享规则 |
@@ -218,7 +244,7 @@ gh workflow run leonmingod-star-night.yaml \
 
 7. 确认 run 真正 success 与活动版本一致；核对主域名/www 的页面、版本化脚本、图片和必要 API。记录版本、回滚点、验证范围，避免把模拟领取写成真实邮件端到端验收。
 
-当前 `release.json.baseline_parent` 仍是发布前 `098a0fa1-11ea-4d04-9030-05da0fd66a0e`，这是 v53 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
+当前 `release.json.baseline_parent` 仍是发布前 `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`，这是 v54 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
 
 回滚优先把主 Worker 切回已知版本，保留当前存储和凭据。若同时修改过转发，则按原流程先恢复入口、再恢复主站。回滚会同时恢复旧代码/图片/流程；不要为单独改一张图回滚整个系统。任何 Secret 更新也可能生成新的 Worker 版本，后续发布要重新读取。
 
@@ -261,6 +287,12 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 
 ## 10. 验证证据与后续事项
 
+v54 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915716462) ·
+[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915906456)：49 项
+测试、公网真实额度/双视图及 30 次读取验证通过。证据 `verification/v54-*.json`。
+
+以下 v53、v52 为此前验收记录：
+
 v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40904919911) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40905233018)：45 项测试通过，包括真实 Workers fetch；7 个页面上线、主域名/www 共 46 项资源比对通过；号池 API 均 200，无私人字段，Render healthz 200，领取仍开放。公网桌面/手机检查覆盖首页、令牌页、CC Switch 和号池；393×580 短屏无整页横向溢出。未发送真实邮件、未轮换 Key、未部署 Render。证据见 `verification/v53-public-resources.json`、`v53-browser-layout.json`、`v53-*.jpg`；原生生图提示词、尺寸与文件见 `verification/star-sea-v53-artwork.json`。
 
 以下为上轮 v52 邮箱流程验收记录：
@@ -287,7 +319,7 @@ v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/4090
 
 ```text
 请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
-网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v53，首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入和匿名号池状态页。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v54，首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
 保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
 先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
 用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。
