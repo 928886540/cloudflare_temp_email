@@ -3,6 +3,7 @@ import * as previous from '../public/free-token/game/engine-v7.mjs';
 const { RULES, createGame, installEntropy } = current;
 const engineFor = run => run.rulesVersion === 7 ? previous : run.rulesVersion === 8 ? current : null;
 import { json, hash, sessionIdentity, verifyHuman, rateLimit } from './security.js';
+import { issueClaimGrant } from './claim-grant.js';
 export { json } from './security.js';
 export const MAX_AGE = 180000;
 const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
@@ -56,6 +57,17 @@ export class GameRun {
   constructor(ctx) { this.ctx = ctx; }
   async fetch(request) {
     const path = new URL(request.url).pathname, body = await request.json();
+    if (path === '/mutex') {
+      const now = Date.now();
+      const current = await this.ctx.storage.get('mutex');
+      if (body.op === 'end') {
+        if (current?.token === body.token) await this.ctx.storage.delete('mutex');
+        return json(200, { ok: true });
+      }
+      if (current && current.token !== body.token && now - current.at < 15000) return json(409, { error: 'busy' });
+      await this.ctx.storage.put('mutex', { at: now, token: body.token });
+      return json(200, { ok: true });
+    }
     if (path === '/limit') {
       const now = Date.now();
       const response = await this.ctx.storage.transaction(async txn => {
@@ -139,5 +151,10 @@ export async function handleGame(request, env) {
   const response = await env.GAME_RUNS.get(env.GAME_RUNS.idFromName(body.id)).fetch('https://game.internal/' + action, { method: 'POST', body: JSON.stringify({ sessionHash: await hash(secret + ':' + await sessionIdentity(request)), receipt: body.receipt, frame: body.frame, trace: body.trace }) });
   const result = await response.json();
   if (!response.ok || action === 'progress') return json(response.status, result);
-  return json(200, { ...result, baseUrl: 'https://cpa-dhke.onrender.com/v1', apiKey: env.FREE_TOKEN_RENDER_KEY, label: 'Leon🌙 破阵奖励' });
+  const issued = await issueClaimGrant(request, env, 'game');
+  if (!issued) return json(503, { error: '通关已记录，但领取暂时不可用，请稍后重试。' });
+  const headers = new Headers();
+  headers.append('Set-Cookie', issued.cookie);
+  headers.append('Set-Cookie', `lmg_game=; HttpOnly; SameSite=Strict; Path=/api/free-token/game; Max-Age=0${url.protocol === 'https:' ? '; Secure' : ''}`);
+  return json(200, { ...result, claimable: true }, headers);
 }

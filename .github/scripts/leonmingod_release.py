@@ -27,19 +27,37 @@ game = [b for b in bindings if b['name'] == 'GAME_RUNS']
 assert len(game) == 1 and game[0]['class_name'] == 'GameRun' and game[0]['namespace_id'] == '2dffacc2783647f0bec81263501de5e1'
 has_reward_binding = any(b['name'] == 'FREE_TOKEN_RENDER_KEY' and b['type'] == 'secret_text' for b in bindings)
 assert any(b['name'] == 'ASSETS' and b['type'] == 'assets' for b in bindings)
+kv = [b for b in bindings if b['name'] == 'KV' and b['type'] == 'kv_namespace']
+assert len(kv) == 1 and kv[0].get('namespace_id') == '1b02d139375045f7a7d5ce2d994abd2c', 'Live KV binding is missing'
 
-def claim():
+def current_status():
+    return json.loads(api.request(api.ORIGIN + '/api/free-token/status', headers={'Cache-Control':'no-cache'})[2])
+
+status_before = current_status()
+assert status_before.get('open') is has_reward_binding, 'Public availability differs from the live reward binding'
+
+def released_claim_has_no_shared_key():
+    """The oath endpoint must no longer hand out FREE_TOKEN_RENDER_KEY."""
     try:
         data = api.site_claim()
     except RuntimeError as error:
-        if str(error).endswith('HTTP 503'):
-            return None
+        text = str(error)
+        if text.endswith(('HTTP 400', 'HTTP 403', 'HTTP 503')):
+            return
         raise
-    assert data['baseUrl'] == api.RENDER_ORIGIN + '/v1' and data['apiKey']
-    return data
+    assert data.get('ok') is True and data.get('next') == 'email'
+    assert not data.get('apiKey'), 'Oath endpoint still returns a shared key'
 
-before_claim = claim()
-assert bool(before_claim) == has_reward_binding, 'Claim state differs from the live reward binding'
+def released_board_and_hero():
+    board = json.loads(api.request(api.ORIGIN + '/api/leaderboard')[2])
+    assert isinstance(board.get('entries'), list) and 'email' not in json.dumps(board) and 'apiKey' not in json.dumps(board)
+    for path in ('/home-hero-desktop-v6.webp', '/home-hero-mobile-v6.webp', '/image', '/img', '/bg', '/wallpaper.png'):
+        try:
+            api.request(api.ORIGIN + path)
+        except RuntimeError as error:
+            assert str(error).endswith('HTTP 404'), path
+            continue
+        raise AssertionError('Retired illustration still served: ' + path)
 mode = os.environ.get('WEBSITE_MODE', 'stage')
 
 def activate_forwarder():
@@ -107,7 +125,7 @@ if mode == 'stage':
         chunks += [(f'--{boundary}\r\nContent-Disposition: {disposition}\r\nContent-Type: {mime}\r\n\r\n').encode(),payload,b'\r\n']
     chunks.append(('--'+boundary+'--\r\n').encode())
     version=api.cf(worker+'/versions','POST',b''.join(chunks),{'Content-Type':'multipart/form-data; boundary='+boundary})
-    assert api.active(worker) == parent and claim() == before_claim, 'Stage unexpectedly affected production'
+    assert api.active(worker) == parent and current_status() == status_before, 'Stage unexpectedly affected production'
     result={'mode':'stage','version_id':version['id'],'production_unchanged':True,'parent_version':parent,'entrance_version':entrance,'module_sha256':hashlib.sha256((root/'dist/index.js').read_bytes()).hexdigest(),'resources_summary':{'bindings':[{'name':b['name'],'type':b['type']} for b in version.get('resources',{}).get('bindings',[])],'assets_config':version.get('resources',{}).get('assets',{}).get('config')}}
 elif mode == 'publish':
     version_id=os.environ['WEBSITE_VERSION']
@@ -124,7 +142,7 @@ elif mode == 'publish':
         print('ACTIVATED_SITE='+json.dumps({'parent':api.active(worker),'entrance':entrance_after,'exports':version['resources'].get('script',{}).get('named_handlers')}),flush=True)
         for attempt in range(12):
             try:
-                for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/game/','free-token/game/index.html')]:
+                for path, local in [('/','index.html'),('/free-token/','free-token/index.html'),('/free-token/choose/','free-token/choose/index.html'),('/free-token/claim/','free-token/claim/index.html'),('/free-token/verify/','free-token/verify/index.html'),('/free-token/game/','free-token/game/index.html')]:
                     body=api.request(api.ORIGIN+path)[2].decode()
                     expected=(root/'public'/local).read_text()
                     import re
@@ -134,11 +152,10 @@ elif mode == 'publish':
                             fresh=api.request(api.ORIGIN+path+'?lmg_verify='+version_id,headers={'Cache-Control':'no-cache'})[2].decode()
                             print('PAGE_DIAGNOSTIC='+json.dumps({'path':path,'new_marker':'home-orb-v3.css' in body,'fresh_marker':'home-orb-v3.css' in fresh,'expected_bytes':len(expected),'actual_bytes':len(body),'first_difference':next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),None)}),flush=True)
                         raise AssertionError('Published page differs: '+path)
-                assert claim() == before_claim, 'Reward changed during website publication'
-                if before_claim:
-                    assert api.models(before_claim['apiKey']) > 0
+                released_claim_has_no_shared_key()
+                released_board_and_hero()
                 status = json.loads(api.request(api.ORIGIN + '/api/free-token/status')[2])
-                assert status['open'] is bool(before_claim), 'Token click availability differs from issuance state'
+                assert status['open'] is has_reward_binding, 'Token click availability differs from issuance state'
                 after=api.cf(worker+'/settings')['bindings']
                 assert {(b['name'],b['type']) for b in after} == {(b['name'],b['type']) for b in bindings}
                 assert [b for b in after if b['name']=='GAME_RUNS'] == game
@@ -147,7 +164,7 @@ elif mode == 'publish':
             except (AssertionError,RuntimeError):
                 if attempt == 11:raise
                 time.sleep(5)
-        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'same_reward_confirmed':bool(before_claim),'website_open':bool(before_claim),'issuance_state_preserved':True,'models_http':200 if before_claim else None,'game_namespace_preserved':True,'source_pages_verified':5}
+        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'shared_key_not_exposed':True,'website_open':has_reward_binding,'issuance_state_preserved':True,'game_namespace_preserved':True,'source_pages_verified':6}
     except Exception:
         if api.active('leonmingod-free-token') != entrance:
             api.cf('leonmingod-free-token/deployments','POST',{'strategy':'percentage','versions':[{'version_id':entrance,'percentage':100}],'annotations':{'workers/message':'Restore original forwarder after failed website publication'}})
