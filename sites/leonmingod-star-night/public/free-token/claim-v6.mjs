@@ -135,7 +135,7 @@ import { humanToken } from './human-v3.mjs';
     try {
       const token = await humanToken('claim_email', humanHost);
       const result = await post('/api/free-token/claim/code', { username: nameInput.value, email: emailInput.value, humanToken: token });
-      const again = '这个邮箱领过密钥：验证后会发一把新密钥，旧密钥立即失效，名字沿用原来的。';
+      const again = '这个邮箱已领取过，验证后显示你的密钥。';
       if (result.ok) {
         codeEmail = email;
         returning = Boolean(result.data.returning);
@@ -187,7 +187,7 @@ import { humanToken } from './human-v3.mjs';
         apiKey.value = result.data.apiKey;
         remember({ username: result.data.username || nameInput.value.trim(), email: emailInput.value.trim().toLowerCase(), key: result.data.apiKey, baseUrl: result.data.baseUrl });
         claimAgain.hidden = true;
-        copyStatus.textContent = result.data.replaced ? '新密钥已生效，旧密钥已失效。已保存在本浏览器，请马上复制。' : '密钥已保存在本浏览器，请马上复制。';
+        copyStatus.textContent = result.data.existing ? '这是你之前领取的密钥，已保存在本浏览器。' : result.data.replaced ? '已为你换发新密钥，旧密钥已失效。已保存在本浏览器，请马上复制。' : '密钥已保存在本浏览器，请马上复制。';
         clearInterval(timer); timer = 0;
         showStatus('');
         emailDialog.close();

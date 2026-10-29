@@ -3,9 +3,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Miniflare } from 'miniflare';
 import {
-  CODE_TTL_MS, MAX_ATTEMPTS, beginCode, completeClaim, emailKey, escapeHtml, keyRecordKey,
+  CODE_TTL_MS, MAX_ATTEMPTS, beginCode, completeClaim as rawComplete, emailKey, escapeHtml, importEncKey, keyRecordKey,
   normalizeEmail, readLeaderboard, sha256Hex, validateUsername, writeKeyStats,
 } from '../src/claim-store.js';
+
+// Test-only key (32 zero-ish bytes), never a real secret.
+const TEST_ENC_SECRET = btoa(String.fromCharCode(...Array.from({ length: 32 }, (_, i) => i)));
+const ENC = await importEncKey(TEST_ENC_SECRET);
+const completeClaim = (kv, args) => rawComplete(kv, { encKey: ENC, ...args });
 
 function memoryKv(clock = () => Date.now()) {
   const rows = new Map();
@@ -125,7 +130,7 @@ test('claim pages link to the game leaderboard and the homepage keeps the v5 cov
 test('worker issues one key by email and serves a public scoreboard', async () => {
   const mf = new Miniflare({
     modules: true, scriptPath: 'dist/index.js', compatibilityDate: '2025-04-01',
-    bindings: { RESEND_API_KEY: 'test-resend-not-a-secret', CLAIM_MAIL_FROM: 'noreply@leonmingod.com', FREE_TOKEN_TURNSTILE_SECRET: 'turnstile', FREE_TOKEN_LOCAL_TEST: 'local-test-only' },
+    bindings: { RESEND_API_KEY: 'test-resend-not-a-secret', CLAIM_MAIL_FROM: 'noreply@leonmingod.com', FREE_TOKEN_TURNSTILE_SECRET: 'turnstile', FREE_TOKEN_LOCAL_TEST: 'local-test-only', KEY_ENC_SECRET: TEST_ENC_SECRET },
     kvNamespaces: { KV: 'claim-test' },
     durableObjects: { GAME_RUNS: { className: 'GameRun', useSQLite: true } },
     serviceBindings: { ASSETS: () => new Response('missing', { status: 404 }) },
@@ -205,8 +210,8 @@ test('send limits report how long until the next send is allowed', async () => {
 
 test('claim page has one send button, a numeric one-time-code input and no verify button', async () => {
   const page = await readFile('public/free-token/claim/index.html', 'utf8');
-  const script = await readFile('public/free-token/claim-v5.mjs', 'utf8');
-  assert.match(page, /src="\/free-token\/claim-v5\.mjs"/);
+  const script = await readFile('public/free-token/claim-v6.mjs', 'utf8');
+  assert.match(page, /src="\/free-token\/claim-v6\.mjs"/);
   assert.doesNotMatch(page, /verify-code|验证并领取/);
   assert.equal((page.match(/id="send-code"/g) || []).length, 1);
   const code = page.match(/<input id="claim-code"[^>]*>/)[0];
@@ -224,7 +229,7 @@ test('a passed human check is remembered even when the send is refused, and veri
   let siteverify = 0;
   const mf = new Miniflare({
     modules: true, scriptPath: 'dist/index.js', compatibilityDate: '2025-04-01',
-    bindings: { RESEND_API_KEY: 'test-resend-not-a-secret', CLAIM_MAIL_FROM: 'noreply@leonmingod.com', FREE_TOKEN_TURNSTILE_SECRET: 'turnstile', FREE_TOKEN_LOCAL_TEST: 'local-test-only' },
+    bindings: { RESEND_API_KEY: 'test-resend-not-a-secret', CLAIM_MAIL_FROM: 'noreply@leonmingod.com', FREE_TOKEN_TURNSTILE_SECRET: 'turnstile', FREE_TOKEN_LOCAL_TEST: 'local-test-only', KEY_ENC_SECRET: TEST_ENC_SECRET },
     kvNamespaces: { KV: 'claim-human-test' },
     durableObjects: { GAME_RUNS: { className: 'GameRun', useSQLite: true } },
     serviceBindings: { ASSETS: () => new Response('missing', { status: 404 }) },
@@ -274,13 +279,16 @@ test('a passed human check is remembered even when the send is refused, and veri
   } finally { await mf.dispose(); }
 });
 
-test('a claimed email can verify again: new key, old key revoked, name and score kept', async () => {
+test('a legacy claim (no ciphertext) is replaced once: new key, old key revoked, name and score kept', async () => {
   let now = 1_800_000_000_000;
   const kv = memoryKv(() => now);
   const email = 'lost@example.com';
   assert.equal((await issue(kv, email, '原名', now, '111111')).ok, true);
   const first = await completeClaim(kv, { email, code: '111111', now });
   const oldHash = await sha256Hex(first.apiKey);
+  // Simulate a record written before encryption existed.
+  const legacy = JSON.parse(await kv.get(emailKey(email))); delete legacy.key_enc;
+  await kv.put(emailKey(email), JSON.stringify(legacy));
   assert.equal((await issue(kv, 'other@example.com', 'Other', now, '444444')).ok, true);
   await completeClaim(kv, { email: 'other@example.com', code: '444444', now });
   await writeKeyStats(kv, oldHash, 7, new Date(now).toISOString());
@@ -319,14 +327,87 @@ test('a claimed email can verify again: new key, old key revoked, name and score
   await writeKeyStats(kv, newHash, 3, new Date(now).toISOString());
   board = await readLeaderboard(kv);
   assert.deepEqual(board.entries[0], { username: '原名', score: 10 });
-  // A third claim chains the history and still leaves one active key.
+  // After the legacy replacement the record has a ciphertext: the next claim shows the same key.
+  assert.ok(pointer.key_enc?.ct);
   now += 120_000;
   await issue(kv, email, 'x', now, '333333');
   const third = await completeClaim(kv, { email, code: '333333', now });
-  const thirdHash = await sha256Hex(third.apiKey);
-  assert.equal(JSON.parse(await kv.get(keyRecordKey(newHash))).status, 'revoked');
-  const chained = JSON.parse(await kv.get('leaderboard:index')).entries.find(entry => entry.username === '原名');
-  assert.deepEqual(chained.prior_hashes, [oldHash, newHash]);
-  assert.equal(chained.key_sha256, thirdHash);
-  assert.deepEqual((await readLeaderboard(kv)).entries[0], { username: '原名', score: 10 });
+  assert.equal(third.existing, true);
+  assert.equal(third.apiKey, second.apiKey);
+  assert.equal(JSON.parse(await kv.get(keyRecordKey(newHash))).status, 'active');
+  assert.deepEqual(JSON.parse(await kv.get('leaderboard:index')).entries.find(entry => entry.username === '原名').prior_hashes, [oldHash]);
+});
+
+test('a returning email sees its original key: no rotation, no revoke, KV has only hash + ciphertext', async () => {
+  let now = 1_900_000_000_000;
+  const kv = memoryKv(() => now);
+  const email = 'same@example.com';
+  await issue(kv, email, '同一个', now, '111111');
+  const first = await completeClaim(kv, { email, code: '111111', now });
+  assert.equal(first.ok, true);
+  const hash = await sha256Hex(first.apiKey);
+  const pointer = JSON.parse(await kv.get(emailKey(email)));
+  assert.equal(pointer.key_sha256, hash);
+  assert.equal(pointer.key_enc.v, 1);
+  assert.equal(Buffer.from(pointer.key_enc.iv, 'base64').length, 12);
+  for (const code of ['222222', '333333']) {
+    now += 120_000;
+    const sent = await issue(kv, email, '改名无效', now, code);
+    assert.equal(sent.returning, true);
+    assert.match((await completeClaim(kv, { email, code: '000000', now })).error, /验证码错误/);
+    const again = await completeClaim(kv, { email, code, now });
+    assert.equal(again.ok, true);
+    assert.equal(again.existing, true);
+    assert.equal(again.replaced, undefined);
+    assert.equal(again.apiKey, first.apiKey, 'the same key every time');
+    assert.equal(again.username, '同一个');
+  }
+  assert.equal(JSON.parse(await kv.get(keyRecordKey(hash))).status, 'active');
+  assert.equal(kv.entries().filter(([key]) => key.startsWith('key:')).length, 1, 'no new key minted');
+  assert.equal(JSON.parse(await kv.get(emailKey(email))).key_enc.ct, pointer.key_enc.ct);
+  const stored = kv.entries().map(([, row]) => row.value).join('\n');
+  assert.equal(stored.includes(first.apiKey), false, 'no plaintext key in KV');
+  assert.equal(stored.includes(first.apiKey.slice(6)), false);
+  // Two claims of different emails never share an IV.
+  await issue(kv, 'two@example.com', 'Two', now, '444444');
+  await completeClaim(kv, { email: 'two@example.com', code: '444444', now });
+  assert.notEqual(JSON.parse(await kv.get(emailKey('two@example.com'))).key_enc.iv, pointer.key_enc.iv);
+});
+
+test('ciphertext is bound to the secret and the email; failures never rotate; switched-off keys stay off', async () => {
+  let now = 1_950_000_000_000;
+  const kv = memoryKv(() => now);
+  const email = 'bound@example.com';
+  await issue(kv, email, 'Bound', now, '111111');
+  const first = await completeClaim(kv, { email, code: '111111', now });
+  const hash = await sha256Hex(first.apiKey);
+  // No secret configured: verify is unavailable rather than issuing a key without ciphertext.
+  now += 120_000;
+  await issue(kv, email, 'Bound', now, '222222');
+  assert.equal((await rawComplete(kv, { email, code: '222222', now })).status, 503);
+  // Wrong secret: cannot decrypt, answer 503, nothing rotated.
+  const other = await importEncKey(btoa(String.fromCharCode(...new Uint8Array(32).fill(7))));
+  const wrong = await rawComplete(kv, { email, code: '222222', now, encKey: other });
+  assert.equal(wrong.status, 503);
+  assert.equal(JSON.parse(await kv.get(emailKey(email))).key_sha256, hash);
+  assert.equal(JSON.parse(await kv.get(keyRecordKey(hash))).status, 'active');
+  // Ciphertext copied to another email does not open there.
+  const victim = 'victim@example.com';
+  await issue(kv, victim, 'Victim', now, '555555');
+  await completeClaim(kv, { email: victim, code: '555555', now });
+  const victimPointer = JSON.parse(await kv.get(emailKey(victim)));
+  await kv.put(emailKey(victim), JSON.stringify({ ...victimPointer, key_enc: JSON.parse(await kv.get(emailKey(email))).key_enc }));
+  now += 120_000;
+  await issue(kv, victim, 'Victim', now, '666666');
+  assert.equal((await completeClaim(kv, { email: victim, code: '666666', now })).status, 503);
+  // A switched-off key is not shown again and not replaced.
+  await kv.put(keyRecordKey(hash), JSON.stringify({ ...JSON.parse(await kv.get(keyRecordKey(hash))), status: 'revoked' }));
+  now += 120_000;
+  await issue(kv, email, 'Bound', now, '777777');
+  const off = await completeClaim(kv, { email, code: '777777', now });
+  assert.equal(off.status, 403);
+  assert.equal(off.apiKey, undefined);
+  assert.equal(JSON.parse(await kv.get(emailKey(email))).key_sha256, hash);
+  assert.equal(await importEncKey('short'), null);
+  assert.equal(await importEncKey(''), null);
 });

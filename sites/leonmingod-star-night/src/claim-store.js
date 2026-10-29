@@ -1,4 +1,6 @@
-// KV records for one unique key per verified email. Plaintext keys are never stored.
+// KV records for one unique key per verified email. Plaintext keys are never stored:
+// KV holds the key's SHA-256 and an AES-GCM ciphertext (KEY_ENC_SECRET) so a returning
+// email can be shown its original key again.
 export const CODE_TTL_SECONDS = 600;
 export const CODE_TTL_MS = CODE_TTL_SECONDS * 1000;
 export const MAX_ATTEMPTS = 5;
@@ -48,6 +50,29 @@ export function mintKey(bytes = crypto.getRandomValues(new Uint8Array(32))) {
   for (const byte of bytes) binary += String.fromCharCode(byte);
   const body = btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '');
   return `sk-lm-${body}`;
+}
+
+// AES-GCM with a random 96-bit IV; the email is bound in as additional data.
+export async function importEncKey(secret) {
+  if (typeof secret !== 'string' || !secret.trim()) return null;
+  let raw;
+  try { raw = Uint8Array.from(atob(secret.trim()), char => char.charCodeAt(0)); } catch { return null; }
+  if (raw.length !== 32) return null;
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+}
+const toB64 = bytes => { let binary = ''; for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte); return btoa(binary); };
+const fromB64 = text => Uint8Array.from(atob(text), char => char.charCodeAt(0));
+const sealAad = email => new TextEncoder().encode(`lmg-key-enc-v1\n${email}`);
+export async function sealKey(encKey, email, apiKey) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: sealAad(email) }, encKey, new TextEncoder().encode(apiKey));
+  return { v: 1, iv: toB64(iv), ct: toB64(ct) };
+}
+export async function openKey(encKey, email, sealed) {
+  if (!encKey || sealed?.v !== 1 || typeof sealed.iv !== 'string' || typeof sealed.ct !== 'string') return null;
+  try {
+    return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(sealed.iv), additionalData: sealAad(email) }, encKey, fromB64(sealed.ct)));
+  } catch { return null; }
 }
 
 export function emailKey(email) { return `email:${email}`; }
@@ -108,7 +133,8 @@ async function globalThrottle(kv, now) {
 }
 
 export async function beginCode(kv, { email, username, now, ipHash, code }) {
-  // An email that already has a key may verify again to replace it (lost key recovery).
+  // An email that already has a key may verify again to see that key (or, for records
+  // from before encryption, to get a replacement).
   const returning = Boolean(await kv.get(emailKey(email)));
   const existing = await readJson(kv, codeKey(email));
   if (existing && now < existing.sent_at + RESEND_COOLDOWN_MS && now < existing.expires_at) {
@@ -137,7 +163,8 @@ export async function cancelCode(kv, email) {
   await kv.delete(codeKey(email));
 }
 
-export async function completeClaim(kv, { email, code, now }) {
+export async function completeClaim(kv, { email, code, now, encKey }) {
+  if (!encKey) return { ok: false, status: 503, error: '验证暂时不可用，请稍后再试。' };
   const pending = await readJson(kv, codeKey(email));
   if (!pending || now >= pending.expires_at) return { ok: false, status: 400, resend: true, error: '验证码已失效，请重新发送。' };
   const expected = await sha256Hex(`lmg-claim-code-v1\n${email}\n${code}`);
@@ -151,24 +178,41 @@ export async function completeClaim(kv, { email, code, now }) {
     return { ok: false, status: 400, wrong_code: true, attempts_left: MAX_ATTEMPTS - attempts, error: '验证码错误，请重新输入。' };
   }
   const previous = await readJson(kv, emailKey(email));
+  if (previous?.key_sha256) {
+    const oldHash = previous.key_sha256;
+    const oldRecord = await readJson(kv, keyRecordKey(oldHash));
+    // A key that was switched off stays off: no re-display and no replacement.
+    if (oldRecord && oldRecord.status !== 'active') {
+      await kv.delete(codeKey(email));
+      return { ok: false, status: 403, error: '这个邮箱的密钥已停用，不能再次领取。' };
+    }
+    if (previous.key_enc) {
+      // Returning email: show the same key again. Never rotate a key we can decrypt.
+      const stored = await openKey(encKey, email, previous.key_enc);
+      if (!stored || await sha256Hex(stored) !== oldHash) return { ok: false, status: 503, error: '暂时无法取回密钥，请稍后再试。' };
+      await kv.delete(codeKey(email));
+      return { ok: true, apiKey: stored, username: previous.username, existing: true };
+    }
+  }
   const apiKey = mintKey();
   const keyHash = await sha256Hex(apiKey);
+  const keyEnc = await sealKey(encKey, email, apiKey);
   const createdAt = new Date(now).toISOString();
   if (previous?.key_sha256) {
-    // Replace: revoke the old key first so at most one key per email is ever active,
-    // keep the original name, and carry the leaderboard entry over to the new hash.
+    // Record from before encryption (no ciphertext): replace once. Revoke the old key first
+    // so at most one key per email is active, keep the name, carry the leaderboard entry.
     const username = previous.username;
     const oldHash = previous.key_sha256;
     const oldRecord = await readJson(kv, keyRecordKey(oldHash));
     if (oldRecord) await kv.put(keyRecordKey(oldHash), JSON.stringify({ ...oldRecord, status: 'revoked', revoked_at: createdAt, replaced_by: keyHash }));
     await kv.put(keyRecordKey(keyHash), JSON.stringify({ username, email, status: 'active', created_at: createdAt }));
-    await kv.put(emailKey(email), JSON.stringify({ ...previous, key_sha256: keyHash, username, rotated_at: createdAt }));
+    await kv.put(emailKey(email), JSON.stringify({ ...previous, key_sha256: keyHash, username, rotated_at: createdAt, key_enc: keyEnc }));
     await replaceInBoard(kv, { username, oldHash, keyHash, createdAt: previous.created_at || createdAt, updatedAt: createdAt });
     await kv.delete(codeKey(email));
     return { ok: true, apiKey, username, replaced: true };
   }
   const username = pending.username;
-  await kv.put(emailKey(email), JSON.stringify({ key_sha256: keyHash, username, created_at: createdAt }));
+  await kv.put(emailKey(email), JSON.stringify({ key_sha256: keyHash, username, created_at: createdAt, key_enc: keyEnc }));
   await kv.put(keyRecordKey(keyHash), JSON.stringify({ username, email, status: 'active', created_at: createdAt }));
   await rememberClaim(kv, { username, keyHash, createdAt });
   await kv.delete(codeKey(email));

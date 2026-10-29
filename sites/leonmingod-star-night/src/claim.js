@@ -1,5 +1,5 @@
 import { json, verifyHuman, rateLimit } from './security.js';
-import { RESEND_COOLDOWN_MS, beginCode, cancelCode, completeClaim, normalizeEmail, readLeaderboard, sha256Hex, validateUsername } from './claim-store.js';
+import { RESEND_COOLDOWN_MS, beginCode, cancelCode, completeClaim, importEncKey, normalizeEmail, readLeaderboard, sha256Hex, validateUsername } from './claim-store.js';
 
 const BASE_URL = 'https://cpa-dhke.onrender.com/v1';
 const FROM_DEFAULT = 'noreply@leonmingod.com';
@@ -53,7 +53,7 @@ async function sendCode(env, email, code, returning = false) {
         from,
         to: [email],
         subject: 'Leon🌙 贵宾密钥验证码',
-        text: `你的验证码是 ${code}，10 分钟内有效。${returning ? '这个邮箱领过密钥，验证后会发一把新密钥，旧密钥立即失效。' : ''}如果不是你本人操作，请忽略这封邮件。`,
+        text: `你的验证码是 ${code}，10 分钟内有效。${returning ? '这个邮箱已领取过，验证后显示你的密钥。' : ''}如果不是你本人操作，请忽略这封邮件。`,
       }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -129,13 +129,15 @@ export async function handleClaimVerify(request, env) {
   // per-code attempt limit (MAX_ATTEMPTS, then a new human-checked send) and the rate limit.
   const limited = await rateLimit(verificationRequest, env, 'claim');
   if (limited) return limited;
+  const encKey = await importEncKey(env.KEY_ENC_SECRET);
+  if (!encKey) return reply(503, { error: '验证暂时不可用，请稍后再试。' });
   return withClaimLock(env, email, async () => {
-    const result = await completeClaim(env.KV, { email, code: body.code, now: Date.now() });
+    const result = await completeClaim(env.KV, { email, code: body.code, now: Date.now(), encKey });
     if (!result.ok) {
       const { ok, status, apiKey, username, ...details } = result;
       return reply(status, details);
     }
-    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username, replaced: Boolean(result.replaced) });
+    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username, replaced: Boolean(result.replaced), existing: Boolean(result.existing) });
   });
 }
 
