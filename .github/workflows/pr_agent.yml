@@ -1,9 +1,11 @@
 name: Codium PR Agent
 
+# This reviewer is intentionally manual. It previously ran on every PR with an
+# unconfigured model credential, failed, posted a bot comment, and generated
+# duplicate failure emails. Keep it available for future repair without letting
+# it affect normal pull requests.
 on:
-  pull_request:
-    types: [opened, reopened, ready_for_review]
-  issue_comment:
+  workflow_dispatch:
 jobs:
   pr_agent_job:
     if: ${{ github.event.sender.type != 'Bot' }}
