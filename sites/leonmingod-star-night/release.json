@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "71cc78b8-48bc-4d9a-ac7b-a5cd73b20386",
+  "baseline_parent": "f1872be0-f97d-4890-9800-0f2f3eb19cf5",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v54: provider tabs, masked credential quota cards, model cards and globally throttled read-only pool status",
+  "message": "v55: real per-model execution counts and streaming metrics, persistent totals, GPT-first common ordering",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -84,7 +84,9 @@
     "model-status/status-v1.css",
     "model-status/status-v1.mjs",
     "model-status/status-v2.mjs",
-    "model-status/status-v2.css"
-  ],
-  "staged_version": "f1872be0-f97d-4890-9800-0f2f3eb19cf5"
+    "model-status/status-v2.css",
+    "model-status/order-v1.mjs",
+    "model-status/status-v3.mjs",
+    "model-status/status-v3.css"
+  ]
 }

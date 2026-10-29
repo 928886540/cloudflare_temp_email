@@ -1,5 +1,9 @@
 """Read-only quota contract audit; output only aggregate/public-safe fields."""
 import json
+import os
+import time
+import urllib.error
+import urllib.request
 import yaml
 import yifu_key_api as api
 
@@ -30,5 +34,39 @@ if account:
         result['windows'] = {k: {field: v.get(field) for field in ['used_percent', 'limit_window_seconds', 'reset_at', 'reset_after_seconds']} for k, v in rate.items() if k in ['primary_window', 'secondary_window'] and isinstance(v, dict)}
         credits = body.get('credits') or {}
         result['credits'] = {k: credits.get(k) for k in ['balance', 'unlimited', 'has_credits']}
+if os.environ.get('POOL_VERIFY_MODEL_USAGE') == 'true':
+    stats = json.loads(api.management_request(key, 'observability/usage/models'))
+    assert stats.get('schema') == 1 and stats.get('enabled') is True
+    requested = 'gpt-6.1-sol'
+    count = lambda data: sum(row['success'] + row['failed'] for row in data['models'] if row['id'] == requested)
+    original = count(stats)
+    config = yaml.safe_load(api.render('/services/' + api.SERVICE + '/secret-files/config.yaml')['content'])
+    clients = (config.get('access') or {}).get('api-keys', config.get('api-keys'))
+    assert isinstance(clients, list) and clients and isinstance(clients[0], str)
+    print('::add-mask::' + clients[0])
+    payload = json.dumps({'model': requested, 'messages': [{'role': 'user', 'content': 'Reply only OK.'}], 'max_tokens': 4, 'stream': True}).encode()
+    request = urllib.request.Request(api.RENDER_ORIGIN + '/v1/chat/completions', data=payload, headers={
+        'Authorization': 'Bearer ' + clients[0], 'Content-Type': 'application/json', 'User-Agent': 'LeonMinGod-model-statistics-verification/1.0'})
+    try:
+        with urllib.request.urlopen(request, timeout=90) as response:
+            http_status = response.status
+            while response.read(16384):
+                pass
+    except urllib.error.HTTPError as error:
+        http_status = error.code
+        error.close()
+    for _ in range(20):
+        current = json.loads(api.management_request(key, 'observability/usage/models'))
+        assert current['instance_id'] == stats['instance_id'], 'CPA restarted during verification'
+        if count(current) > original:
+            break
+        time.sleep(.5)
+    assert count(current) > original, 'Completed model execution was not counted'
+    repeated = json.loads(api.management_request(key, 'observability/usage/models'))
+    assert count(repeated) >= count(current), 'Reading statistics consumed records'
+    assert api.request(api.RENDER_ORIGIN + '/healthz')[0] == 200
+    result['model_usage_verification'] = {'model': requested, 'http_status': http_status,
+        'before': original, 'after': count(current), 'non_destructive': True,
+        'rows': len(current['models']), 'fields': sorted(current['models'][0]) if current['models'] else []}
 assert before == api.latest_deploy()['id'], 'Deployment changed during read-only audit'
 print('POOL_AUDIT=' + json.dumps(result, ensure_ascii=False))

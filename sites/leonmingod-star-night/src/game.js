@@ -124,7 +124,14 @@ export class GameRun {
       return json(200, response);
     });
   }
-  async alarm() { await this.ctx.storage.deleteAll(); }
+  async alarm() {
+    if (await this.ctx.storage.get('pool-status-kind') === 'pool') {
+      this.pool ||= new PoolStatusCoordinator(this.ctx, this.env);
+      await this.pool.alarm();
+      return;
+    }
+    await this.ctx.storage.deleteAll();
+  }
 }
 
 export async function handleGame(request, env) {

@@ -1,4 +1,7 @@
 import { passiveQuota, parseQuota, quotaProbe } from './pool-quota.js';
+import { attachModelUsage, mergeModelUsage } from './pool-metrics.js';
+import { loadPoolCache, savePoolCache } from './pool-storage.js';
+import { compareModels, compareAccounts, compareProviders } from '../public/model-status/order-v1.mjs';
 
 const ORIGIN='https://cpa-dhke.onrender.com';
 export const REFRESH_MS=60_000, QUOTA_MS=300_000, STALE_MS=600_000;
@@ -58,9 +61,9 @@ export async function summarizePool(files,inventory,secret,now=Date.now()){
     }
   }
   return {schema:1,updated_at:new Date(now).toISOString(),stale:false,totals,successful,failed,stats_scope:'account',model_metrics_available:false,
-    models_partial:inventory.some(x=>!Array.isArray(x)),providers:[...providers.values()].sort((a,b)=>b.total-a.total),
-    models:[...modelMap.values()].map(row=>({...row,providers:[...row.providers]})).sort((a,b)=>a.id.localeCompare(b.id)),
-    accounts:accounts.sort((a,b)=>a.provider.localeCompare(b.provider)||a.id.localeCompare(b.id))};
+    models_partial:inventory.some(x=>!Array.isArray(x)),providers:[...providers.values()].sort((a,b)=>compareProviders(a.provider,b.provider)),
+    models:[...modelMap.values()].map(row=>({...row,providers:[...row.providers].sort(compareProviders)})).sort(compareModels),
+    accounts:accounts.sort(compareAccounts)};
 }
 
 async function management(path,env,fetcher,signal,body){
@@ -80,9 +83,13 @@ const publicError=error=>[401,403].includes(error?.status)?'authorization_unavai
 export class PoolStatusCoordinator{
   constructor(ctx,env,{fetcher=(url,options)=>fetch(url,options),clock=()=>Date.now()}={}){
     this.ctx=ctx;this.env=env;this.fetcher=fetcher;this.clock=clock;this.pending=null;this.quotaPending=new Map();this.files=[];this.filesAt=0;
-    this.ready=ctx.storage.get('pool-status-v2').then(value=>{this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};});
+    this.ready=loadPoolCache(ctx.storage).then(value=>{this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};});
   }
-  persist(){return this.ctx.storage.put('pool-status-v2',this.cache);}
+  persist(){
+    const json=JSON.stringify(this.cache);
+    this.persistQueue=(this.persistQueue||Promise.resolve()).catch(()=>{}).then(()=>savePoolCache(this.ctx.storage,json));
+    return this.persistQueue;
+  }
   async credentials(signal){
     const now=this.clock();if(this.files.length&&now-this.filesAt<REFRESH_MS)return this.files;
     if(now<(this.cache.managementBlockedUntil||0))throw Object.assign(new Error('Management backoff'),{status:401});
@@ -119,6 +126,34 @@ export class PoolStatusCoordinator{
     this.quotaPending.set(id,job);
     try{return await job;}finally{this.quotaPending.delete(id);}
   }
+  async modelMetrics(){
+    if(this.metricsPending)return this.metricsPending;
+    const now=this.clock();
+    if(now<(this.cache.metricsNext||0)||now<(this.cache.managementBlockedUntil||0))return;
+    this.metricsPending=(async()=>{
+      this.cache.metricsNext=now+REFRESH_MS;await this.persist();
+      try{
+        const usage=await management('observability/usage/models',this.env,this.fetcher,AbortSignal.timeout(12_000));
+        this.cache.modelUsage=mergeModelUsage(this.cache.modelUsage,usage,now);
+        if(this.cache.snapshot)attachModelUsage(this.cache.snapshot,this.cache.modelUsage,now);
+      }catch(error){
+        this.cache.metricsNext=now+([401,403].includes(error.status)?900_000:REFRESH_MS);
+        if(error.managementAuth)this.cache.managementBlockedUntil=now+900_000;
+      }
+      await this.persist();
+    })().finally(()=>{this.metricsPending=null;});
+    return this.metricsPending;
+  }
+  async schedule(){
+    if(this.scheduled)return;
+    await this.ctx.storage.put('pool-status-kind','pool');
+    await this.ctx.storage.setAlarm(Math.max(this.clock()+REFRESH_MS,this.cache.metricsNext||0,this.cache.managementBlockedUntil||0));
+    this.scheduled=true;
+  }
+  async alarm(){
+    await this.ready;
+    try{await this.modelMetrics();}finally{this.scheduled=false;await this.schedule();}
+  }
   async collect(){
     const now=this.clock();this.cache.next=now+REFRESH_MS;await this.persist();
     try{
@@ -138,6 +173,8 @@ export class PoolStatusCoordinator{
       }));
       if(fatal)throw fatal;
       const snapshot=await summarizePool(files,inventory,this.env.FREE_TOKEN_OPS_SECRET,now);
+      await this.modelMetrics();
+      attachModelUsage(snapshot,this.cache.modelUsage,now);
       // Automatic quota probes are limited to active supported accounts. Disabled
       // accounts stay disabled and never create recurring upstream quota traffic.
       const candidates=files.map((file,i)=>({file,id:ids[i]})).filter(x=>accountState(x.file,now)==='ready'&&quotaProbe(x.file)).slice(0,4);
@@ -163,6 +200,7 @@ export class PoolStatusCoordinator{
   reply(status,body){return Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Pool-Abuse-Exempt':'read-only-status'}});}
   async fetch(request){
     await this.ready;const {kind,id,peek}=await request.json();
+    if(!peek)await this.schedule();
     if(kind==='quota'){
       if(!/^[a-f0-9]{8}$/.test(id||''))return this.reply(400,{error:'账号编号不正确。'});
       if(peek){const row=this.cache.quotas[id];return this.reply(row?200:404,row?{id,quota:{...row.value,next_refresh_at:new Date(row.next).toISOString()}}:{error:'额度尚未读取。'});}

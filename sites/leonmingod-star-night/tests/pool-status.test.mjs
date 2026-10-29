@@ -14,10 +14,12 @@ const usage={email:'never-return@example.com',account_id:'secret-account-id',pla
 function harness(){
  let clock=now;const rows=new Map(),calls=[];let status=200,innerStatus=200;
  const env={CPA_STATUS_MANAGEMENT_KEY:'management-test-placeholder',FREE_TOKEN_OPS_SECRET:'ops-test-placeholder'};
- const ctx={storage:{get:async k=>structuredClone(rows.get(k)),put:async(k,v)=>rows.set(k,structuredClone(v))}};
+ const storage={get:async k=>structuredClone(rows.get(k)),put:async(k,v)=>{if(typeof k==='object'){for(const [name,value] of Object.entries(k))rows.set(name,structuredClone(value));}else rows.set(k,structuredClone(v));},transaction:async callback=>callback(storage),setAlarm:async stamp=>rows.set('alarm',stamp)};
+ const ctx={storage};
  const fetcher=async(url,options)=>{
   calls.push({url,options});assert.equal(options.headers.Authorization,'Bearer management-test-placeholder');assert.equal(options.redirect,'manual');
   if(status!==200)return new Response('private upstream error',{status});
+  if(url.endsWith('/observability/usage/models'))return Response.json({schema:1,scope:'upstream_executions',instance_id:'11111111-1111-4111-8111-111111111111',started_at:new Date(now).toISOString(),enabled:true,models:[]});
   if(url.endsWith('/requests/api-call')){const payload=JSON.parse(options.body);assert.equal(payload.method,'GET');assert.equal(payload.url,'https://chatgpt.com/backend-api/wham/usage');return Response.json({status_code:innerStatus,body:JSON.stringify(usage)});}
   assert.equal(options.method,'GET');assert(!url.includes('/download'));
   return Response.json(url.includes('/models?')?{models:[{id:url.includes('disabled')?'gemini-test':'gpt-test'}]}:{files});
@@ -56,8 +58,8 @@ test('twenty concurrent reads coalesce globally; retries cannot bypass snapshot 
  const body=await responses[0].json();assert.equal(body.models[0].history.length,1);
  const id=body.accounts.find(x=>x.state==='ready').id;
  for(let i=0;i<10;i++)await h.send({kind:'quota',id});
- assert.equal(h.calls.length,5);
- h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,6);
+ assert.equal(h.calls.length,6);
+ h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,8);
  h.advance(300000);await h.send({kind:'quota',id});assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,2);
 });
 
@@ -66,6 +68,16 @@ test('bad management auth backs off for fifteen minutes and cannot be retried th
  for(let i=0;i<20;i++)await h.send({kind:'snapshot'});assert.equal(h.calls.length,1);
  await assert.rejects(h.send({kind:'quota',id:await accountId(files[0],h.env.FREE_TOKEN_OPS_SECRET)}));assert.equal(h.calls.length,1);
  h.advance(900001);h.setStatus(200);assert.equal((await h.send({kind:'snapshot'})).status,200);
+});
+
+test('background model collection is coalesced, persists without visitors and leaves credential/quota traffic idle',async()=>{
+ const h=harness();await h.send({kind:'snapshot'});assert.equal(await h.ctx.storage.get('pool-status-kind'),'pool');
+ const before=h.calls.length;h.advance(61000);
+ await Promise.all([h.coordinator.alarm(),h.coordinator.modelMetrics(),h.coordinator.modelMetrics()]);
+ assert.equal(h.calls.length,before+1);assert(h.calls.at(-1).url.endsWith('/observability/usage/models'));
+ const replacement=new PoolStatusCoordinator(h.ctx,h.env,{fetcher:()=>{throw new Error('HEAD must not fetch');},clock:()=>now+62000});
+ const result=await replacement.fetch(new Request('https://internal/pool-status',{method:'POST',body:JSON.stringify({kind:'snapshot',peek:true})}));
+ assert.equal(result.status,200);assert.equal((await result.json()).model_metrics_available,true);
 });
 
 test('failed quota preserves the old value and disabled credentials do not produce automatic upstream probes',async()=>{
@@ -90,9 +102,9 @@ test('real Workers runtime coalesces reads and rejects redirects without forward
   assert.equal((await blocked.dispatchFetch('https://leonmingod.com/api/pool-status')).status,503);assert.equal(calls,1);
   assert.equal((await blocked.dispatchFetch('https://leonmingod.com/api/pool-status')).status,503);assert.equal(calls,1);
  }finally{await blocked.dispose();}
- const fresh=new Miniflare({...options,outboundService:request=>{calls++;return Response.json(request.url.includes('/models?')?{models:[{id:'runtime-model'}]}:{files:[{name:'test.json',provider:'xai',status:'active'}]});}});
+ const fresh=new Miniflare({...options,outboundService:request=>{calls++;if(request.url.endsWith('/observability/usage/models'))return Response.json({schema:1,scope:'upstream_executions',instance_id:'11111111-1111-4111-8111-111111111111',started_at:new Date(now).toISOString(),enabled:true,models:[]});return Response.json(request.url.includes('/models?')?{models:[{id:'runtime-model'}]}:{files:[{name:'test.json',provider:'xai',status:'active'}]});}});
  try{
-  const responses=await Promise.all(Array.from({length:12},()=>fresh.dispatchFetch('https://leonmingod.com/api/pool-status')));assert(responses.every(r=>r.status===200));assert.equal(calls,3);
+  const responses=await Promise.all(Array.from({length:12},()=>fresh.dispatchFetch('https://leonmingod.com/api/pool-status')));assert(responses.every(r=>r.status===200));assert.equal(calls,4);
   const body=await responses[0].json();assert.equal(body.models[0].id,'runtime-model');assert.equal(body.totals.ready,1);assert.equal(body.models[0].history.length,1);
   assert.equal((await fresh.dispatchFetch('https://leonmingod.com/api/free-token/claim/code',{method:'POST',headers:{Origin:'https://leonmingod.com','Content-Type':'application/json'},body:JSON.stringify({email:'any@example.com'})})).status,503);
  }finally{await fresh.dispose();}
