@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v6.mjs"></script>
+  <script type="module" src="/free-token/claim-v7.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <p id="input-hint" class="input-hint">不多不少，就这两个字。</p>
           <button class="primary claim-button" id="open-confirm" type="submit" disabled>确认称呼 <span aria-hidden="true">→</span></button>
         </form>
-        <p class="fine-print">确认后即可查看 API 地址与贵宾密钥，支持一键复制。</p>
+        <p class="fine-print">确认后验证邮箱，即可查看 API 地址与贵宾密钥，支持一键复制。</p>
       </div>
     </section>
     <a class="claim-back" href="/free-token/choose/">← 换一种拿法</a>
@@ -384,9 +384,9 @@ document.addEventListener('DOMContentLoaded', function() {
   </dialog>
 
   <dialog id="email-dialog" class="modal" aria-labelledby="email-title">
-    <p class="eyebrow">专属密钥 · 只显示一次</p>
+    <p class="eyebrow">专属密钥 · 凭邮箱可找回</p>
     <h2 id="email-title" tabindex="-1">留下名字和邮箱</h2>
-    <p class="modal-description">验证码寄到邮箱。一个邮箱只有一把密钥；领取过的，再验证一次就能看到你的密钥。</p>
+    <p class="modal-description">验证码寄到邮箱。一个邮箱对应一个密钥，丢了可用同一邮箱找回。</p>
     <label class="credential-label" for="claim-name">名字 <span>1-20 字</span></label>
     <div class="input-wrap"><input id="claim-name" name="username" type="text" maxlength="40" autocomplete="nickname" required></div>
     <label class="credential-label" for="claim-email">邮箱</label>

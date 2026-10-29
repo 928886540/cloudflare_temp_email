@@ -210,8 +210,8 @@ test('send limits report how long until the next send is allowed', async () => {
 
 test('claim page has one send button, a numeric one-time-code input and no verify button', async () => {
   const page = await readFile('public/free-token/claim/index.html', 'utf8');
-  const script = await readFile('public/free-token/claim-v6.mjs', 'utf8');
-  assert.match(page, /src="\/free-token\/claim-v6\.mjs"/);
+  const script = await readFile('public/free-token/claim-v7.mjs', 'utf8');
+  assert.match(page, /src="\/free-token\/claim-v7\.mjs"/);
   assert.doesNotMatch(page, /verify-code|验证并领取/);
   assert.equal((page.match(/id="send-code"/g) || []).length, 1);
   const code = page.match(/<input id="claim-code"[^>]*>/)[0];

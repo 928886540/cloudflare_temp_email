@@ -184,12 +184,12 @@ export async function completeClaim(kv, { email, code, now, encKey }) {
     // A key that was switched off stays off: no re-display and no replacement.
     if (oldRecord && oldRecord.status !== 'active') {
       await kv.delete(codeKey(email));
-      return { ok: false, status: 403, error: '这个邮箱的密钥已停用，不能再次领取。' };
+      return { ok: false, status: 403, error: '这个邮箱的密钥已停用，无法找回。' };
     }
     if (previous.key_enc) {
       // Returning email: show the same key again. Never rotate a key we can decrypt.
       const stored = await openKey(encKey, email, previous.key_enc);
-      if (!stored || await sha256Hex(stored) !== oldHash) return { ok: false, status: 503, error: '暂时无法取回密钥，请稍后再试。' };
+      if (!stored || await sha256Hex(stored) !== oldHash) return { ok: false, status: 503, error: '暂时无法找回密钥，请稍后再试。' };
       await kv.delete(codeKey(email));
       return { ok: true, apiKey: stored, username: previous.username, existing: true };
     }

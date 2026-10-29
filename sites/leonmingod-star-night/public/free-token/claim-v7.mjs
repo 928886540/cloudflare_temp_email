@@ -187,7 +187,7 @@ import { humanToken } from './human-v3.mjs';
         apiKey.value = result.data.apiKey;
         remember({ username: result.data.username || nameInput.value.trim(), email: emailInput.value.trim().toLowerCase(), key: result.data.apiKey, baseUrl: result.data.baseUrl });
         claimAgain.hidden = true;
-        copyStatus.textContent = result.data.existing ? '这是你之前领取的密钥，已保存在本浏览器。' : result.data.replaced ? '已为你换发新密钥，旧密钥已失效。已保存在本浏览器，请马上复制。' : '密钥已保存在本浏览器，请马上复制。';
+        copyStatus.textContent = result.data.existing ? '这是你之前领取的密钥，已保存在本浏览器。' : result.data.replaced ? '已为你换发新密钥，旧密钥已失效。以后用这个邮箱找回的就是这把，已保存在本浏览器。' : '密钥已保存在本浏览器。丢了可用同一邮箱找回。';
         clearInterval(timer); timer = 0;
         showStatus('');
         emailDialog.close();
