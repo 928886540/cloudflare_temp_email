@@ -477,7 +477,7 @@ working branch instead of recreating the site.
 | Post-cutover parent source SHA-256 | `1bfd639be2c04996d8e7fac80c2ab42e085acc5200f416b02a2904adc749562a` |
 
 Entrance routes on the apex and www hosts cover `/`, `/index.html`, `/free-token`,
-`/free-token/*`, both `home-hero-*-v4.webp` images, and `/home-scene-v4.js`. The original
+`/free-token/*` and `/home-scene-v4.js`. The original homepage illustration is no longer part of the site source. The original
 parent serves the claim API. Treat these as separate deployment targets.
 
 `src/site-original.js` is a **historical backup** containing the old URL and binding.

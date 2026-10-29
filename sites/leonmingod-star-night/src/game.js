@@ -56,6 +56,17 @@ export class GameRun {
   constructor(ctx) { this.ctx = ctx; }
   async fetch(request) {
     const path = new URL(request.url).pathname, body = await request.json();
+    if (path === '/mutex') {
+      const now = Date.now();
+      const current = await this.ctx.storage.get('mutex');
+      if (body.op === 'end') {
+        if (current?.token === body.token) await this.ctx.storage.delete('mutex');
+        return json(200, { ok: true });
+      }
+      if (current && current.token !== body.token && now - current.at < 15000) return json(409, { error: 'busy' });
+      await this.ctx.storage.put('mutex', { at: now, token: body.token });
+      return json(200, { ok: true });
+    }
     if (path === '/limit') {
       const now = Date.now();
       const response = await this.ctx.storage.transaction(async txn => {
@@ -139,5 +150,5 @@ export async function handleGame(request, env) {
   const response = await env.GAME_RUNS.get(env.GAME_RUNS.idFromName(body.id)).fetch('https://game.internal/' + action, { method: 'POST', body: JSON.stringify({ sessionHash: await hash(secret + ':' + await sessionIdentity(request)), receipt: body.receipt, frame: body.frame, trace: body.trace }) });
   const result = await response.json();
   if (!response.ok || action === 'progress') return json(response.status, result);
-  return json(200, { ...result, baseUrl: 'https://cpa-dhke.onrender.com/v1', apiKey: env.FREE_TOKEN_RENDER_KEY, label: 'Leon🌙 破阵奖励' });
+  return json(200, { ...result, claimable: true, baseUrl: 'https://cpa-dhke.onrender.com/v1', label: 'Leon🌙 破阵奖励' });
 }

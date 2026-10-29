@@ -212,7 +212,7 @@ source `verification/*v3.json` and `artwork-v6.json`; versions below are histori
 
 Following real play feedback, v3 reduces shields to two and increases hazard speed and later double-sword probability. Duration remains 30 seconds with 16 jade. Browser/server share `engine-v3.mjs`; the browser uses a fresh `app-v3.mjs` URL. In-flight v1/v2 runs retain their original replay. The same regular bot profile won 20% of 160 runs versus 52.5% previously; this is offline calibration only.
 
-Native image_gen also refreshed all four adult-character posters with more exposed shoulders, a deeper neckline and a fuller figure, retaining night scenery, pose, hand anatomy and lettering. New assets are `home-hero-*-v6.webp` and `free-token/welcome-*-v4.webp`; choice backgrounds use `choose-v2.css`. Original artwork and older game scripts remain available.
+Native image_gen also refreshed the adult-character posters with more exposed shoulders, a deeper neckline and a fuller figure, retaining night scenery, pose, hand anatomy and lettering. Token posters are `free-token/welcome-*-v4.webp`; choice backgrounds use `choose-v2.css`. The homepage illustration has since been removed from the site source and must not be republished. Original token artwork and older game scripts remain available.
 
 ## Current release: dedicated choices and trial v2 (2026-10-25 16:40 UTC)
 
