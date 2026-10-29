@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script src="/free-token/token-passage-v1.js" defer></script>
   <link rel="stylesheet" href="/free-token/style.css?v=3">
-  <script type="module" src="/free-token/claim-v3.mjs"></script>
+  <script type="module" src="/free-token/claim-v8.mjs"></script>
 <style id="free-token-compact-layout">
 
 #token-fluid { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; opacity: .92; mix-blend-mode: screen; filter: saturate(1.2); transition: opacity .45s; }
@@ -264,6 +264,17 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 .skill-route small { display:block; margin-top:6px; color:#b5c8b5; font-size:10px; }
 .refusal .skill-route { margin-top:20px; }
 @media(max-width:740px){.skill-route{margin-bottom:15px;padding:11px 12px;font-size:12px;}.ritual{padding-top:16px}.gift-art{padding-top:4px;padding-bottom:3px}}
+#email-dialog .send-row { grid-template-columns: 1fr; margin-top: 18px; }
+#email-dialog .send-row .primary { width: 100%; font-variant-numeric: tabular-nums; }
+#email-dialog .claim-human { margin-top: 12px; }
+#email-dialog .claim-human:empty { display: none; }
+#email-dialog .copy-status { text-align: left; }
+.claim-again-row { margin: 10px 0 0; text-align: center; }
+.claim-again { padding: 4px 6px; color: #9fbfae; background: none; border: 0; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.claim-again:hover { color: #e6ca96; }
+.saved-key-row { margin: 9px 0 0; text-align: center; }
+.saved-key-button { border: 0; padding: 5px 8px; color: #b9cdbf; background: none; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.saved-key-button:hover { color: #f1ddb0; }
 </style><script>
 document.addEventListener('DOMContentLoaded', function() {
   function exitToOrigin() {
@@ -276,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 自动选中输入框 (Autofocus + Focus)
   function focusOathInput() {
-    if (document.documentElement.classList.contains('token-arrival')) return;
+    if (document.documentElement.classList.contains('token-arrival') || document.querySelector('dialog[open]')) return;
     var input = document.getElementById('oath-input');
     if (input) {
       input.focus();
@@ -336,7 +347,8 @@ document.addEventListener('DOMContentLoaded', function() {
           <p id="input-hint" class="input-hint">不多不少，就这两个字。</p>
           <button class="primary claim-button" id="open-confirm" type="submit" disabled>确认称呼 <span aria-hidden="true">→</span></button>
         </form>
-        <p class="fine-print">确认后即可查看 API 地址与贵宾密钥，支持一键复制。</p>
+        <p class="fine-print">确认后绑定邮箱，即可领取专属 API Key；以后可用同一邮箱找回。</p>
+        <p class="saved-key-row"><button id="show-saved-key" class="saved-key-button" type="button" hidden>查看本浏览器保存的 API Key</button></p>
       </div>
     </section>
     <a class="claim-back" href="/free-token/choose/">← 换一种拿法</a>
@@ -360,15 +372,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <dialog id="credentials-dialog" class="modal credentials" aria-labelledby="credentials-title">
     <button id="close-credentials" class="close" type="button" aria-label="关闭密钥弹窗">×</button>
-    <p class="eyebrow">见面礼 · 请查收</p>
-    <h2 id="credentials-title" tabindex="-1" autofocus>这份礼，收好。</h2>
-    <p class="modal-description">Leon🌙 贵宾密钥</p>
+    <p class="eyebrow">专属 API KEY · 请妥善保管</p>
+    <h2 id="credentials-title" tabindex="-1" autofocus>领取成功</h2>
+    <p id="credentials-description" class="modal-description">这把 API Key 已与邮箱绑定，可用同一邮箱找回。</p>
     <label class="credential-label" for="base-url">接口地址 <span>Base URL</span></label>
     <div class="copy-row"><input id="base-url" readonly aria-label="接口地址"><button id="copy-url" class="copy-button" type="button">复制地址</button></div>
-    <label class="credential-label" for="api-key">贵宾密钥 <span>API Key</span></label>
-    <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="贵宾密钥" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制密钥</button></div>
+    <label class="credential-label" for="api-key">专属 API Key</label>
+    <div class="copy-row key-row"><textarea id="api-key" readonly rows="2" aria-label="专属 API Key" spellcheck="false"></textarea><button id="copy-key" class="copy-button" type="button">复制 Key</button></div>
     <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+    <p class="claim-again-row"><button id="claim-again" class="claim-again" type="button">换个邮箱领取</button></p>
+  </dialog>
+
+  <dialog id="email-dialog" class="modal" aria-labelledby="email-title">
+    <p class="eyebrow">最后一步 · 验证归属</p>
+    <h2 id="email-title" tabindex="-1">绑定邮箱</h2>
+    <p class="modal-description">邮箱只用于验证身份和找回同一把 API Key，不会显示在页面上。</p>
+    <label class="credential-label" for="claim-email">邮箱地址</label>
+    <div class="input-wrap"><input id="claim-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
+    <div class="dialog-actions send-row"><button id="send-code" class="primary" type="button">发送验证码</button></div>
+    <div id="claim-human" class="claim-human" hidden></div>
+    <p class="copy-status">发送后会进入独立验证页面；120 秒后可以重新发送。</p>
+    <p id="email-error" class="error" role="alert" hidden></p>
   </dialog>
 
 </body>
