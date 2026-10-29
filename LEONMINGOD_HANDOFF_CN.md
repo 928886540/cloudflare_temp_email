@@ -1,0 +1,278 @@
+# LeonMinGod 网站与 CPA 运维交接
+
+截至 **2026 年 10 月 29 日，北京时间**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
+
+接手先读本文、`sites/leonmingod-star-night/README.md` 和 `WEBSITE_UPDATE_CN.md`，再读取 Cloudflare 与 Render 的实时状态。源码已经在 GitHub；不要重新从旧 Windows 目录或旧首页镜像覆盖生产。
+
+## 1. 项目与当前线上状态
+
+网站仓库：<https://github.com/928886540/cloudflare_temp_email>
+
+- **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
+- 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
+- 当前功能代码提交：`2d3bb75003cb0632b786a93776f0546e02e6b2ed`；固定发布版本提交：`86db800dabd97e63aa6c5cbcaa901ee68a6d6894`；本轮验收记录提交：`c78c84e1fb5e9ddae89bb032bff2011dc45a92db`。
+- 本次云端工作树：`/workspace/cf-notification-fix-site`，本地分支 `codex/email-convenience-v52-20261029`，修改已推到上述维护分支。后续环境路径可能变化，以 GitHub 为准。
+- `/workspace/cloudflare_temp_email`、`/workspace/leonmingod-home` 和原 Windows `D:\apiWorkSpace\leonmingod-home` 不能仅凭目录名视为最新代码。
+
+| 项目 | 当前状态 |
+| --- | --- |
+| 网站功能版本 | v52，2026-10-29 16:15 北京时间发布 |
+| 主 Worker | `leonmingod-home` |
+| 主 Worker 活动版本 | `968904cd-207b-4691-863c-d63cc4487640`，100% 流量 |
+| 直接回滚版本 | v51：`76953781-1d5b-43ff-a91c-d3f01ace76f8` |
+| 入口 Worker | `leonmingod-free-token` |
+| 入口活动版本 | `51a33be8-6ca4-4b4f-886f-613bfea996b0` |
+| 首页图片版本 | **v6**，电脑与手机都已恢复 |
+| 游戏规则版本 | v8，实时协议 live-v1；与网站 v52、图片 v6 是不同编号 |
+| 网站领取状态 | open；点击令牌进入原动画与选择页 |
+| 未完成 PR | 本次核对为 0；旧 PR #6 已关闭，PR #7 已合并到维护分支 |
+
+线上入口：
+
+- 首页：<https://leonmingod.com/>
+- 令牌入口：<https://leonmingod.com/free-token/>
+- 两条领取路线的选择页：<https://leonmingod.com/free-token/choose/>
+- 叫义父：<https://leonmingod.com/free-token/claim/>
+- 独立验证码页：<https://leonmingod.com/free-token/verify/>
+- 御剑破阵：<https://leonmingod.com/free-token/game/>
+- CPA Base URL：<https://cpa-dhke.onrender.com/v1>
+
+`www.leonmingod.com` 也已验收。浏览器本地保存的邮箱、落款、Key 和领取流程按 origin 隔离，不能假定主域名与 www 自动共享 localStorage。
+
+## 2. 现在的产品流程
+
+### 叫义父路线
+
+填写 **1–20 字落款/用户名** → 输入“义父” → 二次确认（显示落款）→ 填写邮箱 → 发送验证码 → 独立验证码页 → 验证成功后返回领取页展示专属 Key。
+
+落款随服务端领取资格签名，验证邮箱后保存到邮箱记录及 Key 记录。已有落款保留，原来没有落款的记录可补齐；落款变化不会轮换 Key。新页面要求落款，后端保留旧版在途客户端未传落款的兼容路径，不能误称“所有 API 请求都强制落款”。
+
+### 游戏路线
+
+令牌 → 独立选择页 → 御剑破阵 → 服务端核验通关 → 填邮箱 → 独立验证码页 → 返回游戏奖励弹窗。
+
+两条路线统一使用邮箱归属机制。**现在不是所有人领取同一把共享 Key**：每个邮箱有一把 `sk-lm-` 专属 Key，同一邮箱重新验证后找回同一把。旧版没有加密 Key 的记录首次找回会换发一次并撤销旧 Key；已停用的 Key 不会恢复。
+
+### 本地记忆与验证码便利性
+
+- 邮箱和落款单独在当前浏览器保存，不必领取成功才记住；下次预填。游戏奖励邮箱也预填。
+- 成功领取的 Key 保存在当前浏览器，可直接查看、复制。源码没有写入生产 Key。
+- 已删除结果弹窗的 **“换个邮箱领取”**，也删除了该入口清除本地 Key 的行为；不要自行恢复这个引导。
+- 验证码页保留“邮箱填错了？返回修改”，只用于纠错。
+- 单个验证码输入框使用 `autocomplete="one-time-code"`，支持六位自动验证、整段邮件粘贴提取、全角数字归一化。
+- 邮件主题与正文显示连续六位数字，并有 **“填入验证码”** 按钮。链接把验证码与邮箱放在 `#fragment`，页面读取后立即移除，不放入站点 HTTP 查询参数。
+- 相同 origin、同一浏览器的新标签页可恢复短期流程；服务端仍检查原 HttpOnly 领取资格。不同浏览器或不同邮箱只展示站内复制按钮，不发起校验、不消耗错误次数。
+- iPhone 键盘建议取决于 iOS 和接收邮件的 App；网页标准适配不等于保证所有 QQ/Gmail 客户端都弹建议。邮件客户端不能可靠运行剪贴板脚本，因此没有放假复制按钮。
+- 清理浏览器数据、换设备、无痕窗口不能保证保留上述本地记忆，需要重新验证原邮箱。
+
+### 已确定的时间与限额
+
+| 设置 | 当前值 |
+| --- | --- |
+| 验证码重发间隔 | **120 秒**，前后端与文案一致 |
+| 验证码有效期 | 10 分钟 |
+| 单个验证码错误上限 | 5 次 |
+| 领取资格 | 20 分钟，HttpOnly、Secure、SameSite、签名并绑定浏览器 |
+| Turnstile 真人凭证 | 固定 2 小时，复用且不因访问续期 |
+| 邮箱发信上限 | 每小时 3 次、每天 5 次 |
+| IP 发信上限 | 每小时 8 次、每天 20 次 |
+| 全站发信上限 | 每天 80 次 |
+
+限额源码在 `src/claim-store.js`。Turnstile 位于实际发信、游戏开局；验证码校验不再单独弹挑战。修改间隔时要同时改后端常量、返回值、前端倒计时与邮件/页面文案。
+
+## 3. Cloudflare 架构与绑定
+
+网站由 **Cloudflare Workers 托管**；Render 承载 CPA 模型 API。
+
+当前 GitHub Actions 已有 `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN`、`RENDER_API_KEY` 等 Secrets，发布优先复用现有受保护工作流，不必重新配 CF 凭据。本会话 Cloudflare/Render 插件与 gh 可用；新会话仍要确认自己的连接和权限。不要把 Render 管理 API Key 与对外模型客户端 Key 混淆。
+
+Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY` 调用；默认发件人为 `LeonMinGod <noreply@leonmingod.com>`。邮件模板随网站发布，不是一个必须另行在 Resend Dashboard 编辑的模板。
+
+`leonmingod-free-token` 保留更具体路由，通过服务绑定 `SITE → leonmingod-home` 的命名入口 **`Site`** 转发。不能改成普通默认入口，不能删除转发 Worker 或用旧页面覆盖路由。
+
+当前主 Worker 共 10 个绑定：
+
+| 绑定 | 类型与用途 |
+| --- | --- |
+| `ASSETS` | 保留的线上静态资源集合 |
+| `GAME_RUNS` | Durable Object `GameRun`；命名空间 `2dffacc2783647f0bec81263501de5e1` |
+| `KV` | KV `1b02d139375045f7a7d5ce2d994abd2c`，邮箱、加密 Key 等 |
+| `KEY_ENC_SECRET` | Key 的 AES-GCM 加密及领取资格签名相关 Secret |
+| `RESEND_API_KEY` | Resend 发信 Secret |
+| `FREE_TOKEN_TURNSTILE_SITEKEY` | 当前真人验证组件配置 |
+| `FREE_TOKEN_TURNSTILE_SECRET` | 服务端 Turnstile 校验及真人凭证相关 Secret |
+| `FREE_TOKEN_OPS_SECRET` | 私有运维验收用途，不能暴露给前端 |
+| `FREE_TOKEN_RENDER_KEY` | 旧共享 Key/当前入口开放状态仍引用的遗留 Secret |
+| `FREE_TOKEN_CPA_KEY` | 遗留 Secret，按用户要求保留 |
+
+同一 KV 在 `cpa-abuse-guard` 中绑定名为 **`KEYS`**。服务端只存 `sk-lm-` Key 的 SHA-256 与 AES-GCM 密文，不存明文；本地浏览器保存 Key 是用户便利功能。
+
+`wrangler.jsonc` 是本地描述，不是完整生产资产镜像。**不能直接 `wrangler deploy` 上传 public 替换线上 ASSETS**，否则可能丢失只有线上保留的素材。发布脚本使用 `keep_assets`、保留 Secret 和原存储命名空间。
+
+## 4. Render CPA 与 Key 类型
+
+本次通过 Render 插件实时核对：
+
+- Workspace：My Workspace，`tea-d779tahr0fns73e1h3lg`，用户已确认可使用。
+- Service：`srv-d9c4kkvavr4c73ab3sfg`，服务名 `cpa`，Singapore，free 计划，Docker。
+- 实际绑定仓库：**`https://github.com/928886540/cpa`，分支 `main`**，不是公开的 CLIProxyAPI 仓库。
+- 当前 live deploy：`dep-dbh9b30u01pc73al6ar0`。
+- 当前提交：`b93eefd35b45d967a0ad361203be152d8b973219`。
+- 启动命令：`./CLIProxyAPI --config /etc/secrets/config.yaml`；Secret File 为 `/etc/secrets/config.yaml`。
+- 健康检查：`/healthz`。自动部署目前为 yes，trigger 为 commit。
+
+### 个人 Key 与静态 Key
+
+`CPA_REMOTE_KEY_AUTH=1` 已上线：`sk-lm-` 个人 Key 通过风控 Worker 的 HMAC 授权接口校验，只传 Key 哈希；远程授权失败时拒绝，控制面不可用通常返回 503。
+
+`sk-karl-…` 等静态客户端 Key 保留本地配置校验，与网页领取独立。新增个人 Key 不需要逐把写入 Render 的静态 `api-keys`。**不能恢复成把一个共享 Key 写进前端，也不能把所有静态 Key 当作义父 Key 删除。**
+
+用户术语：
+
+- “义父 Token”就是这个免费 Token 网站。
+- “打开义父 Token 给别人用”指开放网页入口。
+- 历史“更新义父 Key”要求替换旧义父 Key 并撤销旧值，不能只新增留下旧值；现在已迁移到每邮箱专属 Key，先区分用户要撤销哪个个人 Key、旧共享 Key，还是新增独立静态 Key。
+- Karl Key 是独立永久用途，不参与网页轮换。未获明确指令不删登录凭据、其他 Key 或数据库。
+
+### CPA 部署必须保护 OAuth 登录
+
+Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支的 `leonmingod-security.yaml`：**在推送或合并 CPA main 前**先 `guard-hold` 备份当前登录/配置并暂停自动部署，再推送代码，用 `guard-deploy` 指定完整 CPA commit，部署后恢复并核验。
+
+登录文件数量以部署前实时快照为准，不能把早期 10/12/13 份当作永久基线，更不能用旧快照覆盖新账号。现有环境变量、Secret File 的其他配置、Karl Key 与其他静态 Key 都要保留。
+
+区分健康与上游额度：`healthz=200` 不代表每个模型都有可用配额。GPT 429/冷却可能来自上游 Plus 账号；重启 Render 不会补额度。先看健康、模型响应和账号状态，再决定是否需要部署。
+
+## 5. 游戏与美术约束
+
+- **45 秒、24 枚灵玉、2 点护盾、无暂停**。不要恢复拖动失焦暂停、空格/ESC 暂停或后台暂停。
+- 收集到 19 枚，即最后 5 枚开始时提高难度；不是最后 5 秒。满 24 枚后仍需存活至结算。
+- 剑墙有预兆和可到达的稳定通路，红剑不突然反向封死；不要回到必死阵。
+- 拾取范围从剑尖/剑身判断，伤害体积独立，不能退回剑柄才算拾取。
+- 金令触发 5 秒金刚罩：范围内可拾取青玉/金令，红剑被服务端移除并播放弹飞；不叠时、不回血、不算作灵玉。
+- 游戏退出返回选择页。失败保留十句带 emoji/诗句的调侃与重试/叫义父两个出口。
+- 公共说明只写通关条件，不剧透“最后五颗狂暴”；不添加“缺口一”等方框或安全区文字。
+- 服务器实时接收不可回改操作前缀、逐段提供后续随机性；不允许恢复“本地解题、等待 45 秒、一次性提交完整 trace”的旧漏洞。
+- 排行榜 UI 已移除，新领取不再写排名。历史接口/数据保留，不要未经需求重做排名。
+- 保持星夜、成人女性、当前 v6 首页、玉牌导航、完整挂绳和切页动画。首页全屏流光默认关闭，手机避免重模糊与满屏粒子。
+- 改图只用原生 `image_gen`；放大检查手指、手腕、挂绳及文字，手机功能不能依赖 hover。
+
+## 6. 主要文件
+
+下表的相对路径除特别注明外，均在 `sites/leonmingod-star-night/` 内。
+
+| 文件 | 用途 |
+| --- | --- |
+| `public/index.html` | 首页；电脑与手机的 v6 图引用均有两层，修改时同步 |
+| `public/home-hero-desktop-v6.webp`、`public/home-hero-mobile-v6.webp` | 当前首页原图 |
+| `public/free-token/claim/index.html`、`public/free-token/claim-v9.mjs`、`public/free-token/claim-compact-v5.css` | 义父、落款、邮箱、已存 Key 弹窗 |
+| `public/free-token/verify/index.html`、`public/free-token/verify-v2.mjs`、`public/free-token/verify-v2.css` | 独立验证码与跨浏览器复制页 |
+| `public/free-token/verify-flow-v2.mjs` | 本地记忆、跨标签流程、邮件片段、验证码请求 |
+| `public/free-token/game/app-v16.mjs`、`public/free-token/game/engine-v8.mjs`、`public/free-token/game/physics-v8.mjs` | 当前游戏客户端及共享规则 |
+| `public/free-token/human-v3.mjs` | 邮箱发信真人凭证复用 |
+| `src/claim.js`、`src/claim-email.js` | 领取 API、Resend HTML/纯文本邮件 |
+| `src/claim-store.js`、`src/claim-grant.js` | Key/邮箱存储、限额、领取资格与落款签名 |
+| `src/game.js`、`src/security.js` | 游戏权威核验、真人验证与限频 |
+| `src/index.js`、`src/static.js` | Worker 路由、`Site` 入口、嵌入静态资源 |
+| `release.json`、`scripts/build.mjs` | 发布基线、文件清单与构建 |
+| 仓库 `.github/scripts/leonmingod_release.py` | 带版本保护的 stage/publish 发布 |
+| 仓库 `sites/api-abuse-guard/` | 异常 IP 统计、临时封禁、个人 Key 授权 |
+
+历史脚本保留以兼容缓存，**以当前 HTML import/src 为准**。新改 JS/CSS 应使用新版本 URL，并加入 `release.json.files`，避免一年的 immutable 缓存继续加载旧内容。
+
+浏览器存储键：`lmg-claim-v1`（已领 Key）、`lmg-claim-email-v1`（邮箱）、`lmg-claim-name-v1`（落款）、`lmg-email-verify-v1`（短期流程）、`lmg-claim-result-v2`（返回结果）。不要把这些测试或导出到公开日志。
+
+## 7. 网站修改与发布步骤
+
+1. 更新维护分支并检查工作树。先核对生产三个 Worker 的活动版本、绑定；仓库中的历史版本号不能直接重跑。
+2. 本地在 `sites/leonmingod-star-night/` 运行 `npm ci`、`npm run build`、`npm test`。按变更做手机短屏与电脑浏览器验证。
+3. 新资源加入 `release.json.files`；把 `baseline_parent`、`baseline_entrance` 设置为**刚读取的实时版本**，更新 message，清除或替换上一轮 staged_version。
+4. 推送到维护分支，手动执行 stage。不要只推 main，也不要为每次例行修改新增无用 PR 或触发旧部署。
+
+```sh
+gh workflow run leonmingod-star-night.yaml \
+  --repo 928886540/cloudflare_temp_email \
+  --ref codex/free-token-home-20261024 -f mode=stage
+```
+
+5. 查看阶段测试与 `WEBSITE_RELEASE`：确认 `production_unchanged=true`，比对构建哈希和全部绑定。将新 version_id 写入 `release.json.staged_version`，提交并推送。
+6. 手动 publish 已审核的同一个版本；发布脚本会再次读实时基线，保留 ASSETS、Secret、KV、GAME_RUNS，并在验收失败时尝试回滚。
+
+```sh
+gh workflow run leonmingod-star-night.yaml \
+  --repo 928886540/cloudflare_temp_email \
+  --ref codex/free-token-home-20261024 \
+  -f mode=publish -f version_id=新阶段返回的版本ID
+```
+
+7. 确认 run 真正 success 与活动版本一致；核对主域名/www 的页面、版本化脚本、图片和必要 API。记录版本、回滚点、验证范围，避免把模拟领取写成真实邮件端到端验收。
+
+当前 `release.json.baseline_parent` 仍是 **发布前 v51**，这是 v52 发布清单，不是下次直接重跑的保护值。下次发布必须刷新；否则保护脚本应停止，不能删除断言强行发布。
+
+回滚优先把主 Worker 切回已知版本，保留当前存储和凭据。若同时修改过转发，则按原流程先恢复入口、再恢复主站。回滚会同时恢复旧代码/图片/流程；不要为单独改一张图回滚整个系统。任何 Secret 更新也可能生成新的 Worker 版本，后续发布要重新读取。
+
+## 8. 风控与异常 IP 运维
+
+Cloudflare `cpa-abuse-guard` 当前活动版本：`3700d5ea-b59f-4f13-a090-23cc95644cdd`；地址 <https://cpa-abuse-guard.928886540.workers.dev>。
+
+`KEYS` 绑定同一个邮箱 Key KV；`STATE` 为 `AbuseState`，DO 命名空间 `73670c63f6e64753b5402345406cd140`，另有 `SERVICE_SECRET`、`ADMIN_SECRET`。`POST /v1/authorize` 是 HMAC 服务间接口，不是浏览器可裸调用的公共管理入口。
+
+仓库策略：5 分钟 20 次明确异常封 1 小时；10 分钟 40 次封 24 小时；24 小时 30 次低频探测封 24 小时；24 小时第三次独立封禁升级 7 天。全部自动到期，记录保留 30 天。401/403/404/405/429/5xx 分别记录，5xx 不作为封禁证据，单次 404/429 不封；合法健康检查、管理与回调免计数。共享公网出口优先按合法 Key 隔离，避免整 IP 误伤。
+
+**区分两个故障策略**：异常 IP 控制面故障可以保持业务可用；个人 Key 远程授权故障则拒绝授权。`guard-disable` 只停止 IP 封禁，不关闭个人 Key 授权。
+
+Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Cloudflare WAF 不能保护 `onrender.com` 直连。定时任务每 10 分钟请求健康检查，但免费服务休眠、上游额度和应用故障仍要分别判断。
+
+使用维护分支的 `leonmingod-security.yaml`：
+
+| mode | 用途 |
+| --- | --- |
+| `guard-status` | 实时策略、封禁指纹与记录，不能仅靠旧文档猜已封 IP |
+| `guard-allow` / `guard-unallow` | IP 白名单添加/移除，配合 `ip` 参数 |
+| `guard-unban` | 立即解封；`reset_history=true` 才同时清掉重复触发历史 |
+| `guard-disable` / `guard-enable` | 观察/执行模式切换 |
+| `guard-hold` / `guard-deploy` | 保护 OAuth 登录的 CPA 发布 |
+
+封禁情况属于实时状态，本文不复制一份很快过时的 IP 名单。日志和普通交接只保留不可逆 IP 指纹，不记录原始凭据或请求体。
+
+## 9. GitHub Actions 与旧 Key 工具
+
+为解决反复发失败邮件：
+
+- `Codium PR Agent` 已全局设为 `disabled_manually`，主分支和维护分支都改成仅手动触发。旧模型凭据为空导致 dummy_key 鉴权失败；不要未经修复重新开启。
+- 通用 E2E 保留，纯网站目录/专用脚本改动已排除。
+- 五个旧网站工作流已去掉 push 触发：Connect Free Token to Render、Deploy Free Token entrance、Inspect homepage Cloudflare deployment、Issue and publish Yifu Token key、Stage new Render Free Token key。
+- 当前网站 stage/publish、风控工作流、中文“添加义父 Key / 移除义父 Key”仍为手动入口。真实发布失败通知保留；不要通过关掉所有检查掩盖失败。
+
+**中文 Key 工具保留不代表完全适配个人 Key 模式。** `.github/scripts/yifu_keys.py` 已识别 `{ok:true,next:'email'}`，但 add 且 publish=true 的路径仍要求领取接口返回相同共享 apiKey；不能直接把该模式当作当前“给所有邮箱同步一把 Key”的正确方案。当前个人 Key 的新增/撤销应围绕 KV 授权记录并验证 CPA 行为，不能仅改 Render 静态 Key 列表。
+
+独立静态 Key 可参考中文添加工具的 `publish=false`、`use_custom_key=true`、`key_prefix`、`suffix_digits`。实际执行前先 dry_run、检查当前分支实现及配置快照，遵循完整登录备份、保留其他 Key 的保护流程。不要执行旧版本保护值或一键清空整个 api-keys。
+
+## 10. 验证证据与后续事项
+
+本轮网站 stage：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840633936>
+
+本轮 publish：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840812582>
+
+- 本地与 GitHub 阶段 **37 项测试通过**，包括真实 SQLite、领取资格、签名落款、防覆盖、同邮箱同 Key、旧记录、错误次数与限额。
+- 本地及公网各 8 项浏览器场景通过，覆盖 393×580 手机与 1440×900 电脑、邮箱/落款记忆、整段粘贴、邮件链接、新标签页和跨浏览器复制。
+- 主域名/www 的 24 项页面、新脚本与 v6 图片和源码一致；无资格发码/校验 403、空落款 400、正常签名落款确认 200 且无共享 Key；Render healthz 200。
+- 浏览器领取响应使用模拟值；邮件服务用测试替身验证模板与请求。**本轮没有发送真实验证邮件、没有在真实 iPhone Mail 上验证系统键盘建议，也没有新增/轮换生产 Key。**
+- 证据在 `sites/leonmingod-star-night/verification/email-convenience-v52-*.json`；历史更新在同目录 `WEBSITE_UPDATE_CN.md`。
+
+后续重点：
+
+1. 个人 Key 模式下重做管理工具，清晰区分入口开放、暂停新发放、撤销指定个人 Key、轮换旧共享 Key。当前 `/status` 依赖遗留 `FREE_TOKEN_RENDER_KEY`，但邮箱发码/校验函数未直接按它拒绝；**删该 Secret 不能视为已经完整关闭个人 Key 领取，更不等于撤销已领 Key**。本次仅交接记录，未替用户关站或改该策略。
+2. v52 后端对无落款旧客户端兼容；若要全量强制，先设计旧流程迁移和相应运维探针，不能直接改坏现有 preflight。
+3. 先前报告的 grok 模型映射、max_tokens 不生效、Gmail 加号别名多领、私有运维凭证权限边界、排行榜旧数据，尚未在本轮修复；按具体需求分别复验。
+4. 旧共享 Secret/Key 和独立 Karl Key按用户原要求保留；数据库 `leonmingod-db` 没有收到删除决定。
+5. `mail.leonmingod.com` 临时邮箱验证是另一条业务线。其独立 KV/Turnstile 等配置不能套用到本免费 Token 站，也不要在本网站发布时覆盖。
+
+## 11. 给新会话的接手话术
+
+```text
+请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v52，首页图片 v6，游戏规则 v8，三者不要混淆。
+保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
+先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
+用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。
+```

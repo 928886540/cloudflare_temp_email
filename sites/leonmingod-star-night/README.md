@@ -1,5 +1,7 @@
 # LeonMinGod current star-night website
 
+Current operational handoff: [LEONMINGOD_HANDOFF_CN.md](../../LEONMINGOD_HANDOFF_CN.md). This takes precedence over archived shared-key instructions.
+
 Recovered from the production Worker/source maps and public assets on 2026-10-25. This is the current cloud maintenance source, not a complete copy of the user's original Windows directory. See [WEBSITE_UPDATE_CN.md](WEBSITE_UPDATE_CN.md) for provenance, changes, verification, and deployment details.
 
 ```sh
