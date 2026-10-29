@@ -131,7 +131,8 @@ def issue(state):
     assert state['deploy']['id'] == EXPECTED_RENDER_DEPLOY and state['deploy']['status'] == 'live'
     assert state['deploy']['commit']['id'] == EXPECTED_RENDER_COMMIT
     assert state['management'] and state['credentials'] is not None, 'Management access is needed to preserve login files'
-    assert state['claim']['baseUrl'] == api.RENDER_ORIGIN + '/v1'
+    claim_base = api.RENDER_ORIGIN + '/v1' if state['claim'] is None else state['claim']['baseUrl']
+    assert claim_base == api.RENDER_ORIGIN + '/v1'
     assert any(b['name'] == 'FREE_TOKEN_RENDER_KEY' and b['type'] == 'secret_text' for b in state['settings']['bindings'])
     before_visuals = snapshot()
     for key in state['keys']:

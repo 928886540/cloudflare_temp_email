@@ -19,15 +19,18 @@ class PublicClaimTest(unittest.TestCase):
     def test_legacy_shared_key_still_returned(self):
         data = {'baseUrl': BASE, 'apiKey': 'sk-legacy-secret'}
         self.assertEqual(self.claim(lambda: data)[0], data)
+        self.assertFalse(tool._per_user_claim)
 
     def test_per_user_flow_is_not_a_shared_key(self):
         result, output = self.claim(lambda: {'ok': True, 'next': 'email'})
         self.assertIsNone(result)
+        self.assertTrue(tool._per_user_claim)
         self.assertIn('CLAIM_FLOW=per-user', output)
 
     def test_unexpected_shape_is_not_fatal_and_hides_values(self):
         result, output = self.claim(lambda: {'apiKey': 'sk-should-not-print', 'baseUrl': 'https://x'})
         self.assertIsNone(result)
+        self.assertFalse(tool._per_user_claim)
         self.assertIn('Unexpected claim response shape', output)
         self.assertNotIn('sk-should-not-print', output)
 
@@ -35,6 +38,7 @@ class PublicClaimTest(unittest.TestCase):
         def closed():
             raise RuntimeError('POST /api/free-token/claim: HTTP 503')
         self.assertIsNone(self.claim(closed)[0])
+        self.assertFalse(tool._per_user_claim)
 
 
 class DeployVerificationTest(unittest.TestCase):
