@@ -1,8 +1,5 @@
 name: Stage new Render Free Token key
 on:
-  push:
-    branches: [codex/free-token-home-20261024]
-    paths: [.github/workflows/stage-render-free-token.yaml]
   workflow_dispatch:
 permissions:
   contents: read

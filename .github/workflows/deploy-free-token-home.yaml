@@ -1,10 +1,5 @@
 name: Deploy Free Token entrance
 on:
-  push:
-    branches: [codex/free-token-home-20261024]
-    paths:
-      - sites/free-token-home/**
-      - .github/workflows/deploy-free-token-home.yaml
   workflow_dispatch:
 permissions:
   contents: read

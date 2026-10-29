@@ -1,5 +1,23 @@
 # LeonMinGod 网站更新记录
 
+## 2026-10-29：GitHub Actions 降噪与发布边界
+
+失效的 `Codium PR Agent` 已在仓库 Actions 中手动停用，并在 `main` 改为仅允许手动
+触发。它此前没有可用的模型凭据，会以 `dummy_key` 调用后失败、自动留言并重复发送
+PR 失败邮件；该失败与网站、Cloudflare 或 Render 发布状态无关。
+
+通用 `End-to-End Tests` 继续用于主项目 PR，但纯 `sites/leonmingod-star-night/`、旧
+`sites/free-token-home/` 及其专用运维脚本变更不再启动这套无关的临时邮箱 E2E，避免
+机器人连续推送时产生旧任务取消通知。旧版 `Connect Free Token to Render`、
+`Deploy Free Token entrance`、`Inspect homepage Cloudflare deployment`、
+`Issue and publish Yifu Token key`、`Stage new Render Free Token key` 已全部移除
+push 自动触发，只保留手动入口。
+
+当前应使用的生产入口不变：网站发布用 `Deploy current LeonMinGod star-night website`
+的 stage/publish；风控与 Render guard 用 `Configure LeonMinGod human verification`；
+义父 Key 用中文 `添加义父 Key` / `移除义父 Key`。这些生产运维工作流仍为手动触发，
+没有停用。本次只改 GitHub 工作流触发条件，没有部署 Cloudflare 或 Render。
+
 ## 2026-10-29：v51 独立邮箱验证与专属 Key 流程已上线
 
 当前主 Worker `leonmingod-home` 版本为

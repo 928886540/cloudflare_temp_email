@@ -1,8 +1,5 @@
 name: Inspect homepage Cloudflare deployment
 on:
-  push:
-    branches: [codex/free-token-home-20261024]
-    paths: [.github/workflows/inspect-homepage.yaml]
   workflow_dispatch:
 permissions:
   contents: read

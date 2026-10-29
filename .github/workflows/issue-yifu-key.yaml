@@ -1,10 +1,5 @@
 name: Issue and publish Yifu Token key
 on:
-  push:
-    branches: [codex/free-token-home-20261024]
-    paths:
-      - .github/workflows/issue-yifu-key.yaml
-      - .github/scripts/issue_yifu_key.py
   workflow_dispatch:
     inputs:
       mode:

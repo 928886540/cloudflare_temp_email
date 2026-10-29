@@ -1,10 +1,5 @@
 name: Connect Free Token to Render
 on:
-  push:
-    branches: [codex/free-token-home-20261024]
-    paths:
-      - .github/workflows/connect-render-free-token.yaml
-      - .github/scripts/free_token_render.py
   workflow_dispatch:
     inputs:
       mode:
