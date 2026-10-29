@@ -21,10 +21,17 @@ import { humanToken } from './human-v3.mjs';
   const sendCode = document.getElementById('send-code');
   const codeStatus = document.getElementById('code-status');
   const humanHost = document.getElementById('claim-human');
+  const claimAgain = document.getElementById('claim-again');
   const CODE_LENGTH = 6;
   let busy = false;
   let timer = 0;
   let codeEmail = '';
+  let returning = false;
+  const STORE = 'lmg-claim-v1';
+  // The plaintext key is kept only in this browser's localStorage, never on the server.
+  const remembered = () => { try { return JSON.parse(localStorage.getItem(STORE) || 'null') || {}; } catch { return {}; } };
+  const remember = patch => { try { localStorage.setItem(STORE, JSON.stringify({ ...remembered(), ...patch, saved_at: Date.now() })); } catch {} };
+  const forget = () => { try { localStorage.removeItem(STORE); } catch {} };
 
   input.addEventListener('input', () => {
     const ready = input.value.trim() === '义父';
@@ -128,15 +135,19 @@ import { humanToken } from './human-v3.mjs';
     try {
       const token = await humanToken('claim_email', humanHost);
       const result = await post('/api/free-token/claim/code', { username: nameInput.value, email: emailInput.value, humanToken: token });
+      const again = '这个邮箱领过密钥：验证后会发一把新密钥，旧密钥立即失效，名字沿用原来的。';
       if (result.ok) {
         codeEmail = email;
+        returning = Boolean(result.data.returning);
         countdown = Number(result.data.resend_after) || 60;
-        showStatus('验证码已发送到邮箱，填入 6 位数字即可自动领取。');
+        remember({ username: nameInput.value.trim(), email });
+        showStatus(returning ? `验证码已发送。${again}` : '验证码已发送到邮箱，填入 6 位数字即可自动领取。');
         enableCode();
       } else if (result.status === 429 && result.data.cooldown) {
         codeEmail = email;
+        returning = Boolean(result.data.returning);
         countdown = result.retryAfter || 60;
-        showStatus(`验证码已发送，请查收邮箱。${countdown} 秒后可重新发送。`);
+        showStatus(`验证码已发送，请查收邮箱。${countdown} 秒后可重新发送。${returning ? again : ''}`);
         enableCode();
       } else {
         countdown = result.status === 429 ? result.retryAfter : 0;
@@ -174,7 +185,9 @@ import { humanToken } from './human-v3.mjs';
         issued = true;
         baseUrl.value = result.data.baseUrl;
         apiKey.value = result.data.apiKey;
-        copyStatus.textContent = '密钥只显示这一次，请马上复制。';
+        remember({ username: result.data.username || nameInput.value.trim(), email: emailInput.value.trim().toLowerCase(), key: result.data.apiKey, baseUrl: result.data.baseUrl });
+        claimAgain.hidden = true;
+        copyStatus.textContent = result.data.replaced ? '新密钥已生效，旧密钥已失效。已保存在本浏览器，请马上复制。' : '密钥已保存在本浏览器，请马上复制。';
         clearInterval(timer); timer = 0;
         showStatus('');
         emailDialog.close();
@@ -224,4 +237,31 @@ import { humanToken } from './human-v3.mjs';
   document.getElementById('copy-url').addEventListener('click', () => copy(baseUrl.value, '接口地址已复制。', baseUrl));
   document.getElementById('copy-key').addEventListener('click', () => copy(apiKey.value, '贵宾密钥已复制。', apiKey));
   document.getElementById('copy-all').addEventListener('click', () => copy(`Base URL: ${baseUrl.value}\nAPI Key: ${apiKey.value}`, '接口地址与贵宾密钥已复制。', apiKey));
+
+  function openForm() {
+    const saved = remembered();
+    if (saved.username && !nameInput.value) nameInput.value = saved.username;
+    if (saved.email && !emailInput.value) emailInput.value = saved.email;
+    showEmailError('');
+    emailDialog.showModal();
+    (nameInput.value ? emailInput.value ? sendCode : emailInput : nameInput).focus();
+  }
+  claimAgain.addEventListener('click', () => {
+    forget();
+    credentialsDialog.close();
+    nameInput.value = ''; emailInput.value = ''; codeInput.value = ''; codeInput.disabled = true;
+    codeEmail = ''; showStatus(''); stopCountdown('发送验证码');
+    openForm();
+  });
+  const saved = remembered();
+  if (typeof saved.key === 'string' && saved.key.startsWith('sk-lm-')) {
+    baseUrl.value = saved.baseUrl || 'https://cpa-dhke.onrender.com/v1';
+    apiKey.value = saved.key;
+    copyStatus.textContent = saved.username ? `${saved.username}，这是你保存在本浏览器里的密钥。` : '这是你保存在本浏览器里的密钥。';
+    claimAgain.hidden = false;
+    credentialsDialog.showModal();
+  } else {
+    if (saved.username) nameInput.value = saved.username;
+    if (saved.email) emailInput.value = saved.email;
+  }
 })();

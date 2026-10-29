@@ -81,7 +81,10 @@ test('one email mints one key, stores only hashes, and leaderboard orders scores
   const bo = await first('bo@example.com', 'Bo', '222222');
   assert.equal(ada.ok, true);
   assert.match(ada.apiKey, /^sk-lm-[A-Za-z0-9_-]{32,}$/);
-  assert.equal((await issue(kv, 'ada@example.com', 'Ada', now, '333333')).status, 409);
+  const back = await issue(kv, 'ada@example.com', 'Ada', now, '333333');
+  assert.equal(back.ok, true);
+  assert.equal(back.returning, true);
+  await kv.delete('code:ada@example.com');
   const stored = kv.entries().map(([, row]) => row.value).join('\n');
   assert.equal(stored.includes(ada.apiKey), false);
   assert.equal(stored.includes(bo.apiKey), false);
@@ -168,7 +171,9 @@ test('worker issues one key by email and serves a public scoreboard', async () =
     assert.match(reward.apiKey, /^sk-lm-/);
     assert.equal(reward.baseUrl, 'https://cpa-dhke.onrender.com/v1');
     const again = await post('/api/free-token/claim/code', { username: 'Ada', email: 'ada@example.com', humanToken: 'local-test' });
-    assert.equal(again.status, 409);
+    assert.equal(again.status, 200);
+    assert.equal((await again.json()).returning, true);
+    await kv.delete('code:ada@example.com');
     const board = await (await mf.dispatchFetch(origin + '/api/leaderboard', { headers: { 'Cache-Control': 'no-cache' } })).json();
     assert.deepEqual(board.entries, [{ username: 'Ada', score: 0 }]);
     assert.equal(JSON.stringify(board).includes('example.com'), false);
@@ -211,6 +216,8 @@ test('claim page has one send button, a numeric one-time-code input and no verif
   assert.doesNotMatch(script, /verify-code|verifyHuman/);
   assert.match(script, /s 后重发/);
   assert.match(script, /claim\/verify', \{ email: emailInput\.value, code \}/, 'verify sends no human token');
+  assert.match(script, /localStorage/);
+  assert.match(page, /id="claim-again"[^>]*>不是你？重新领取/);
 });
 
 test('a passed human check is remembered even when the send is refused, and verify needs no check', async () => {
@@ -265,4 +272,61 @@ test('a passed human check is remembered even when the send is refused, and veri
     assert.equal(locked.resend, true);
     assert.equal((await post('/api/free-token/claim/verify', { email: 'bo@example.com', code: 'abc' })).status, 400);
   } finally { await mf.dispose(); }
+});
+
+test('a claimed email can verify again: new key, old key revoked, name and score kept', async () => {
+  let now = 1_800_000_000_000;
+  const kv = memoryKv(() => now);
+  const email = 'lost@example.com';
+  assert.equal((await issue(kv, email, '原名', now, '111111')).ok, true);
+  const first = await completeClaim(kv, { email, code: '111111', now });
+  const oldHash = await sha256Hex(first.apiKey);
+  assert.equal((await issue(kv, 'other@example.com', 'Other', now, '444444')).ok, true);
+  await completeClaim(kv, { email: 'other@example.com', code: '444444', now });
+  await writeKeyStats(kv, oldHash, 7, new Date(now).toISOString());
+  now += 120_000;
+  const again = await issue(kv, email, '新名字', now, '222222');
+  assert.equal(again.returning, true);
+  assert.match((await completeClaim(kv, { email, code: '000000', now })).error, /验证码错误/);
+  const second = await completeClaim(kv, { email, code: '222222', now });
+  assert.equal(second.ok, true);
+  assert.equal(second.replaced, true);
+  assert.equal(second.username, '原名', 'the original name is kept');
+  assert.notEqual(second.apiKey, first.apiKey);
+  const newHash = await sha256Hex(second.apiKey);
+  const oldRecord = JSON.parse(await kv.get(keyRecordKey(oldHash)));
+  const newRecord = JSON.parse(await kv.get(keyRecordKey(newHash)));
+  assert.equal(oldRecord.status, 'revoked');
+  assert.equal(newRecord.status, 'active');
+  assert.equal(newRecord.username, '原名');
+  assert.equal(newRecord.email, email);
+  const pointer = JSON.parse(await kv.get(emailKey(email)));
+  assert.equal(pointer.key_sha256, newHash);
+  assert.equal(pointer.username, '原名');
+  const active = kv.entries().filter(([key, row]) => key.startsWith('key:') && JSON.parse(row.value).email === email && JSON.parse(row.value).status === 'active');
+  assert.equal(active.length, 1, 'exactly one active key per email');
+  const stored = kv.entries().map(([, row]) => row.value).join('\n');
+  assert.equal(stored.includes(second.apiKey), false);
+  assert.equal(stored.includes(first.apiKey), false);
+  const index = JSON.parse(await kv.get('leaderboard:index'));
+  assert.equal(index.entries.length, 2);
+  const mine = index.entries.find(entry => entry.username === '原名');
+  assert.equal(mine.key_sha256, newHash);
+  assert.deepEqual(mine.prior_hashes, [oldHash]);
+  // The guard keeps writing stats for the new hash only; the old score still counts.
+  let board = await readLeaderboard(kv);
+  assert.deepEqual(board.entries, [{ username: '原名', score: 7 }, { username: 'Other', score: 0 }]);
+  await writeKeyStats(kv, newHash, 3, new Date(now).toISOString());
+  board = await readLeaderboard(kv);
+  assert.deepEqual(board.entries[0], { username: '原名', score: 10 });
+  // A third claim chains the history and still leaves one active key.
+  now += 120_000;
+  await issue(kv, email, 'x', now, '333333');
+  const third = await completeClaim(kv, { email, code: '333333', now });
+  const thirdHash = await sha256Hex(third.apiKey);
+  assert.equal(JSON.parse(await kv.get(keyRecordKey(newHash))).status, 'revoked');
+  const chained = JSON.parse(await kv.get('leaderboard:index')).entries.find(entry => entry.username === '原名');
+  assert.deepEqual(chained.prior_hashes, [oldHash, newHash]);
+  assert.equal(chained.key_sha256, thirdHash);
+  assert.deepEqual((await readLeaderboard(kv)).entries[0], { username: '原名', score: 10 });
 });

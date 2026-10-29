@@ -271,6 +271,9 @@ h1 { font-size: clamp(30px,3.4vw,39px); line-height: 1.35; }
 #email-dialog #claim-code { letter-spacing: .5em; font-variant-numeric: tabular-nums; }
 #email-dialog #claim-code:disabled { opacity: .55; cursor: not-allowed; }
 #email-dialog .copy-status { text-align: left; }
+.claim-again-row { margin: 10px 0 0; text-align: center; }
+.claim-again { padding: 4px 6px; color: #9fbfae; background: none; border: 0; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.claim-again:hover { color: #e6ca96; }
 </style><script>
 document.addEventListener('DOMContentLoaded', function() {
   function exitToOrigin() {
@@ -377,12 +380,13 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="copy-all" class="primary copy-all" type="button">一键复制全部</button>
     <a class="primary copy-all" href="/free-token/game/#leaderboard">查看排行 <span aria-hidden="true">→</span></a>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+    <p class="claim-again-row"><button id="claim-again" class="claim-again" type="button" hidden>不是你？重新领取</button></p>
   </dialog>
 
   <dialog id="email-dialog" class="modal" aria-labelledby="email-title">
     <p class="eyebrow">专属密钥 · 只显示一次</p>
     <h2 id="email-title" tabindex="-1">留下名字和邮箱</h2>
-    <p class="modal-description">验证码寄到邮箱。同一个邮箱只能领取一次。</p>
+    <p class="modal-description">验证码寄到邮箱。一个邮箱同时只有一把密钥；领过但弄丢了，再验证一次就发新密钥，旧的立即失效。</p>
     <label class="credential-label" for="claim-name">名字 <span>1-20 字</span></label>
     <div class="input-wrap"><input id="claim-name" name="username" type="text" maxlength="40" autocomplete="nickname" required></div>
     <label class="credential-label" for="claim-email">邮箱</label>

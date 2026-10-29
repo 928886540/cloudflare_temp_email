@@ -43,7 +43,7 @@ async function withClaimLock(env, email, run) {
   }
 }
 
-async function sendCode(env, email, code) {
+async function sendCode(env, email, code, returning = false) {
   const from = env.CLAIM_MAIL_FROM || FROM_DEFAULT;
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -53,7 +53,7 @@ async function sendCode(env, email, code) {
         from,
         to: [email],
         subject: 'Leon🌙 贵宾密钥验证码',
-        text: `你的验证码是 ${code}，10 分钟内有效。如果不是你本人操作，请忽略这封邮件。`,
+        text: `你的验证码是 ${code}，10 分钟内有效。${returning ? '这个邮箱领过密钥，验证后会发一把新密钥，旧密钥立即失效。' : ''}如果不是你本人操作，请忽略这封邮件。`,
       }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -105,13 +105,13 @@ export async function handleClaimCode(request, env) {
   return withClaimLock(env, email, async () => {
     // Every reply after a passed human check carries the pass cookie, so the check is not asked again.
     const prepared = await beginCode(env.KV, { email, username: username.username, now: Date.now(), ipHash, code });
-    if (!prepared.ok) return reply(prepared.status, { error: prepared.error, retry_after: prepared.retry_after, ...(prepared.cooldown ? { cooldown: true } : {}) }, {}, headers);
-    const sent = await sendCode(env, email, code);
+    if (!prepared.ok) return reply(prepared.status, { error: prepared.error, retry_after: prepared.retry_after, ...(prepared.cooldown ? { cooldown: true, returning: prepared.returning } : {}) }, {}, headers);
+    const sent = await sendCode(env, email, code, prepared.returning);
     if (!sent.ok) {
       await cancelCode(env.KV, email);
       return reply(sent.status, { error: sent.error }, {}, headers);
     }
-    return json(200, { sent: true, resend_after: RESEND_COOLDOWN_MS / 1000 }, headers);
+    return json(200, { sent: true, resend_after: RESEND_COOLDOWN_MS / 1000, returning: prepared.returning }, headers);
   });
 }
 
@@ -135,7 +135,7 @@ export async function handleClaimVerify(request, env) {
       const { ok, status, apiKey, username, ...details } = result;
       return reply(status, details);
     }
-    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username });
+    return json(200, { baseUrl: BASE_URL, apiKey: result.apiKey, label: 'Leon🌙 贵宾密钥', username: result.username, replaced: Boolean(result.replaced) });
   });
 }
 
