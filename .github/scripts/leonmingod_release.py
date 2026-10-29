@@ -150,9 +150,11 @@ elif mode == 'publish':
                     import re
                     body=re.sub(r'\n?<script[^>]*src=["\']https://static\.cloudflareinsights\.com/[^>]*>\s*</script>','',body)
                     if body.replace('\r\n','\n').strip()!=expected.replace('\r\n','\n').strip():
-                        if attempt == 0:
+                        if attempt in (0, 11):
                             fresh=api.request(api.ORIGIN+path+'?lmg_verify='+version_id,headers={'Cache-Control':'no-cache'})[2].decode()
                             print('PAGE_DIAGNOSTIC='+json.dumps({'path':path,'new_marker':'home-orb-v3.css' in body,'fresh_marker':'home-orb-v3.css' in fresh,'expected_bytes':len(expected),'actual_bytes':len(body),'first_difference':next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),None)}),flush=True)
+                            difference=next((i for i,(a,b) in enumerate(zip(body,expected)) if a!=b),min(len(body),len(expected)))
+                            print('PAGE_PUBLIC_DIFFERENCE='+json.dumps({'path':path,'actual':body[max(0,difference-80):difference+350],'expected':expected[max(0,difference-80):difference+350],'actual_tail':body[-350:]}),flush=True)
                         raise AssertionError('Published page differs: '+path)
                 released_claim_has_no_shared_key()
                 released_board_and_hero()
