@@ -1,5 +1,5 @@
 {
-  "baseline_parent": "8f82f2d1-4a50-4d5f-be05-2ac71c7e484d",
+  "baseline_parent": "2572af64-7d02-4fcd-872d-6edca26408c3",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
   "message": "v53: star-sea art, floating orb, vivid default flow, CC Switch import and live pool status",
   "files": [
@@ -84,5 +84,5 @@
     "model-status/status-v1.css",
     "model-status/status-v1.mjs"
   ],
-  "staged_version": "2572af64-7d02-4fcd-872d-6edca26408c3"
+  "staged_version": ""
 }

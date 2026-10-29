@@ -74,7 +74,7 @@ async function management(path, secret, fetcher, signal) {
     method: 'GET', headers: { Authorization: `Bearer ${secret}`, Accept: 'application/json' },
     redirect: 'error', signal,
   });
-  if (!response.ok) throw new Error('CPA status unavailable');
+  if (!response.ok) throw Object.assign(new Error('CPA status unavailable'), { code: `CPA_HTTP_${response.status}` });
   const reader = response.body.getReader();
   const chunks = [];let length = 0;
   for (;;) {
@@ -101,7 +101,7 @@ export async function handlePoolStatus(request, env, { fetcher = globalThis.fetc
   try {
     const signal = AbortSignal.timeout(15000);
     const body = await management('credentials', env.CPA_STATUS_MANAGEMENT_KEY, fetcher, signal);
-    if (!Array.isArray(body.files)) throw new Error('Invalid status');
+    if (!Array.isArray(body.files)) throw Object.assign(new Error('Invalid status'), { code: 'CPA_INVALID_STATUS' });
     const files = body.files.slice(0, 500), inventory = new Array(files.length).fill(null);
     let next = 0;
     await Promise.all(Array.from({ length: Math.min(4, files.length) }, async () => {
@@ -117,8 +117,10 @@ export async function handlePoolStatus(request, env, { fetcher = globalThis.fetc
     const snapshot = await summarizePool(files, inventory, env.FREE_TOKEN_OPS_SECRET, now);
     try { await env.KV.put(SNAPSHOT_KEY, JSON.stringify(snapshot), { expirationTtl: 600 }); } catch {}
     return reply(200, snapshot);
-  } catch {
+  } catch (error) {
     if (saved?.schema === 1 && now - timestamp(saved.updated_at) < 600000) return reply(200, { ...saved, stale: true });
-    return reply(503, { error: 'CPA 暂未响应，稍后刷新即可。' });
+    const code = /^CPA_(?:HTTP_\d{3}|INVALID_STATUS)$/.test(error?.code) ? error.code : error?.name === 'TimeoutError' ? 'CPA_TIMEOUT' : 'CPA_STATUS_FAILED';
+    console.warn(JSON.stringify({ event: 'pool_status_unavailable', code, error_type: error?.name }));
+    return reply(503, { error: 'CPA 暂未响应，稍后刷新即可。', code });
   }
 }
