@@ -1,5 +1,44 @@
 # LeonMinGod 网站更新记录
 
+## 2026-10-29：v51 独立邮箱验证与专属 Key 流程已上线
+
+当前主 Worker `leonmingod-home` 版本为
+`76953781-1d5b-43ff-a91c-d3f01ace76f8`；发布前版本 v50
+`f88d3dde-4134-4542-974f-1c7da29c7e62` 可回滚。入口 Worker
+`leonmingod-free-token` 仍为 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，转发源码、
+`SITE → Site` binding 和具体路由均未改变。首页保持线上 v5 封面，发布文件 SHA-256
+为 `3c5575de1347…`，未改首页图片、美术和导航。
+
+领取流程现分成明确的三步：叫义父并二次确认，或真实完成御剑破阵；填写邮箱并发送；
+进入独立 `/free-token/verify/` 页面输入六位验证码。输满六位自动校验，验证码 10 分钟
+有效，重新发送统一为 **120 秒**。发送按钮只出现在邮箱步骤；验证码页只做验证码校验、
+重发和更换邮箱。Resend 使用已验证的 `leonmingod.com` 发信域名，同时发送品牌 HTML
+和纯文本邮件；邮件不泄露该邮箱是否领取过。
+
+叫义父或通关后，服务端签发 20 分钟、HttpOnly/Secure/SameSite 的领取资格，并绑定
+浏览器与本次流程。发码和校验接口都要求该资格，KV 中的待验证记录还会绑定资格 ID；
+没有叫义父或通关，直接请求 `/claim/code`、`/claim/verify` 均返回 403。义父确认接口
+只返回下一步，不再返回共享 Key。Turnstile 放在实际发信和游戏开局处；已有两小时真人
+凭证会复用，减少重复 Cloudflare 验证。五次错误验证码锁定、邮箱/IP/全局发信限额继续
+生效。
+
+新用户每个邮箱创建一把 `sk-lm-` 专属 Key；同一邮箱以后验证后返回原来的同一把 Key。
+KV 只保存 Key 哈希和 AES-GCM 密文，不保存明文。旧版没有密文的记录首次找回时只换发
+一次并撤销旧 Key；已停用 Key 不会被恢复。姓名输入和排行榜从领取页、游戏页移除，新的
+领取不再写排行榜；历史排行榜接口和已有数据暂留，避免不可逆删除。
+
+本轮没有部署 Render、没有新增或删除 Render Key，也没有修改 OAuth 登录文件。
+CPA 仍为 `https://cpa-dhke.onrender.com/v1`，`sk-lm-` Key 继续由现有
+`CPA_REMOTE_KEY_AUTH=1` 远程校验。Cloudflare 的 10 个现有绑定全部保留，包括 ASSETS、
+KV `1b02d139375045f7a7d5ce2d994abd2c`、GAME_RUNS
+`2dffacc2783647f0bec81263501de5e1`、Resend/Turnstile/加密 Secret 及旧配置。
+
+本地和 GitHub 阶段共 34 项测试全过。公网逐字节核验首页、领取页、验证码页、游戏页及
+三个当前脚本；公开状态为 open，无资格发码/校验 403，义父确认 200 且不含共享 Key，
+带资格的无效邮箱 400，Render `/healthz` 200。
+[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40810252737) ·
+[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40810369882)
+
 ## 2026-10-27：Render CPA 异常 IP 防护已上线
 
 只保护 `https://cpa-dhke.onrender.com` 的模型 API，网站页面、游戏与义父 Key 均未
