@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizePool, accountState, handlePoolStatus } from '../src/pool-status.js';
+import { readFile } from 'node:fs/promises';
+import { Miniflare } from 'miniflare';
 
 const now = Date.parse('2026-10-29T12:00:00Z');
 const later = new Date(now+60000).toISOString();
@@ -31,4 +33,35 @@ test('live pool reads are server authenticated, restricted to GET metadata, cach
   const stale=await handlePoolStatus(request,env,{fetcher:async()=>new Response('secret upstream error',{status:401}),now:now+31000});assert.equal((await stale.json()).stale,true);
   assert.equal((await handlePoolStatus(request,{}, {fetcher})).status,503);
   assert.equal((await handlePoolStatus(new Request(request,{method:'POST'}),env,{fetcher})).status,405);
+});
+
+test('pool requests run in Workers with redirects rejected before credentials can be forwarded', async () => {
+  const source = await readFile(new URL('../src/pool-status.js', import.meta.url), 'utf8');
+  let calls = 0, redirect = true;
+  const runtime = new Miniflare({
+    modules: true, compatibilityDate: '2025-06-01',
+    script: source + '\nexport default { fetch: handlePoolStatus };',
+    kvNamespaces: ['KV'],
+    bindings: { CPA_STATUS_MANAGEMENT_KEY: 'management-runtime-test', FREE_TOKEN_OPS_SECRET: 'ops-runtime-test' },
+    outboundService: request => {
+      calls++;
+      assert.match(request.url, /^https:\/\/cpa-dhke\.onrender\.com\/v8\/management\/credentials(?:\/models\?name=test\.json)?$/);
+      assert.equal(request.headers.get('Authorization'), 'Bearer management-runtime-test');
+      if (redirect) return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example/credentials' } });
+      return Response.json(request.url.includes('/models?') ? { models: [{ id: 'runtime-model' }] } : { files: [{ name: 'test.json', provider: 'codex', status: 'active' }] });
+    },
+  });
+  try {
+    const response = await runtime.dispatchFetch('https://leonmingod.com/api/pool-status');
+    assert.equal(calls, 1);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).code, 'CPA_HTTP_302');
+    redirect = false;
+    const success = await runtime.dispatchFetch('https://leonmingod.com/api/pool-status');
+    assert.equal(success.status, 200);
+    const summary = await success.json();
+    assert.equal(summary.totals.ready, 1);
+    assert.equal(summary.models[0].id, 'runtime-model');
+    assert.equal(calls, 3);
+  } finally { await runtime.dispose(); }
 });

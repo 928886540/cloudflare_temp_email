@@ -72,7 +72,7 @@ export async function summarizePool(files, inventory, secret, now = Date.now()) 
 async function management(path, secret, fetcher, signal) {
   const response = await fetcher(`${ORIGIN}/v8/management/${path}`, {
     method: 'GET', headers: { Authorization: `Bearer ${secret}`, Accept: 'application/json' },
-    redirect: 'error', signal,
+    redirect: 'manual', signal,
   });
   if (!response.ok) throw Object.assign(new Error('CPA status unavailable'), { code: `CPA_HTTP_${response.status}` });
   const reader = response.body.getReader();
