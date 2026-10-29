@@ -3,6 +3,20 @@ name: End-to-End Tests
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      # The generic temp-email E2E stack does not exercise the standalone
+      # LeonMinGod website or its operations scripts. Cursor often updates a
+      # website PR several times, which used to cancel the preceding E2E run
+      # and generate noisy "old job" notifications.
+      - "sites/leonmingod-star-night/**"
+      - "sites/free-token-home/**"
+      - ".github/scripts/leonmingod_*.py"
+      - ".github/scripts/yifu_keys.py"
+      - ".github/scripts/issue_yifu_key.py"
+      - ".github/scripts/free_token_render.py"
+      - ".github/workflows/leonmingod-*.yaml"
+      - ".github/workflows/yifu-*.yaml"
+      - ".github/workflows/*free-token*.yaml"
   workflow_dispatch:
 
 jobs:
