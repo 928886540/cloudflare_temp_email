@@ -10,20 +10,20 @@
 
 - **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
 - 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
-- 当前功能代码提交：`2d3bb75003cb0632b786a93776f0546e02e6b2ed`；固定发布版本提交：`86db800dabd97e63aa6c5cbcaa901ee68a6d6894`；本轮验收记录提交：`c78c84e1fb5e9ddae89bb032bff2011dc45a92db`。
-- 本次云端工作树：`/workspace/cf-notification-fix-site`，本地分支 `codex/email-convenience-v52-20261029`，修改已推到上述维护分支。后续环境路径可能变化，以 GitHub 为准。
+- 本轮功能提交：`4a11c52`；Workers 运行修复与回归测试：`9d9d699`；固定发布版本提交：`e904012`。验收记录见 `verification/v53-*.json`。
+- 本次 Windows 工作树：`D:\apiWorkSpace\leonmingod-ccswitch`，本地分支 `codex/ccswitch-import-20261029`，修改已推到上述维护分支。后续环境路径可能变化，以 GitHub 为准。
 - `/workspace/cloudflare_temp_email`、`/workspace/leonmingod-home` 和原 Windows `D:\apiWorkSpace\leonmingod-home` 不能仅凭目录名视为最新代码。
 
 | 项目 | 当前状态 |
 | --- | --- |
-| 网站功能版本 | v52，2026-10-29 16:15 北京时间发布 |
+| 网站功能版本 | v53，2026-10-29 23:48 北京时间发布 |
 | 主 Worker | `leonmingod-home` |
-| 主 Worker 活动版本 | `968904cd-207b-4691-863c-d63cc4487640`，100% 流量 |
-| 直接回滚版本 | v51：`76953781-1d5b-43ff-a91c-d3f01ace76f8` |
+| 主 Worker 活动版本 | `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`，100% 流量 |
+| 稳定旧版回滚参考 | v52 加号池 Secret：`8f82f2d1-4a50-4d5f-be05-2ac71c7e484d`；回滚后无 v53 功能 |
 | 入口 Worker | `leonmingod-free-token` |
 | 入口活动版本 | `51a33be8-6ca4-4b4f-886f-613bfea996b0` |
-| 首页图片版本 | **v6**，电脑与手机都已恢复 |
-| 游戏规则版本 | v8，实时协议 live-v1；与网站 v52、图片 v6 是不同编号 |
+| 图片版本 | 首页 **v7**、令牌入口 **v5**，各有电脑与手机独立构图 |
+| 游戏规则版本 | v8，实时协议 live-v1；与网站 v53、图片 v7 是不同编号 |
 | 网站领取状态 | open；点击令牌进入原动画与选择页 |
 | 未完成 PR | 本次核对为 0；旧 PR #6 已关闭，PR #7 已合并到维护分支 |
 
@@ -35,11 +35,20 @@
 - 叫义父：<https://leonmingod.com/free-token/claim/>
 - 独立验证码页：<https://leonmingod.com/free-token/verify/>
 - 御剑破阵：<https://leonmingod.com/free-token/game/>
+- 号池状态：<https://leonmingod.com/model-status/>
 - CPA Base URL：<https://cpa-dhke.onrender.com/v1>
 
 `www.leonmingod.com` 也已验收。浏览器本地保存的邮箱、落款、Key 和领取流程按 origin 隔离，不能假定主域名与 www 自动共享 localStorage。
 
 ## 2. 现在的产品流程
+
+### CC Switch 与号池状态（v53）
+
+领取结果、已保存 Key 与游戏奖励弹窗均有「接入 CC Switch」。选择 Claude/Codex/Gemini、配置名称与必填主模型；模型使用当前展示的个人 Key 实时读取 CPA `/v1/models`，保留完整别名。提交才创建 `ccswitch://v1/import`，默认不自动启用。必须安装 CC Switch；本轮用模拟模型和虚构 Key 验证弹窗及协议，未在桌面实际唤起原生应用。
+
+令牌入口的「号池状态」进入 `/model-status/`，无需登录 CPA。`/api/pool-status` 在服务端只读 CPA v8 凭证元数据和模型注册列表，返回匿名账号、状态、冷却及已观测额度；不返回邮箱、文件名、路径、管理密钥或凭据内容。最多缓存 30 秒，暂时失败可标注并展示十分钟内旧快照。注册/调度状态不等于实测每个模型生成成功，未上报额度显示「未观测」。
+
+本轮实时验收：13 个账号、3 可用、10 停用、35 个模型，完整覆盖、非旧缓存；数字随运行变化。新增 `CPA_STATUS_MANAGEMENT_KEY` 只通过 `pool-setup` 安装于 Cloudflare，Render 配置、部署和 OAuth 文件未修改。Workers 服务端 fetch 必须用 `redirect: 'manual'` 并拒绝非 2xx；`redirect: 'error'` 不受支持。已有真实 Workers 运行回归测试防止再次退回该配置。
 
 ### 叫义父路线
 
@@ -90,7 +99,7 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 
 `leonmingod-free-token` 保留更具体路由，通过服务绑定 `SITE → leonmingod-home` 的命名入口 **`Site`** 转发。不能改成普通默认入口，不能删除转发 Worker 或用旧页面覆盖路由。
 
-当前主 Worker 共 10 个绑定：
+当前主 Worker 共 11 个绑定：
 
 | 绑定 | 类型与用途 |
 | --- | --- |
@@ -102,6 +111,7 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 | `FREE_TOKEN_TURNSTILE_SITEKEY` | 当前真人验证组件配置 |
 | `FREE_TOKEN_TURNSTILE_SECRET` | 服务端 Turnstile 校验及真人凭证相关 Secret |
 | `FREE_TOKEN_OPS_SECRET` | 私有运维验收用途，不能暴露给前端 |
+| `CPA_STATUS_MANAGEMENT_KEY` | 服务端只读号池使用；不能下发浏览器或用于公开管理入口 |
 | `FREE_TOKEN_RENDER_KEY` | 旧共享 Key/当前入口开放状态仍引用的遗留 Secret |
 | `FREE_TOKEN_CPA_KEY` | 遗留 Secret，按用户要求保留 |
 
@@ -153,7 +163,7 @@ Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支
 - 公共说明只写通关条件，不剧透“最后五颗狂暴”；不添加“缺口一”等方框或安全区文字。
 - 服务器实时接收不可回改操作前缀、逐段提供后续随机性；不允许恢复“本地解题、等待 45 秒、一次性提交完整 trace”的旧漏洞。
 - 排行榜 UI 已移除，新领取不再写排名。历史接口/数据保留，不要未经需求重做排名。
-- 保持星夜、成人女性、当前 v6 首页、玉牌导航、完整挂绳和切页动画。首页全屏流光默认关闭，手机避免重模糊与满屏粒子。
+- 保持星夜、成人女性、首页 v7/令牌 v5 横竖四张图、玉牌导航、完整挂绳和切页动画。**用户最新要求流光默认开启并增强，覆盖早先默认关闭的偏好。** 保留手动关闭和减少动态效果适配。球下文字条与重复掌心图片层已移除，独立透明球体上下浮动，手机无需 hover。
 - 改图只用原生 `image_gen`；放大检查手指、手腕、挂绳及文字，手机功能不能依赖 hover。
 
 ## 6. 主要文件
@@ -162,12 +172,14 @@ Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支
 
 | 文件 | 用途 |
 | --- | --- |
-| `public/index.html` | 首页；电脑与手机的 v6 图引用均有两层，修改时同步 |
-| `public/home-hero-desktop-v6.webp`、`public/home-hero-mobile-v6.webp` | 当前首页原图 |
-| `public/free-token/claim/index.html`、`public/free-token/claim-v9.mjs`、`public/free-token/claim-compact-v5.css` | 义父、落款、邮箱、已存 Key 弹窗 |
+| `public/index.html`、`public/home-scene-v6.js`、`public/star-sea-v1.css` | 首页、默认流光、独立浮动球体与品牌字样 |
+| `public/home-hero-desktop-v7.webp`、`public/home-hero-mobile-v7.webp` | 当前首页原图 |
+| `public/free-token/claim/index.html`、`public/free-token/claim-v10.mjs`、`public/free-token/claim-compact-v5.css` | 义父、落款、邮箱、已存 Key 与 CC Switch |
+| `public/free-token/ccswitch-v1.mjs`、`public/free-token/ccswitch-v1.css` | 实时模型选择及 CC Switch 导入 |
+| `public/model-status/`、`src/pool-status.js` | 公开匿名号池看板及服务端状态读取 |
 | `public/free-token/verify/index.html`、`public/free-token/verify-v2.mjs`、`public/free-token/verify-v2.css` | 独立验证码与跨浏览器复制页 |
 | `public/free-token/verify-flow-v2.mjs` | 本地记忆、跨标签流程、邮件片段、验证码请求 |
-| `public/free-token/game/app-v16.mjs`、`public/free-token/game/engine-v8.mjs`、`public/free-token/game/physics-v8.mjs` | 当前游戏客户端及共享规则 |
+| `public/free-token/game/app-v17.mjs`、`public/free-token/game/engine-v8.mjs`、`public/free-token/game/physics-v8.mjs` | 当前游戏客户端及共享规则 |
 | `public/free-token/human-v3.mjs` | 邮箱发信真人凭证复用 |
 | `src/claim.js`、`src/claim-email.js` | 领取 API、Resend HTML/纯文本邮件 |
 | `src/claim-store.js`、`src/claim-grant.js` | Key/邮箱存储、限额、领取资格与落款签名 |
@@ -206,7 +218,7 @@ gh workflow run leonmingod-star-night.yaml \
 
 7. 确认 run 真正 success 与活动版本一致；核对主域名/www 的页面、版本化脚本、图片和必要 API。记录版本、回滚点、验证范围，避免把模拟领取写成真实邮件端到端验收。
 
-当前 `release.json.baseline_parent` 仍是 **发布前 v51**，这是 v52 发布清单，不是下次直接重跑的保护值。下次发布必须刷新；否则保护脚本应停止，不能删除断言强行发布。
+当前 `release.json.baseline_parent` 仍是发布前 `098a0fa1-11ea-4d04-9030-05da0fd66a0e`，这是 v53 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
 
 回滚优先把主 Worker 切回已知版本，保留当前存储和凭据。若同时修改过转发，则按原流程先恢复入口、再恢复主站。回滚会同时恢复旧代码/图片/流程；不要为单独改一张图回滚整个系统。任何 Secret 更新也可能生成新的 Worker 版本，后续发布要重新读取。
 
@@ -249,6 +261,10 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 
 ## 10. 验证证据与后续事项
 
+v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40904919911) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40905233018)：45 项测试通过，包括真实 Workers fetch；7 个页面上线、主域名/www 共 46 项资源比对通过；号池 API 均 200，无私人字段，Render healthz 200，领取仍开放。公网桌面/手机检查覆盖首页、令牌页、CC Switch 和号池；393×580 短屏无整页横向溢出。未发送真实邮件、未轮换 Key、未部署 Render。证据见 `verification/v53-public-resources.json`、`v53-browser-layout.json`、`v53-*.jpg`；原生生图提示词、尺寸与文件见 `verification/star-sea-v53-artwork.json`。
+
+以下为上轮 v52 邮箱流程验收记录：
+
 本轮网站 stage：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840633936>
 
 本轮 publish：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840812582>
@@ -271,7 +287,7 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 
 ```text
 请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
-网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v52，首页图片 v6，游戏规则 v8，三者不要混淆。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v53，首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入和匿名号池状态页。
 保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
 先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
 用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。

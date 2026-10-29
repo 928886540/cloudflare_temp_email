@@ -20,4 +20,6 @@ The sanitized snapshot is cached in KV for 30 seconds. At most 24 account model 
 
 ## Current visual direction
 
+Released as v53 on 2026-10-29: parent `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`, with all 11 bindings retained. Stage 40904919911 passed 45 tests; publish 40905233018 and 46 public resource comparisons passed. Runtime tests execute the actual pool code in Workers: fetch uses `redirect: 'manual'`, rejects redirects, and never forwards credentials to their destination. The browser's `error` redirect mode is unsupported at the edge. Production status returned 13 anonymous accounts and 35 registered models at verification; these counts change over time. CC Switch browser QA used dummy credentials and isolated mocked models; native app launch was not tested.
+
 The latest user request enables flow by default, superseding older instructions that kept it off. `home-scene-v6.js` strengthens interactive jade trails, with reduced-motion and manual-off support. Four new native-image_gen backgrounds use a star-sea observatory and a celestial moongate; home art is v7 and token art is v5. Text is rendered by HTML. The old orb caption and duplicated palm layer are removed; `jade-orb-v4.webp` is an independent transparent animated sprite. Preserve the existing navigation, full token cord, transition, email flow and game rules.

@@ -4,6 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## LeonMinGod homepage / Free Token / Render operations
 
+### Current v53 authority (2026-10-29)
+
+Read [LEONMINGOD_HANDOFF_CN.md](LEONMINGOD_HANDOFF_CN.md) before older records below.
+Production parent is `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`; the forwarder remains
+`51a33be8-6ca4-4b4f-886f-613bfea996b0` with its named `Site` binding. Active clients
+are claim-v10 / app-v17, with unchanged v8 game rules and per-email keys. Home v7
+and token v5 each have new desktop/mobile art. The latest user explicitly requires
+flow ON by default, overriding archived OFF preferences. Preserve the independent
+floating orb without its old caption, CC Switch live-model import, and anonymous
+`/model-status/` dashboard. Its server-only `CPA_STATUS_MANAGEMENT_KEY` is installed;
+all 11 bindings are retained. Workers fetch uses manual redirects and rejects non-2xx;
+the browser-only error redirect mode is unsupported at the edge. Stage 40904919911
+passed 45 tests; publish 40905233018 and 46 public resource comparisons passed.
+Never deploy the incomplete asset mirror directly or redeploy Render for site edits.
+
 ### Latest website handoff: star-night and game (2026-10-25)
 
 Read [the latest handoff](vitepress-docs/docs/en/guide/feature/leonmingod-star-night-handoff.md)
