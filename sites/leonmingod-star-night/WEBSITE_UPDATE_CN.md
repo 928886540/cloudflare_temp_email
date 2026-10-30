@@ -1,5 +1,20 @@
 # LeonMinGod 网站更新记录
 
+## v59：按真实调用次数排序，隐藏空厂商
+
+厂商、模型和凭证均默认按累计调用次数降序；厂商零凭证标签隐藏，进入页面默认
+“全部厂商”。实际数据当前 Grok 在 Codex 前，Antigravity 无调用排后，Claude/Gemini
+无凭证不再展示。保留手选排序，切换厂商/视图与刷新沿用当前排序；同次数才按原有
+常用/状态次序稳定排列。旧固定 GPT/Codex 优先只作为同次数或手选常用的规则。
+
+主站版本 `401ac7d3-59af-4c00-81fa-cc6a7b6d020b`，回滚 v58
+`169531c7-97bf-43d7-b8fd-f0fed62c3153`；入口、11 个绑定、KV/GAME_RUNS 与
+全部 Key 保留，Render 未部署。57 项测试通过；手机/电脑验证模型与凭证降序，
+厂商筛选无额外状态查询。代码 d636451，阶段固定 eb4fc1b。
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41077695189) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41077902764)。
+
+
 ## v57/v58：本地 Key 查看、xAI 原生额度与管理误封修复
 
 当前主站 `169531c7-97bf-43d7-b8fd-f0fed62c3153`，前一版 v57
