@@ -50,3 +50,20 @@ test('large pool snapshots are atomically chunked below the Workers storage per-
   await savePoolCache(storage,JSON.stringify(state));assert.equal(transactions,1);assert.deepEqual(await loadPoolCache(storage),state);
   await savePoolCache(storage,JSON.stringify({small:true}));assert.deepEqual(await loadPoolCache(storage),{small:true});
 });
+
+test('delta persistence skips identical parts, survives reload and removes obsolete chunks atomically',async()=>{
+  const data=new Map();let writes=0,transactions=0;
+  const storage={get:async key=>data.get(key),put:async(key,value)=>{
+    for(const [k,v] of typeof key==='object'?Object.entries(key):[[key,value]]){writes++;data.set(k,v);}
+  },delete:async keys=>{for(const key of keys){writes++;data.delete(key);}},transaction:async callback=>{transactions++;return callback(storage);}};
+  const json=JSON.stringify({stamp:1000,padding:'a'.repeat(80_000)});
+  let parts=await savePoolCache(storage,json);const first=writes,tx=transactions;
+  parts=await savePoolCache(storage,json,parts);assert.equal(writes,first);assert.equal(transactions,tx);
+  const changed=json.replace('1000','2000');parts=await savePoolCache(storage,changed,parts);
+  assert.equal(writes,first+1,'Only one changed chunk should be written; the unchanged manifest stays intact');
+  let loadedParts;assert.equal((await loadPoolCache(storage,value=>{loadedParts=value;})).stamp,2000);
+  await savePoolCache(storage,changed,loadedParts);assert.equal(writes,first+1,'Reloading must not force a full rewrite');
+  await savePoolCache(storage,JSON.stringify({stamp:3000}),loadedParts);
+  assert.deepEqual(await loadPoolCache(storage),{stamp:3000});
+  assert.equal([...data.keys()].filter(key=>key.startsWith('pool-status-v3-part-')).length,1);
+});

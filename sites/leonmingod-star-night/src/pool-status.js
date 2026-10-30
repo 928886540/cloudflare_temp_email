@@ -83,11 +83,16 @@ const publicError=error=>[401,403].includes(error?.status)?'authorization_unavai
 export class PoolStatusCoordinator{
   constructor(ctx,env,{fetcher=(url,options)=>fetch(url,options),clock=()=>Date.now()}={}){
     this.ctx=ctx;this.env=env;this.fetcher=fetcher;this.clock=clock;this.pending=null;this.quotaPending=new Map();this.files=[];this.filesAt=0;
-    this.ready=loadPoolCache(ctx.storage).then(value=>{this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};});
+    this.ready=Promise.all([loadPoolCache(ctx.storage,parts=>{this.persistedParts=parts;}),ctx.storage.get('pool-status-kind')]).then(([value,kind])=>{
+      this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};
+      this.isPool=kind==='pool';
+    });
   }
   persist(){
     const json=JSON.stringify(this.cache);
-    this.persistQueue=(this.persistQueue||Promise.resolve()).catch(()=>{}).then(()=>savePoolCache(this.ctx.storage,json));
+    this.persistQueue=(this.persistQueue||Promise.resolve()).catch(()=>{}).then(async()=>{
+      this.persistedParts=await savePoolCache(this.ctx.storage,json,this.persistedParts);
+    });
     return this.persistQueue;
   }
   async credentials(signal){
@@ -146,7 +151,7 @@ export class PoolStatusCoordinator{
   }
   async schedule(){
     if(this.scheduled)return;
-    await this.ctx.storage.put('pool-status-kind','pool');
+    if(!this.isPool){await this.ctx.storage.put('pool-status-kind','pool');this.isPool=true;}
     await this.ctx.storage.setAlarm(Math.max(this.clock()+REFRESH_MS,this.cache.metricsNext||0,this.cache.managementBlockedUntil||0));
     this.scheduled=true;
   }
@@ -208,7 +213,7 @@ export class PoolStatusCoordinator{
       let selected;for(let i=0;i<files.length;i++)if(await accountId(files[i],this.env.FREE_TOKEN_OPS_SECRET,i)===id){selected=files[i];break;}
       if(!selected)return this.reply(404,{error:'账号不存在或已移除。'});
       const value=await this.quota(selected,id);
-      if(this.cache.snapshot){const account=this.cache.snapshot.accounts.find(x=>x.id===id);if(account)account.quota=value;await this.persist();}
+      if(this.cache.snapshot){const account=this.cache.snapshot.accounts.find(x=>x.id===id);if(account&&JSON.stringify(account.quota)!==JSON.stringify(value)){account.quota=value;await this.persist();}}
       return this.reply(200,{id,quota:value});
     }
     if(!peek&&this.clock()>=this.cache.next){

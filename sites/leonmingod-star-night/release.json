@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "f1872be0-f97d-4890-9800-0f2f3eb19cf5",
+  "baseline_parent": "2b31bdc4-5d08-4716-8589-411b49f0017c",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v55: real per-model execution counts and streaming metrics, persistent totals, GPT-first common ordering",
+  "message": "v56: persist only changed pool cache chunks, skip cached quota writes and repeated object markers",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -88,6 +88,5 @@
     "model-status/order-v1.mjs",
     "model-status/status-v3.mjs",
     "model-status/status-v3.css"
-  ],
-  "staged_version": "2b31bdc4-5d08-4716-8589-411b49f0017c"
+  ]
 }

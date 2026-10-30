@@ -12,9 +12,9 @@ const files=[
 ];
 const usage={email:'never-return@example.com',account_id:'secret-account-id',plan_type:'plus',rate_limit:{primary_window:{used_percent:72,limit_window_seconds:18000,reset_at:(now+7200000)/1000},secondary_window:{used_percent:36,limit_window_seconds:604800,reset_at:(now+432000000)/1000}},credits:{balance:'0'}};
 function harness(){
- let clock=now;const rows=new Map(),calls=[];let status=200,innerStatus=200;
+ let clock=now,writes=0;const rows=new Map(),calls=[];let status=200,innerStatus=200;
  const env={CPA_STATUS_MANAGEMENT_KEY:'management-test-placeholder',FREE_TOKEN_OPS_SECRET:'ops-test-placeholder'};
- const storage={get:async k=>structuredClone(rows.get(k)),put:async(k,v)=>{if(typeof k==='object'){for(const [name,value] of Object.entries(k))rows.set(name,structuredClone(value));}else rows.set(k,structuredClone(v));},transaction:async callback=>callback(storage),setAlarm:async stamp=>rows.set('alarm',stamp)};
+ const storage={get:async k=>structuredClone(rows.get(k)),put:async(k,v)=>{if(typeof k==='object'){for(const [name,value] of Object.entries(k)){writes++;rows.set(name,structuredClone(value));}}else{writes++;rows.set(k,structuredClone(v));}},delete:async keys=>{for(const key of Array.isArray(keys)?keys:[keys]){writes++;rows.delete(key);}},transaction:async callback=>callback(storage),setAlarm:async stamp=>rows.set('alarm',stamp)};
  const ctx={storage};
  const fetcher=async(url,options)=>{
   calls.push({url,options});assert.equal(options.headers.Authorization,'Bearer management-test-placeholder');assert.equal(options.redirect,'manual');
@@ -26,7 +26,7 @@ function harness(){
  };
  const coordinator=new PoolStatusCoordinator(ctx,env,{fetcher,clock:()=>clock});
  const send=body=>coordinator.fetch(new Request('https://internal/pool-status',{method:'POST',body:JSON.stringify(body)}));
- return {env,ctx,calls,coordinator,send,advance:ms=>{clock+=ms;},setStatus:value=>{status=value;},setInner:value=>{innerStatus=value;}};
+ return {env,ctx,calls,coordinator,send,writes:()=>writes,advance:ms=>{clock+=ms;},setStatus:value=>{status=value;},setInner:value=>{innerStatus=value;}};
 }
 
 test('summaries mask email before returning it and retain true credential counters and model cooldowns',async()=>{
@@ -57,7 +57,10 @@ test('twenty concurrent reads coalesce globally; retries cannot bypass snapshot 
  assert.equal(h.calls.filter(x=>x.url.includes('/models?')).length,3);assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,1);
  const body=await responses[0].json();assert.equal(body.models[0].history.length,1);
  const id=body.accounts.find(x=>x.state==='ready').id;
+ const beforeCached=h.writes();
  for(let i=0;i<10;i++)await h.send({kind:'quota',id});
+ await Promise.all(Array.from({length:100},()=>h.send({kind:'snapshot'})));
+ assert.equal(h.writes(),beforeCached,'Cached snapshot and quota reads must not write storage');
  assert.equal(h.calls.length,6);
  h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,8);
  h.advance(300000);await h.send({kind:'quota',id});assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,2);
