@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 
 import yaml
+from yifu_key_api import is_cpa_repo
 
 SERVICE = 'srv-d9c4kkvavr4c73ab3sfg'
 WORKSPACE = 'tea-d779tahr0fns73e1h3lg'
@@ -84,7 +85,7 @@ def inspect():
             raise RuntimeError('Missing GitHub Actions secret: ' + name)
     service = render('/services/' + SERVICE)
     assert service['ownerId'] == WORKSPACE
-    assert service['repo'] == 'https://github.com/928886540/cpa'
+    assert is_cpa_repo(service['repo'])
     assert service['branch'] == 'main'
     assert service['serviceDetails']['envSpecificDetails']['dockerCommand'] == './CLIProxyAPI --config /etc/secrets/config.yaml'
     secret = render('/services/' + SERVICE + '/secret-files/config.yaml')

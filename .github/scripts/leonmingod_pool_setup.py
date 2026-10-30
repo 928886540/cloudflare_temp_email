@@ -8,7 +8,7 @@ import yifu_key_api as api
 def main():
     service = api.render('/services/' + api.SERVICE)
     assert service['ownerId'] == api.WORKSPACE
-    assert service['repo'] == 'https://github.com/928886540/cpa' and service['branch'] == 'main'
+    assert api.is_cpa_repo(service['repo']) and service['branch'] == 'main'
     before = api.latest_deploy()['id']
     config = yaml.safe_load(api.render('/services/' + api.SERVICE + '/secret-files/config.yaml')['content'])
     values = {row['envVar']['key']: row['envVar']['value'] for row in api.render('/services/' + api.SERVICE + '/env-vars?limit=100')}

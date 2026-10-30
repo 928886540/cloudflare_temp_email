@@ -13,6 +13,11 @@ WORKSPACE = 'tea-d779tahr0fns73e1h3lg'
 RENDER_ORIGIN = 'https://cpa-dhke.onrender.com'
 ORIGIN = 'https://leonmingod.com'
 
+
+def is_cpa_repo(value):
+    return isinstance(value, str) and value.removesuffix('.git').rstrip('/') in {
+        'https://github.com/LeonMinGod/cpa', 'https://github.com/928886540/cpa'}
+
 def request(url, method='GET', body=None, headers=None):
     headers = {'User-Agent': 'Mozilla/5.0', **(headers or {})}
     if isinstance(body, (dict, list)):

@@ -127,7 +127,7 @@ def service():
     value = api.render("/services/" + api.SERVICE)
     if value.get("ownerId") != api.WORKSPACE:
         raise RuntimeError("Unexpected Render workspace")
-    if value.get("repo") != "https://github.com/928886540/cpa" or value.get("branch") != "main":
+    if not api.is_cpa_repo(value.get("repo")) or value.get("branch") != "main":
         raise RuntimeError("Unexpected Render source repository")
     return value
 

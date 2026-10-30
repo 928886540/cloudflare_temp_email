@@ -116,7 +116,7 @@ def read_state():
         if not os.environ.get(name, '').strip():
             raise RuntimeError('Missing GitHub Actions secret: ' + name)
     service = api.render('/services/' + api.SERVICE)
-    assert service['ownerId'] == api.WORKSPACE and service['repo'] == 'https://github.com/928886540/cpa'
+    assert service['ownerId'] == api.WORKSPACE and api.is_cpa_repo(service['repo'])
     assert service['branch'] == 'main'
     assert service['serviceDetails']['envSpecificDetails']['dockerCommand'] == './CLIProxyAPI --config /etc/secrets/config.yaml'
     secret = api.render('/services/' + api.SERVICE + '/secret-files/config.yaml')

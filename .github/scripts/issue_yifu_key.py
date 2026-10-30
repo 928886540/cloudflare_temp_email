@@ -55,7 +55,7 @@ def inspect():
             raise RuntimeError('Missing GitHub Actions secret: ' + name)
     service = api.render('/services/' + api.SERVICE)
     assert service['ownerId'] == api.WORKSPACE
-    assert service['repo'] == 'https://github.com/928886540/cpa' and service['branch'] == 'main'
+    assert api.is_cpa_repo(service['repo']) and service['branch'] == 'main'
     assert service['serviceDetails']['envSpecificDetails']['dockerCommand'] == './CLIProxyAPI --config /etc/secrets/config.yaml'
     secret = api.render('/services/' + api.SERVICE + '/secret-files/config.yaml')
     config = yaml.safe_load(secret['content'])

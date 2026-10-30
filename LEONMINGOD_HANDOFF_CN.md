@@ -6,7 +6,7 @@
 
 ## 1. 项目与当前线上状态
 
-网站仓库：<https://github.com/928886540/cloudflare_temp_email>
+网站仓库：<https://github.com/LeonMinGod/cloudflare_temp_email>
 
 - **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
 - 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
@@ -205,7 +205,7 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 
 - Workspace：My Workspace，`tea-d779tahr0fns73e1h3lg`，用户已确认可使用。
 - Service：`srv-d9c4kkvavr4c73ab3sfg`，服务名 `cpa`，Singapore，free 计划，Docker。
-- 实际绑定仓库：**`https://github.com/928886540/cpa`，分支 `main`**，不是公开的 CLIProxyAPI 仓库。
+- 实际绑定仓库：**`https://github.com/LeonMinGod/cpa`，分支 `main`**，不是公开的 CLIProxyAPI 仓库。
 - 当前 live deploy：`dep-dbht8a9srm7s73dt3a30`。
 - 当前提交：`6b7dc9b34f1da0171ce8004dc1ba031e27cd1d21`。
 - 启动命令：`./CLIProxyAPI --config /etc/secrets/config.yaml`；Secret File 为 `/etc/secrets/config.yaml`。
@@ -282,7 +282,7 @@ Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支
 
 ```sh
 gh workflow run leonmingod-star-night.yaml \
-  --repo 928886540/cloudflare_temp_email \
+  --repo LeonMinGod/cloudflare_temp_email \
   --ref codex/free-token-home-20261024 -f mode=stage
 ```
 
@@ -291,7 +291,7 @@ gh workflow run leonmingod-star-night.yaml \
 
 ```sh
 gh workflow run leonmingod-star-night.yaml \
-  --repo 928886540/cloudflare_temp_email \
+  --repo LeonMinGod/cloudflare_temp_email \
   --ref codex/free-token-home-20261024 \
   -f mode=publish -f version_id=新阶段返回的版本ID
 ```
@@ -341,33 +341,33 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 
 ## 10. 验证证据与后续事项
 
-v56 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979061456) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979321483)。
+v56 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979061456) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979321483)。
 55 项测试通过；公网模型计数和起算时间保留，Render 未部署且 healthz=200。
 证据 `verification/v56-*.json`。写入预算为明确标注的代码模拟，不是账单实测。
 
-v55 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40971792221) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40972514083) ·
-[统计配置与登录保护](https://github.com/928886540/cloudflare_temp_email/actions/runs/40972135000) ·
-[真实模型调用验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40971772148)。
+v55 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40971792221) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40972514083) ·
+[统计配置与登录保护](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40972135000) ·
+[真实模型调用验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40971772148)。
 54 项网站测试，Go 全量测试/编译、计数 race 测试通过；公网三尺寸浏览器默认模型顺序、
 真实计数/性能、脱敏额度及本地筛选通过。实测 gpt-6.1-sol 调用 HTTP 200，计数 0→1；
 十二次看板读取均正常，六个主域名/www 版本化资源与源码完全一致。证据
 `verification/v55-*.json`。未真实发送验证码邮件，未轮换用户 Key。
 
-v54 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915716462) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915906456)：49 项
+v54 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40915716462) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40915906456)：49 项
 测试、公网真实额度/双视图及 30 次读取验证通过。证据 `verification/v54-*.json`。
 
 以下 v53、v52 为此前验收记录：
 
-v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40904919911) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40905233018)：45 项测试通过，包括真实 Workers fetch；7 个页面上线、主域名/www 共 46 项资源比对通过；号池 API 均 200，无私人字段，Render healthz 200，领取仍开放。公网桌面/手机检查覆盖首页、令牌页、CC Switch 和号池；393×580 短屏无整页横向溢出。未发送真实邮件、未轮换 Key、未部署 Render。证据见 `verification/v53-public-resources.json`、`v53-browser-layout.json`、`v53-*.jpg`；原生生图提示词、尺寸与文件见 `verification/star-sea-v53-artwork.json`。
+v53 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40904919911) · [Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40905233018)：45 项测试通过，包括真实 Workers fetch；7 个页面上线、主域名/www 共 46 项资源比对通过；号池 API 均 200，无私人字段，Render healthz 200，领取仍开放。公网桌面/手机检查覆盖首页、令牌页、CC Switch 和号池；393×580 短屏无整页横向溢出。未发送真实邮件、未轮换 Key、未部署 Render。证据见 `verification/v53-public-resources.json`、`v53-browser-layout.json`、`v53-*.jpg`；原生生图提示词、尺寸与文件见 `verification/star-sea-v53-artwork.json`。
 
 以下为上轮 v52 邮箱流程验收记录：
 
-本轮网站 stage：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840633936>
+本轮网站 stage：<https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40840633936>
 
-本轮 publish：<https://github.com/928886540/cloudflare_temp_email/actions/runs/40840812582>
+本轮 publish：<https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40840812582>
 
 - 本地与 GitHub 阶段 **37 项测试通过**，包括真实 SQLite、领取资格、签名落款、防覆盖、同邮箱同 Key、旧记录、错误次数与限额。
 - 本地及公网各 8 项浏览器场景通过，覆盖 393×580 手机与 1440×900 电脑、邮箱/落款记忆、整段粘贴、邮件链接、新标签页和跨浏览器复制。
@@ -387,7 +387,7 @@ v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/4090
 
 ```text
 请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
-网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v56，统计缓存采用变化分片写入；默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 LeonMinGod/cpa。当前网站 v56，统计缓存采用变化分片写入；默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
 保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
 先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
 用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。

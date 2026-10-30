@@ -5,8 +5,8 @@
 主站 `a767d9be-e5e3-4701-b117-77206ad6390c`，可直接回滚到兼容格式的 v55
 `2b31bdc4-5d08-4716-8589-411b49f0017c`。入口、11 个绑定、邮箱 KV 和原
 GAME_RUNS 保留；未部署 Render，原模型计数与起算时间经公网检查保留。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979061456) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979321483)。
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979061456) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979321483)。
 
 全站每分钟统计与每凭证五分钟额度闸门不变。持久化事务只更新变化的分片，数量
 不变时不重写 manifest；数据缩小时删除旧分片。冷启动恢复分片基线。缓存命中的
@@ -24,8 +24,8 @@ healthz 为 200。证据 `verification/v56-write-budget.json` 与 `v56-release.j
 
 主站 `2b31bdc4-5d08-4716-8589-411b49f0017c`，入口仍为
 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，11 个绑定、原 KV/GAME_RUNS 保留。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40971792221) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40972514083)。
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40971792221) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40972514083)。
 
 模型视图成为默认入口。GPT/Codex 厂商和 `gpt-6.1-sol` 常用模型置前，
 `gpt-6.1-terra`、`gpt-6-astra` 随后，内部 auto-review 靠后。凭证按状态、厂商、
@@ -61,8 +61,8 @@ CPA 新增不消费队列的鉴权汇总接口 `/v8/management/observability/usa
 主站 `f1872be0-f97d-4890-9800-0f2f3eb19cf5`，可回滚到 v53
 `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`；入口保持
 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，11 个绑定及原 GAME_RUNS/KV 不变。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915716462) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40915906456)。
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40915716462) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40915906456)。
 
 按用户指定参考站的白色卡片方式重做 `/model-status/`，保留手动深色切换。
 顶部为厂商标签，下面可切换“凭证与额度 / 模型状态”；厂商、视图、搜索和状态筛选
@@ -101,15 +101,15 @@ WAF 修改前后备份在 `verification/v54-waf-*.json`。回滚白名单时仅�
 
 本轮未重部署 Render、未启停凭证、未轮换客户端 Key。首页 v7、令牌 v5、默认流光、
 CC Switch、邮箱/落款和游戏 v8 全部保留。新增手动 `pool-audit` 仅输出脱敏额度契约
-与汇总，成功记录 [40912892424](https://github.com/928886540/cloudflare_temp_email/actions/runs/40912892424)。
+与汇总，成功记录 [40912892424](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40912892424)。
 
 
 ## 2026-10-29：v53 CC Switch、真实号池与星海四幅背景已上线
 
 北京时间 23:48 发布：主站 `71cc78b8-48bc-4d9a-ac7b-a5cd73b20386`；入口仍为
 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，保留 SITE → 主站命名入口 Site。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40904919911) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40905233018)。
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40904919911) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40905233018)。
 稳定旧版回滚参考为带状态 Secret 的 v52 `8f82f2d1-4a50-4d5f-be05-2ac71c7e484d`。
 
 领取结果、保存 Key 和游戏奖励增加「接入 CC Switch」：Claude/Codex/Gemini、配置名、
@@ -145,8 +145,8 @@ Render 配置、部署、客户端 Key 与 OAuth 文件均未修改。
 发布于 2026-10-29 08:15 UTC：主站 `968904cd-207b-4691-863c-d63cc4487640`，
 可回滚到 v51 `76953781-1d5b-43ff-a91c-d3f01ace76f8`；入口仍为
 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。10 个绑定与原 GAME_RUNS/KV 均保留。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40840633936) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40840812582)
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40840633936) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40840812582)
 
 按用户要求恢复电脑和手机首页的 v6 图。此前 v51 沿用 v5，并禁止直接访问 v6；本轮
 同时恢复 v6 资源路由、首页两层图片引用，以及发布脚本对 v6 原图的逐字节校验。
@@ -235,8 +235,8 @@ KV `1b02d139375045f7a7d5ce2d994abd2c`、GAME_RUNS
 本地和 GitHub 阶段共 34 项测试全过。公网逐字节核验首页、领取页、验证码页、游戏页及
 三个当前脚本；公开状态为 open，无资格发码/校验 403，义父确认 200 且不含共享 Key，
 带资格的无效邮箱 400，Render `/healthz` 200。
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40810252737) ·
-[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40810369882)
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40810252737) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40810369882)
 
 ## 2026-10-27：Render CPA 异常 IP 防护已上线
 
@@ -259,15 +259,15 @@ Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/he
 恢复。加密配置/登录备份 artifact 保留 30 天。Render 本身一直在线；当时 GPT 不可用
 来自两份上游 Plus 账号的真实配额冷却，重启 Render 不会增加上游额度。
 
-[发布与公网验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40538198918) ·
-[独立状态复核](https://github.com/928886540/cloudflare_temp_email/actions/runs/40539773887) ·
+[发布与公网验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40538198918) ·
+[独立状态复核](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40539773887) ·
 [运维说明](../api-abuse-guard/README_CN.md)
 
 ## 2026-10-26：v8 金刚罩范围与操作反馈
 
 已发布并验收：主站/代码版本 `98a305ea-8544-45ec-809a-3c1f26ccaf5e`，转发入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。发布前实时基线为 `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`。27 项检查、4 种布局的特效/失败按钮/音效开关、3 种手机触控实时提交均通过；主域名/www 各 48 项资源与源码一致，真实手机验证控件正常加载。公网管理签名开局后，连续提交 45 段操作完成 v8 通关：24 玉、2 盾，吃到 2 次金令、弹开 20 把红剑、6 次险避事件。并发领奖 200/409/409；整局补交、一次性批量提交和匿名/假验证仍被拒绝。游戏与原领取返回同一把现有 Key（指纹 `a6bbe9c75913e4ec`），models 200 / 33。未部署 Render、未改 Key、保留两小时验证和 v7 在途局。
 
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40349972406) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40350193310) · [Live acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40350258134)
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40349972406) · [Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40350193310) · [Live acceptance](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40350258134)
 
 新局使用 v8 / app-v12：剑墙来向先亮起 0.4 秒剑光再发射，稳定缺口的保护时间同步后移；不增加安全方框、标签或机制剧透。金刚罩生效期间，青玉和金令使用半径 108 的圆形护罩接触范围拾取，红剑接触后由服务端移除威胁、客户端播放向外弹飞和金色火花；五秒到期恢复普通剑尖拾取与受伤判定。重复金令刷新五秒不叠加、不回血。
 
@@ -277,7 +277,7 @@ Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/he
 
 已于北京时间 2026-10-26 23:07 发布：主站/代码版本 `7018e442-e644-4bdf-a38f-ca8cf9e31e8e`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。发布前只读核对实时基线 `0c98caa6-334b-4b4c-ac1f-694ec95e8879`。20 项检查、两种手机尺寸刷新/重开/切换领取实测通过；主域名/www 各 43 项资源与源码一致。公网管理方临时签名凭证验证连续开局 200、相同奖励领取 200、固定两小时有效期；缺失/过期/篡改凭证均 403。该公网验收使用管理权限签名，不是自动通过真人挑战；真实手机验证控件另行加载检查通过。
 
-[Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40345932586) · [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346185218) · [Acceptance](https://github.com/928886540/cloudflare_temp_email/actions/runs/40346269266)
+[Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40345932586) · [Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40346185218) · [Acceptance](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40346269266)
 
 验证通过后由服务器签发固定 2 小时的 HttpOnly/Secure 签名凭证，同一浏览器刷新、重开游戏、切换义父领取及主域名/www 不再重复弹 Turnstile。凭证不绑定 IP，手机切网不会因此重验；访问不续期，过期、清除 Cookie、签名或浏览器不匹配时重新验证。服务端独立核验凭证，CF 原 token 仍单次使用，实时游戏、领奖条件、限频、关闭状态与私密运维验收继续生效。
 
@@ -286,7 +286,7 @@ Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/he
 ## 最终发布：弱网跨局响应隔离（北京时间 2026-10-26 16:19）
 
 当前 CF 主站/代码版本均为 `0c98caa6-334b-4b4c-ac1f-694ec95e8879`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。客户端 app-v10.mjs，实时协议仍为 v7。旧局迟到的成功响应、错误及清理回调均与新局隔离，不覆盖新凭证、不结束新游戏、不清空新局正在提交的请求。
-两个针对性浏览器场景均通过，新局持续实时提交 200、无脚本异常。[阶段](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291321848) 18 项检查通过，[发布](https://github.com/928886540/cloudflare_temp_email/actions/runs/40291450251)通过；主域名/www 40 项资源与源码一致，匿名领取/开局和假凭证仍为 403。
+两个针对性浏览器场景均通过，新局持续实时提交 200、无脚本异常。[阶段](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40291321848) 18 项检查通过，[发布](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40291450251)通过；主域名/www 40 项资源与源码一致，匿名领取/开局和假凭证仍为 403。
 新义父 Key 仍为指纹 `a6bbe9c75913e4ec`，models 200；旧 `69ba11c6809909d7` 已撤销 401。Render 仍 `dep-dbfglagae00c73819490`、4 把 Key、12 份登录，Karl 保留；本补丁未变更奖励或后端游戏规则，也未再部署 Render。下方完整 45 秒实时通关验收仍适用于未改变的协议/规则。
 证据 `verification/security-v7-stale-responses.json`、`verification/security-v7-client-v10-release.json`。刷新旧页面后使用新客户端。
 
@@ -294,14 +294,14 @@ Durable Object SQLite，Render 重启不丢失；Worker 每 10 分钟探活 `/he
 
 新义父 Key 指纹 `a6bbe9c75913e4ec`（非凭据）已在 Render 验证 models 200 并同步网页；旧 `69ba11c6809909d7` 已删除并验证 models 401。网页仍开放，两条领取使用同一把新 Key，地址仍为 https://cpa-dhke.onrender.com/v1；匿名直接领取须先过真人验证。
 主站当前版本 `d93ec9bd-702c-4379-9ac3-922b7919130d`，代码版本 `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`；入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。Render 部署 `dep-dbfglagae00c73819490`。网页本次轮换只切 Secret，未再改代码/美术/游戏。
-[新增并同步](https://github.com/928886540/cloudflare_temp_email/actions/runs/40290134078)、[撤销旧 Key](https://github.com/928886540/cloudflare_temp_email/actions/runs/40290264958)均成功。最终保留 4 把 Key：唯一义父发放 Key、2 把原有 Key、独立 Karl Key；当前全部 12 份登录均备份恢复（已不是早前的 10 份）。运维检查现为 15 项，包括延迟轮换的旧指纹保护。
+[新增并同步](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40290134078)、[撤销旧 Key](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40290264958)均成功。最终保留 4 把 Key：唯一义父发放 Key、2 把原有 Key、独立 Karl Key；当前全部 12 份登录均备份恢复（已不是早前的 10 份）。运维检查现为 15 项，包括延迟轮换的旧指纹保护。
 CPA 管理接口一度触发错误登录封禁，两次预检均在任何修改前停止；等解封后才备份、轮换，没有重启去赌丢失账号。不得为绕过临时封禁而跳过最新登录备份。脱敏记录 `.github/operations/render-client-keys/yifu-security-rotation-20261026.json`；实时游戏修复的完整验收见下方记录。
 
 ## 实时校验 v7 已发布：公网绕过复验通过（北京时间 2026-10-26 15:47）
 
 主站代码版本 `c6a5209a-d283-4a12-ab4a-a02d9b6f9f2a`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。保留 GAME_RUNS 命名空间、原 ASSETS、其他绑定和所有美术；客户端 app-v9.mjs / engine-v7.mjs，玩法参数不变。发布前已重新读取 CF 实时版本，新增验证配置后的保护基线为 `468396f7-8023-4ed8-8339-f835610dabd3`。
-[构建阶段](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287641432) 18 项检查通过，[发布](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287743435)通过，14 项密钥运维测试通过。3 种本地手机尺寸实时提交和原领取流程通过；主域名/www 共 39 项资源与源码一致，原图片与游戏参数未改。
-[真实公网 API 验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40287817328)：使用仅管理方持有的签名开局，持续提交 45 段实时操作，24 玉/2 盾通关；领奖并发 200/409/409，与签名原领取相同 Key，models 200 / 34 模型。签名只跳过人机验证，不跳过实时游戏校验，这不是声称自动化通过了真人验证。
+[构建阶段](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40287641432) 18 项检查通过，[发布](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40287743435)通过，14 项密钥运维测试通过。3 种本地手机尺寸实时提交和原领取流程通过；主域名/www 共 39 项资源与源码一致，原图片与游戏参数未改。
+[真实公网 API 验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40287817328)：使用仅管理方持有的签名开局，持续提交 45 段实时操作，24 玉/2 盾通关；领奖并发 200/409/409，与签名原领取相同 Key，models 200 / 34 模型。签名只跳过人机验证，不跳过实时游戏校验，这不是声称自动化通过了真人验证。
 无真人凭证的开局/领取、假 token 在主域名/www 均为 403；等待时间后才提交整局 trace、一次性补交 2700 帧均被拒绝。公网手机真人验证控件实际加载且不超出 393×580 屏幕，未代替用户解答挑战。旧 v1–v6 游戏须刷新重新开局。
 后续客户端版本不要恢复完整种子/最终 trace 领奖通道。持续在线自动化和领到共享 Key 后转发不能由本次机制彻底消除。
 
@@ -319,7 +319,7 @@ Cloudflare Turnstile 同时校验开局与原义父领取，严格验证 hostnam
 令牌入口已恢复原转场与 `/free-token/choose/`；手机 393×580 的主域名/www 实际点击通过，无脚本异常。网页状态为 open，未修改页面、图片、游戏规则或 Worker 模块。
 主站当前版本 `fd79879f-4dbc-43c9-b5fa-d9cf240b9b59`；入口仍为 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。Render 部署 `dep-dbffl1cs728c73f95fqg`，沿用原代码。
 Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独立 Karl Key（`162618109a2dc43b`，再次验证 models 200）。10 份登录保留。已撤销的旧义父 Key 不恢复；以后更新义父 Key 仍须撤销被替换的那把，Karl 不参与网页轮换。
-[操作与验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40283102427)成功。脱敏结果 `.github/operations/render-client-keys/yifu-open-20261026.json`；不记录 Key 原值。以下为历史记录。
+[操作与验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40283102427)成功。脱敏结果 `.github/operations/render-client-keys/yifu-open-20261026.json`；不记录 Key 原值。以下为历史记录。
 
 ## 当前状态：暂未开放，义父 Key 已撤销（2026-10-26 04:16 UTC）
 
@@ -331,7 +331,7 @@ Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独�
 - 关闭：默认 `yifu-remove-key.yaml` 移除当前 Key，入口自动关闭。不设置自动开放时间，不用恢复旧 Key/旧 Worker 版本来开放。
 
 `GET /api/free-token/status` 不返回 Key、no-store；状态只跟随当前发放 Secret。添加/删除流程已校验此状态，网站发布流程支持 Secret 缺失并保持关闭。历史 inspect 假定领取开放，关闭后用默认 add/remove 的 dry_run 检查。
-[入口发布](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268031184)通过，18 项后端检查及 10 项 Key 运维测试通过；[撤销记录](https://github.com/928886540/cloudflare_temp_email/actions/runs/40268141055)成功。
+[入口发布](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40268031184)通过，18 项后端检查及 10 项 Key 运维测试通过；[撤销记录](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40268141055)成功。
 主域名/www 实际开放点击与实际关闭点击分别验收；关闭时两条发放接口均 503。五种布局/交互用模拟状态验证关闭不跳转、原页无需刷新重新开放、触屏、键盘及减少动画模式。图片、游戏 v6/金刚罩、实际通道保护和转发结构均保留。
 证据：`verification/availability-release-and-close.json`、`availability-live-*.json`、`availability-browser-*.json`。以下为历史记录。
 
@@ -347,7 +347,7 @@ Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独�
 ## 已发布：剑尖拾取与生图金刚罩 v6（2026-10-26 02:02 UTC）
 
 主站 `0e79d9a0-048b-46d8-b109-0b4cde0a76aa`；入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，客户端 `app-v8.mjs`，共享规则 v6。
-[发布验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40257121629)通过，17 项后端检查通过，包括剑尖/剑身拾取、受击范围不扩大、同帧金令挡伤害、五秒到期、刷新不叠加及 v1-v5 在途回放。
+[发布验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40257121629)通过，17 项后端检查通过，包括剑尖/剑身拾取、受击范围不扩大、同帧金令挡伤害、五秒到期、刷新不叠加及 v1-v5 在途回放。
 金令和透明金色符纹护罩均由原生 image_gen 生成（约 152KB / 442KB WebP）；收集反馈跟随剑尖触点。金令独立于灵玉计数，授予 5 秒金刚罩，HUD 倒计时；不恢复已损失的护盾。
 公网真实 v6 回放吃到 2 次金令、护罩挡住 17 把剑，24 玉/剩 1 盾通关，领奖并发 409/200/409。仍发当前 `01db29c9e73f5fba`，models 200（本次 22 模型）。未改 Render 或 Key，已撤销旧 Key 不恢复。
 33 个发布资源与源码一致，原 8 个图/脚本不变，主域名/www 对齐。公网手机/短屏/横屏浏览器用模拟开局验证剑尖先于剑柄拾取、同帧挡剑、5 秒到期、两张生图资源显示与透明度，无脚本错误；真实领奖另由公网 API 检查。
@@ -366,7 +366,7 @@ Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独�
 
 主站 `190a247f-8f89-4437-b41d-137cf2760145`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`；客户端 `app-v7.mjs`。
 仅删除随剑墙下落的虚线透明方框和“缺口 ↓”文字，让玩家观察自然空位。v5 引擎、实际缺口保护、难度、不可暂停、通关条件和十句台词均未修改。
-[发布验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40254536775)通过，固定阶段构建的 12 项测试通过。主域名/www 客户端与源码一致，均已删除方框/文字；v5 引擎字节相同。
+[发布验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40254536775)通过，固定阶段构建的 12 项测试通过。主域名/www 客户端与源码一致，均已删除方框/文字；v5 引擎字节相同。
 公网 320×480、393×580、844×390 浏览器与剑墙画面检查通过；开局 API 为测试夹具，本轮未重复真实游戏领奖。发布校验旧领取/models 200、相同当前 Key、GAME_RUNS 与转发结构均保留，未改 Render。
 证据：`verification/no-gap-marker-*.json`、`release-no-gap-markers.json`。用户拒绝此类调试风格的安全提示，后续不得恢复；以下为历史记录。
 
@@ -381,7 +381,7 @@ Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独�
 ## 已发布：v5 公平剑阵与简洁通关说明（2026-10-26 01:16 UTC）
 
 主站 `8a812fa0-2aec-4ebb-ba29-bff5442ff8d0`，入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。
-[发布验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40253418901)通过；12 项后端测试全部通过，含 90 组剑墙缺口可达且不被封住、边缘不反弹、v1-v4 兼容和 SQLite 并发防重复领取。
+[发布验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40253418901)通过；12 项后端测试全部通过，含 90 组剑墙缺口可达且不被封住、边缘不反弹、v1-v4 兼容和 SQLite 并发防重复领取。
 游戏已用 v5 / app-v6：减轻中后段密度和速度，三格稳定受保护缺口并标记位置；保留 45 秒、24 灵玉、两盾、不暂停和十句调侃。
 对外只写通关条件，开局与 HUD 不预告最后五颗、狂暴或后续躲避机制。用户明确要求有挑战但不能设计无路可躲或强制死亡；后续调整保留此原则。
 
@@ -402,7 +402,7 @@ Render 共 4 把 Key：本次唯一的义父发放 Key、2 把原有 Key、独�
 
 ## 昨天的义父 Key 已撤销（2026-10-26 00:46 UTC）
 
-用户明确要求更新即替换并撤销旧义父 Key，已完成：[撤销与验证](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250878059)。
+用户明确要求更新即替换并撤销旧义父 Key，已完成：[撤销与验证](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40250878059)。
 昨天的 `7fa19b84ca57a2ba` 已从 Render 删除，调用 models 返回 401；当前网站仍只发新 Key `01db29c9e73f5fba`，models 200。
 Render 剩 3 把客户端 Key：当前义父 Key 和另外 2 把原有 Key；10 份登录均已恢复。部署 `dep-dbfa5eq9lscs739btcq0`，代码提交不变。
 CF 主站仍 `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`、入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，网页/游戏与新 Key 发放均未改动。
@@ -416,13 +416,13 @@ CF 主站仍 `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`、入口仍 `51a33be8-6ca4-4
 Render 部署 `dep-dbfa25cs728c73elg030`，仍为原代码提交 `f9cee393e5360db6b47dd18d6c2747a2e6c6cbb7`。新旧 Key 均经 models 验证，新 Key models 200 / 34 模型。
 网站 `FREE_TOKEN_RENDER_KEY` 已同步同一把新 Key，领奖地址仍为 `https://cpa-dhke.onrender.com/v1`。
 主站当前版本 `c6a75a10-b1bd-4a93-ba54-8d4ba2236408`；入口仍 `51a33be8-6ca4-4b4f-886f-613bfea996b0`。本轮仅切 Secret，全部 Worker 模块、页面/动效、游戏 v4 规则、其他绑定和 Render 环境配置不变。
-[操作与验收记录](https://github.com/928886540/cloudflare_temp_email/actions/runs/40250335029)，脱敏结果 `verification/key-rotation-20261026.json`。后续换 Key 继续用此固定流程，重新读取实时版本；以下为历史记录。
+[操作与验收记录](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40250335029)，脱敏结果 `verification/key-rotation-20261026.json`。后续换 Key 继续用此固定流程，重新读取实时版本；以下为历史记录。
 
 
 ## 已发布：v4 最后五颗狂暴与十句嘲讽（2026-10-26 00:24 UTC）
 
 主站版本 `ad78a420-ae8e-4df3-86b4-8b2f3d3edca3`，入口保留 `51a33be8-6ca4-4b4f-886f-613bfea996b0` 和 SITE → Site 绑定。
-[发布验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40249180162)通过，阶段构建 9 项后端测试全部通过。
+[发布验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40249180162)通过，阶段构建 9 项后端测试全部通过。
 新局 v4 / app-v5：45 秒、24 枚灵玉、两点护盾；累计 19 枚即还差 5 枚时狂暴，不按剩余时间触发。吃满后不再掉玉，纯躲避至 45 秒。
 失败随机显示 10 句带 emoji 的嘲讽，保留用户给出的三句、“车到山前必有路，赶紧回头叫义父！”及诗词谐改；可重试或直达义父领取。仍然不准暂停，退出回选择页。
 
@@ -449,7 +449,7 @@ Render 部署 `dep-dbfa25cs728c73elg030`，仍为原代码提交 `f9cee393e5360d
 游戏按实际经过时间推进，后台/BFCache 返回时补算；手机拖动和焦点变化不会停止游戏。
 用户明确要求不准暂停，后续不要从历史客户端恢复此功能。规则仍为 v3，两点护盾、30 秒、16 灵玉。
 
-[发布验收](https://github.com/928886540/cloudflare_temp_email/actions/runs/40246534213)通过。
+[发布验收](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40246534213)通过。
 主域名/www 的游戏 HTML 与 app-v4 均和源码一致，均无暂停/继续按钮。公网 393×580 浏览器
 使用固定开局测试夹具验证连续拖动、反复失焦、空格/ESC 和冻结回调后跳时返回；无暂停和脚本异常。
 该浏览器用例模拟开局 API，不代表本轮重新完成真实领奖；发布检查真实旧领取/models 200，奖励未变。
@@ -465,7 +465,7 @@ Render 部署 `dep-dbfa25cs728c73elg030`，仍为原代码提交 `f9cee393e5360d
 ## v3 已发布：2026-10-25 17:05 UTC（北京时间 10 月 26 日 01:05）
 
 - 主站：`168571b3-3eab-46c8-89f4-310b62491bf4`；转发仍为 `51a33be8-6ca4-4b4f-886f-613bfea996b0`，SITE / Site 绑定和路由不变。
-- 发布：https://github.com/928886540/cloudflare_temp_email/actions/runs/40214794565 。
+- 发布：https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40214794565 。
 - 6 项服务端测试通过，覆盖第二次受击即结束、v1/v2 在途局、回放一致性、会话与真实 SQLite 并发领奖保护。
 - 公网新局确认规则版本 3、初始 2 点护盾；25 灵玉、剩余 1 点护盾通关领奖成功，并发返回 409/409/200。与原领取发出同一 Key，models 200/22 个模型。
 - 全部 21 个发布资源与源码一致，包括四张新海报；主域名/www 对齐、手机公网浏览器和短屏操作检查通过。原图/旧脚本保留，Render Key 和 GAME_RUNS 命名空间未改。
@@ -484,7 +484,7 @@ Render 部署 `dep-dbfa25cs728c73elg030`，仍为原代码提交 `f9cee393e5360d
 
 - 主站版本：`f9576720-5c7f-4909-a685-5e145fc25001`。
 - 转发版本：`51a33be8-6ca4-4b4f-886f-613bfea996b0`。转发 JS/映射字节保持不变，`SITE` binding 指向主站的命名入口 `Site`，让更新页面先经过主站处理；保留原更具体路由。
-- 发布与验收：https://github.com/928886540/cloudflare_temp_email/actions/runs/40212806612 。
+- 发布与验收：https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40212806612 。
 - 14 个新增/更新资源与源码一致，8 个受保护的原图/脚本不变；主域名/www 四个页面一致。公网手机浏览器 393×580 检查通过。
 - 原领取 200，现有 Key 指纹仍为 `7fa19b84ca57a2ba`；`/v1/models` 200、22 个模型。未修改 Render 配置/Key。
 - 公网 v2 游戏领奖成功（27 枚灵玉、2 点护盾），并发返回 200/409/409，奖励与原领取完全相同。`GAME_RUNS` 原命名空间保留，无新迁移。
