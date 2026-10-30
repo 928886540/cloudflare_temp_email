@@ -1,4 +1,4 @@
-import { passiveQuota, parseQuota, quotaProbe } from './pool-quota.js';
+import { passiveQuota, parseQuota, quotaProbe, quotaProbes } from './pool-quota.js';
 import { attachModelUsage, mergeModelUsage } from './pool-metrics.js';
 import { loadPoolCache, savePoolCache } from './pool-storage.js';
 import { compareModels, compareAccounts, compareProviders } from '../public/model-status/order-v1.mjs';
@@ -117,9 +117,16 @@ export class PoolStatusCoordinator{
       const entry={next:now+QUOTA_MS,value:cached?.value||passiveQuota(file,now)};
       this.cache.quotas[id]=entry;await this.persist();
       try{
-        const response=await management('requests/api-call',this.env,this.fetcher,AbortSignal.timeout(12_000),probe);
-        if(response.status_code!==200)throw Object.assign(new Error('Quota upstream unavailable'),{status:response.status_code});
-        const raw=typeof response.body==='string'?JSON.parse(response.body):response.body;
+        const probes=quotaProbes(file),responses=await Promise.allSettled(probes.map(async({key,request})=>{
+          const response=await management('requests/api-call',this.env,this.fetcher,AbortSignal.timeout(12_000),request);
+          if(response.status_code!==200)throw Object.assign(new Error('Quota upstream unavailable'),{status:response.status_code});
+          return {key,body:typeof response.body==='string'?JSON.parse(response.body):response.body};
+        }));
+        const denied=responses.find(x=>x.status==='rejected'&&x.reason.managementAuth);
+        if(denied)throw denied.reason;
+        const values=responses.filter(x=>x.status==='fulfilled').map(x=>x.value);
+        if(!values.length)throw responses.find(x=>x.status==='rejected').reason;
+        const raw=probes.length===1?values[0].body:Object.fromEntries(values.map(x=>[x.key,x.body]));
         entry.value={...parseQuota(providerOf(file),raw,now),renew_at:passiveQuota(file,now).renew_at};
       }catch(error){
         entry.value={...entry.value,error:publicError(error)};

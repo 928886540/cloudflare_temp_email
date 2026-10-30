@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "a767d9be-e5e3-4701-b117-77206ad6390c",
+  "baseline_parent": "3453ed6c-697c-4174-9a16-14cd4c377e9b",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v57: shared browser-saved key viewer on path selection and game victory",
+  "message": "v58: native xAI subscription, weekly remaining quota, reset and shared product usage",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -89,7 +89,8 @@
     "model-status/status-v3.mjs",
     "model-status/status-v3.css",
     "free-token/saved-key-v1.mjs",
-    "free-token/saved-key-v1.css"
-  ],
-  "staged_version": "3453ed6c-697c-4174-9a16-14cd4c377e9b"
+    "free-token/saved-key-v1.css",
+    "model-status/status-v4.mjs",
+    "model-status/status-v4.css"
+  ]
 }

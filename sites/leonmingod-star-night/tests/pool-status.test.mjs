@@ -47,7 +47,7 @@ test('quota parsing preserves real remaining percent and reset times while strip
  assert.equal(parseQuota('claude',{five_hour:{utilization:100,resets_at:later}},now).windows[0].remaining,0);
  assert.equal(passiveQuota({quota:{signals:{'X-Codex-Primary-Used-Percent':'bad'}}}).windows.length,0);
  assert.throws(()=>parseQuota('codex',{rate_limit:{primary_window:{used_percent:102}}},now));
- assert.equal(quotaProbe({provider:'xai',auth_index:'index'}),null);
+ assert.equal(quotaProbe({provider:'xai',auth_index:'index'}).url,'https://cli-chat-proxy.grok.com/v1/billing?format=credits');
  assert.equal(quotaProbe(files[0]).header.Authorization,'Bearer $TOKEN$');
 });
 

@@ -1,4 +1,4 @@
-const safeNumber = value => value !== null && value !== '' && Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : null;
+const safeNumber = value => ['number','string'].includes(typeof value) && String(value).trim() !== '' && Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const iso = value => { const n = typeof value === 'number' ? (value < 1e12 ? value * 1000 : value) : Date.parse(value || ''); return Number.isFinite(n) && n > 0 ? new Date(n).toISOString() : null; };
 const PLANS = new Set(['free', 'plus', 'pro', 'team', 'business', 'enterprise', 'max', 'ultra']);
 const plan = value => PLANS.has(String(value).toLowerCase()) ? String(value).toLowerCase() : null;
@@ -49,10 +49,62 @@ export function quotaProbe(file) {
     header['Content-Type']='application/json';
     return { auth_index:file.auth_index, method:'POST', url:'https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels', header, data:JSON.stringify({project:file.project_id}) };
   }
+  if (['xai','grok'].includes(provider)) {
+    Object.assign(header,{'x-xai-token-auth':'xai-grok-cli','x-grok-client-version':'1.0.46',Accept:'*/*','User-Agent':'grok-pager/1.0.46 grok-shell/1.0.46 (macos; aarch64)'});
+    const subject=[file.sub,file.subject,file.user_id,file.userId,file.metadata?.sub,file.attributes?.sub].find(x=>typeof x==='string'&&/^[\w|:-]{1,200}$/.test(x));
+    if(subject)header['x-userid']=subject;
+    return {auth_index:file.auth_index,method:'GET',url:'https://cli-chat-proxy.grok.com/v1/billing?format=credits',header};
+  }
   return null;
 }
 
+export function quotaProbes(file){
+  const primary=quotaProbe(file);if(!primary)return [];
+  if(!['xai','grok'].includes(String(file.provider||file.type||'').toLowerCase()))return [{key:'primary',request:primary}];
+  return [{key:'credits',request:primary},...[
+    ['billing','billing'],['user','user?include=subscription'],['settings','settings'],
+  ].map(([key,path])=>({key,request:{...primary,url:'https://cli-chat-proxy.grok.com/v1/'+path}}))];
+}
+
+const money=value=>safeNumber(value&&typeof value==='object'?value.val:value);
+const normalize=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function xaiPlan(body,limit){
+  const name=normalize(body.settings?.subscription_tier_display||body.settings?.subscriptionTierDisplay||body.user?.subscriptionTier||body.user?.subscription_tier);
+  if(name.includes('heavy'))return 'SuperGrok Heavy';
+  if(name.includes('supergrok')||name==='premium')return 'SuperGrok';
+  if(name==='free'||name==='standard')return 'Free';
+  return limit===150000?'SuperGrok Heavy':limit===15000?'SuperGrok':null;
+}
+function parseXaiQuota(body,now){
+  const configs=[body.credits?.config,body.billing?.config,body.config].filter(x=>x&&typeof x==='object');
+  const selected=configs.find(x=>safeNumber(x.creditUsagePercent??x.credit_usage_percent)!==null)||configs.find(x=>String((x.currentPeriod||x.current_period)?.type).toLowerCase().includes('weekly'))||configs[0]||{};
+  const value=field=>configs.map(x=>money(x[field])).find(x=>x!==null)??null;
+  const limit=value('monthlyLimit')??value('monthly_limit'),used=value('used'),cap=value('onDemandCap')??value('on_demand_cap'),onDemand=value('onDemandUsed')??value('on_demand_used');
+  const period=selected.currentPeriod||selected.current_period||{},weekly=String(period.type||'').toLowerCase().includes('weekly');
+  const creditPercent=safeNumber(selected.creditUsagePercent??selected.credit_usage_percent);
+  const windows=[];
+  const isMonthly=String(period.type||'').toLowerCase().includes('monthly');
+  const weeklyWindow=window(isMonthly?'月额度':'周限额',creditPercent,period.end,isMonthly?null:604800);
+  if(weeklyWindow&&(weekly||creditPercent!==null))windows.push(weeklyWindow);
+  if(limit!==null&&limit>0&&used!==null&&!windows.some(x=>x.label==='月额度')){
+    const config=configs.find(x=>x.billingPeriodEnd||x.billing_period_end)||selected;
+    const row=window('月额度',Math.min(used,limit)/limit*100,config.billingPeriodEnd||config.billing_period_end,null);
+    if(row)windows.push(row);
+  }
+  const products=new Map([['grokbuild','GrokBuild'],['grokcli','GrokBuild'],['cursor','Cursor'],['grokbot','GrokBot']]);
+  const breakdown=configs.map(x=>x.productUsage||x.product_usage).find(x=>Array.isArray(x)&&x.length)||[];
+  const product_usage=breakdown.slice(0,16).filter(row=>row&&typeof row==='object').map(row=>({product:products.get(normalize(row.product)),used_percent:safeNumber(row.usagePercent??row.usage_percent)})).filter(x=>x.product&&x.used_percent!==null&&x.used_percent<=100);
+  const type=xaiPlan(body,limit);
+  if(!windows.length&&!type&&!product_usage.length&&cap===null)throw new Error('QUOTA_NO_DATA');
+  return {plan:type,credits:null,windows,product_usage,
+    pay_as_you_go:cap===null?null:{enabled:cap>0,cap_usd:cap/100,used_usd:onDemand===null?null:onDemand/100},
+    prepaid_usd:(value('prepaidBalance')??value('prepaid_balance'))===null?null:(value('prepaidBalance')??value('prepaid_balance'))/100,
+    observed_at:new Date(now).toISOString(),source:'live',supported:true,
+    primary_remaining:windows[0]?.remaining??null,secondary_remaining:windows[1]?.remaining??null};
+}
+
 export function parseQuota(provider, body, now = Date.now()) {
+  if(['xai','grok'].includes(provider))return parseXaiQuota(body,now);
   let windows = [], type = null;
   if (provider === 'codex') {
     type = plan(body.plan_type);
