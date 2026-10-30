@@ -63,6 +63,17 @@ def main():
         result['native_status_http'] = status
         if status == 200:
             result['native_login_record'] = native
+            result['management_client_ip_is_public'] = ipaddress.ip_address(native['client_ip']).is_global
+        if os.environ['SECURITY_MODE'] == 'management-verify-current':
+            assert status == 200 and result.get('management_client_ip_is_public'), 'Management client IP is still a proxy'
+            keys = (config.get('access') or {}).get('api-keys', config.get('api-keys'))
+            assert keys
+            counts = []
+            for _ in range(5):
+                for client_key in keys:
+                    counts.append(api.models(client_key))
+            assert all(count > 0 for count in counts)
+            result['current_model_api_checks'] = {'successful': len(counts), 'failed': 0, 'keys': len(keys)}
         if os.environ['SECURITY_MODE'] == 'management-unban':
             assert status == 200, 'Deploy the management recovery endpoint before clearing a native ban'
             status, reset = call('security/login-attempts', 'DELETE', {'ip': target})

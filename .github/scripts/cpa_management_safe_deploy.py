@@ -1,5 +1,6 @@
 """Restore OAuth before readiness, preserving live key traffic and all guard policy."""
 import json
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 import threading
@@ -37,11 +38,15 @@ def main():
     def monitor():
         while not stopped.is_set():
             for index, key in enumerate(state['keys']):
+                if stopped.is_set():
+                    break
                 try:
                     count = api.models(key)
-                    samples.append({'key_index': index, 'http': 200, 'models': count})
-                except Exception:
-                    samples.append({'key_index': index, 'http': 'failed'})
+                    samples.append({'key_index': index, 'http': 200, 'models': count, 'at': datetime.now(timezone.utc).isoformat()})
+                except Exception as error:
+                    # API helper errors contain only path/status, never keys or bodies.
+                    samples.append({'key_index': index, 'http': 'failed', 'at': datetime.now(timezone.utc).isoformat(),
+                        'error_type': type(error).__name__, 'reason': str(error)[:180] if isinstance(error, RuntimeError) else type(error).__name__})
             stopped.wait(3)
 
     thread = threading.Thread(target=monitor, daemon=True)
@@ -69,11 +74,12 @@ def main():
             'management_ip_cleared': bool(target)}
     finally:
         stopped.set()
-        thread.join(timeout=65)
+        thread.join(timeout=60)
         report = {'samples': len(samples), 'failures': sum(row['http'] != 200 for row in samples),
             'keys_checked': len(state['keys'])}
         Path('cpa-abuse-rollout').mkdir(exist_ok=True)
         Path('cpa-abuse-rollout/model-traffic-verification.json').write_text(json.dumps(report, indent=2))
+        Path('cpa-abuse-rollout/model-traffic-samples.json').write_text(json.dumps(samples, indent=2))
         print('CPA_LIVE_TRAFFIC_MONITOR=' + json.dumps(report), flush=True)
     assert not report['failures'], 'Live key requests failed during monitored cutover'
     print('CPA_SAFE_MANAGEMENT_DEPLOY=' + json.dumps(result), flush=True)

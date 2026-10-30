@@ -7,6 +7,9 @@
   <title>这份礼，怎么拿？ · LeonMinGod</title>
   <link rel="icon" href="/assets/logo-v2.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/free-token/choose-v3.css">
+  <link rel="stylesheet" href="/free-token/saved-key-v1.css">
+  <link rel="stylesheet" href="/free-token/ccswitch-v1.css">
+  <script type="module" src="/free-token/saved-key-v1.mjs"></script>
   <link rel="stylesheet" href="/free-token/token-passage-v1.css">
   <script>try{const p=JSON.parse(sessionStorage.getItem('lmg-token-passage')||'null');sessionStorage.removeItem('lmg-token-passage');if(p&&p.destination===location.pathname&&Date.now()-p.at<8000&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('token-arrival')}catch{}</script>
   <script src="/free-token/token-passage-v1.js" defer></script>
@@ -24,10 +27,11 @@
       <a class="path path-trial" href="/free-token/game/" aria-labelledby="trial-title">
         <span class="path-number" aria-hidden="true">02</span>
         <div class="path-art sword-art" aria-hidden="true"><span class="art-halo"></span><span class="jade-sword"></span></div>
-        <div class="path-copy"><span class="path-label">实力 · 凭剑说话</span><h2 id="trial-title">御剑破阵</h2><p>三十秒见真章。<br>躲剑煞，夺灵玉，赢了就拿。</p><span class="path-action">拔剑，试一局 <b aria-hidden="true">↗</b></span></div>
+        <div class="path-copy"><span class="path-label">实力 · 凭剑说话</span><h2 id="trial-title">御剑破阵</h2><p>四十五秒见真章。<br>躲剑煞，夺灵玉，赢了就拿。</p><span class="path-action">拔剑，试一局 <b aria-hidden="true">↗</b></span></div>
       </a>
     </div>
     <p class="choice-note"><span aria-hidden="true">◇</span> 两条路，同一份 Token。选你喜欢的。</p>
+    <button type="button" class="saved-key-entry" data-saved-key-entry hidden>查看本浏览器保存的 API Key</button>
   </main>
 </body>
 </html>
