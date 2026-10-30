@@ -1,6 +1,6 @@
 # LeonMinGod 网站与 CPA 运维交接
 
-截至 **v55 本轮线上核对**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
+截至 **v56 本轮线上核对**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
 
 接手先读本文、`sites/leonmingod-star-night/README.md` 和 `WEBSITE_UPDATE_CN.md`，再读取 Cloudflare 与 Render 的实时状态。源码已经在 GitHub；不要重新从旧 Windows 目录或旧首页镜像覆盖生产。
 
@@ -10,16 +10,16 @@
 
 - **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
 - 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
-- 本轮网站功能提交：`8d91300`，发布固定/统计开关流程：`580aed9`；CPA 提交：`6b7dc9b`。验收记录见 `verification/v55-*.json`。
+- 本轮写入优化提交：`43d8627`，发布固定：`f0116bc`；模型统计基础：网站 `8d91300` / CPA `6b7dc9b`。验收记录见 `verification/v56-*.json` 与 `v55-*.json`。
 - 当前云端工作树：`/workspace/cf-notification-fix-site`，本地分支 `codex/pool-dashboard-v54-20261030`，修改已推到维护分支。此前 Windows CC Switch 工作树属于 v53；后续以 GitHub 为准。
 - `/workspace/cloudflare_temp_email`、`/workspace/leonmingod-home` 和原 Windows `D:\apiWorkSpace\leonmingod-home` 不能仅凭目录名视为最新代码。
 
 | 项目 | 当前状态 |
 | --- | --- |
-| 网站功能版本 | v55，真实单模型调用次数、性能与常用排序 |
+| 网站功能版本 | v56，保持 v55 功能并减少统计缓存写入 |
 | 主 Worker | `leonmingod-home` |
-| 主 Worker 活动版本 | `2b31bdc4-5d08-4716-8589-411b49f0017c`，100% 流量 |
-| 上一版本 | v54：`f1872be0-f97d-4890-9800-0f2f3eb19cf5`；回滚注意下方模型统计缓存说明 |
+| 主 Worker 活动版本 | `a767d9be-e5e3-4701-b117-77206ad6390c`，100% 流量 |
+| 直接回滚版本 | v55：`2b31bdc4-5d08-4716-8589-411b49f0017c`；格式兼容，恢复旧写入方式 |
 | 入口 Worker | `leonmingod-free-token` |
 | 入口活动版本 | `51a33be8-6ca4-4b4f-886f-613bfea996b0` |
 | 图片版本 | 首页 **v7**、令牌入口 **v5**，各有电脑与手机独立构图 |
@@ -41,6 +41,27 @@
 `www.leonmingod.com` 也已验收。浏览器本地保存的邮箱、落款、Key 和领取流程按 origin 隔离，不能假定主域名与 www 自动共享 localStorage。
 
 ## 2. 现在的产品流程
+
+### CF 写入预算与分片增量持久化（v56）
+
+模型调用逐条计数发生在 Render 内存；CF 全站每分钟读取一次汇总并保存检查点。
+统计写入的是独立 DO 的 SQLite 存储，不写保存邮箱 Key 的 Workers KV，不能把
+Workers KV 的免费写入限额直接套到这里。游戏、邮件、风控等仍共用账户的相关额度。
+
+本轮只优化 Worker：事务中仅写发生变化的缓存分片，分片数量未变时不重写 manifest，
+缩小时清理多余分片；冷启动读缓存后也能识别未变化内容。缓存命中的额度请求不再
+保存整份快照；池对象身份标识只首次写入，alarm 继续每分钟重设。统计口径、刷新
+频率、KV/DO 命名空间、Key 与 Render/OAuth 均不变。历史缓存原来就限制 60 条，
+不存在此前口头误判的无限增长问题，本轮没有声称修复此类问题。
+
+相同 35 模型、13 账号、已填满 60 条历史的代码模拟：有人持续查看时基础写行调用
+由 2,760/小时降到 900/小时；无人访问的背景收集从 1,440/小时降到 240/小时。
+按 24 小时外推约 21,600 / 5,760 行，减少约 67% / 83%；100 次内存缓存命中读取
+没有新增写入。这不是 CF 实测账单，未包含额度探测、游戏/邮箱/风控、冷启动或
+平台索引与缓存计费差异；不要把它说成账户总用量或费用保证。官方 DO SQLite
+免费档参考是每天 100,000 写行，访问人数仍会增加 Worker/DO 的读取请求。
+依据：`verification/v56-write-budget.json`、
+<https://developers.cloudflare.com/durable-objects/platform/pricing/>。55 项测试通过。
 
 ### 单模型调用统计与统一排序（v55）
 
@@ -277,7 +298,7 @@ gh workflow run leonmingod-star-night.yaml \
 
 7. 确认 run 真正 success 与活动版本一致；核对主域名/www 的页面、版本化脚本、图片和必要 API。记录版本、回滚点、验证范围，避免把模拟领取写成真实邮件端到端验收。
 
-当前 `release.json.baseline_parent` 仍是发布前 `f1872be0-f97d-4890-9800-0f2f3eb19cf5`，这是 v55 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
+当前 `release.json.baseline_parent` 仍是发布前 `2b31bdc4-5d08-4716-8589-411b49f0017c`，这是 v56 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
 
 回滚优先把主 Worker 切回已知版本，保留当前存储和凭据。若同时修改过转发，则按原流程先恢复入口、再恢复主站。回滚会同时恢复旧代码/图片/流程；不要为单独改一张图回滚整个系统。任何 Secret 更新也可能生成新的 Worker 版本，后续发布要重新读取。
 
@@ -320,6 +341,11 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 
 ## 10. 验证证据与后续事项
 
+v56 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979061456) ·
+[Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40979321483)。
+55 项测试通过；公网模型计数和起算时间保留，Render 未部署且 healthz=200。
+证据 `verification/v56-*.json`。写入预算为明确标注的代码模拟，不是账单实测。
+
 v55 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/40971792221) ·
 [Publish](https://github.com/928886540/cloudflare_temp_email/actions/runs/40972514083) ·
 [统计配置与登录保护](https://github.com/928886540/cloudflare_temp_email/actions/runs/40972135000) ·
@@ -361,7 +387,7 @@ v53 [Stage](https://github.com/928886540/cloudflare_temp_email/actions/runs/4090
 
 ```text
 请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
-网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v55，默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 928886540/cpa。当前网站 v56，统计缓存采用变化分片写入；默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
 保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
 先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
 用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。
