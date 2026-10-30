@@ -1,7 +1,7 @@
 {
-  "baseline_parent": "3453ed6c-697c-4174-9a16-14cd4c377e9b",
+  "baseline_parent": "169531c7-97bf-43d7-b8fd-f0fed62c3153",
   "baseline_entrance": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
-  "message": "v58: native xAI subscription, weekly remaining quota, reset and shared product usage",
+  "message": "v59: rank providers, models and credentials by usage; hide empty providers",
   "files": [
     "index.html",
     "home-orb-v3.css",
@@ -91,7 +91,7 @@
     "free-token/saved-key-v1.mjs",
     "free-token/saved-key-v1.css",
     "model-status/status-v4.mjs",
-    "model-status/status-v4.css"
-  ],
-  "staged_version": "169531c7-97bf-43d7-b8fd-f0fed62c3153"
+    "model-status/status-v4.css",
+    "model-status/status-v5.mjs"
+  ]
 }
