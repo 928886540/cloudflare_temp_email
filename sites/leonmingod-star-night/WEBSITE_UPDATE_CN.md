@@ -1,5 +1,41 @@
 # LeonMinGod 网站更新记录
 
+## v57/v58：本地 Key 查看、xAI 原生额度与管理误封修复
+
+当前主站 `169531c7-97bf-43d7-b8fd-f0fed62c3153`，前一版 v57
+`3453ed6c-697c-4174-9a16-14cd4c377e9b`；入口仍是
+`51a33be8-6ca4-4b4f-886f-613bfea996b0`，11 个绑定、KV/GAME_RUNS 保留。
+[本地 Key Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41071012306) ·
+[本地 Key Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41071501187) ·
+[xAI Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41072746984) ·
+[xAI Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41073674810)。
+
+选择页说明下、游戏胜利画面和通关邮箱弹窗均新增本浏览器 Key 入口，共用旧领取页的
+本地记录。支持看/复制地址和 Key 及 CC Switch；有记录才显示，无记录或清除会隐藏，
+storage/pageshow 同步。浏览器验证使用虚构本地 Key，没有新建/换发或真实发邮件；
+查看 Key 不发 API、Turnstile、邮件或模型请求。游戏规则/服务器领奖机制未修改，
+选择页的旧“三十秒”描述纠正为实际四十五秒。
+
+xAI 与 CPA 当前原生面板同源，从固定 billing（credits/常规）、user、settings 四个
+GET 读取真实套餐和用量。服务端白名单解析 Heavy、周剩余/重置、按量付费开关及
+GrokBuild/Cursor/GrokBot 共享明细，完整邮箱/上游 ID/令牌不公开。四个 GET 组成
+一次五分钟刷新组，多人合并，自动不查停用账户，不复制原生管理 UI 的生成 ping
+fallback。实时核对 Heavy、周剩 88%，北京时间 11/04 21:58 重置，产品 5%/4%/3%；
+这些数字随实际使用变化。57 项测试通过，三尺寸本地和公网核对通过。
+
+另修复 CPA 原生管理登录把 Render 入口 IP 当成客户端造成的连带误封。原生五次失败/
+三十分钟保留，只修真实 IP；新增鉴权的单 IP 查询/清理接口。用户 IP 在外层 API
+风控没有活动封禁，没有新增永久白名单，也没有修改模型 API 封禁规则。旧锁到期后
+先恢复访问，再做保护发布。GitHub username 已更新为 LeonMinGod，脚本兼容旧地址。
+
+CPA 新提交 97fbbcd / 部署 dep-dbiabbdg1s2s73eelarg。新增启动前 OAuth 快照恢复
+和完整加载就绪门槛，13 份登录和四把静态 Key 保留，原 config.yaml 与其他 env 不变；
+只增加 bootstrap Secret File/env，自动部署保持 no，后续手动 management-safe-deploy。
+本次切换的 60 次探测有 1 次失败，原因未被旧监控捕获，流程因此失败但部署已 live；
+随后只读验证 20/20 返回 200。不能宣称全程零中断，未为了刷绿再次切换后端，后续
+监控已补详细错误记录。完整依据与操作步骤见根交接文档和 verification/。
+
+
 ## v56 号池缓存减少重复写入已上线
 
 主站 `a767d9be-e5e3-4701-b117-77206ad6390c`，可直接回滚到兼容格式的 v55

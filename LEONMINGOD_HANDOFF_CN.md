@@ -1,6 +1,6 @@
 # LeonMinGod 网站与 CPA 运维交接
 
-截至 **v56 本轮线上核对**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
+截至 **v58 本轮线上核对**。本文是当前维护入口；旧交接中的共享 Key、页面版本和部署编号属于历史记录。本文只记录密钥名称、用途与资源 ID，不包含任何凭据值。
 
 接手先读本文、`sites/leonmingod-star-night/README.md` 和 `WEBSITE_UPDATE_CN.md`，再读取 Cloudflare 与 Render 的实时状态。源码已经在 GitHub；不要重新从旧 Windows 目录或旧首页镜像覆盖生产。
 
@@ -8,22 +8,24 @@
 
 网站仓库：<https://github.com/LeonMinGod/cloudflare_temp_email>
 
+用户已将 GitHub username 从 928886540 改为 LeonMinGod。当前 Git remote、运维命令与链接使用新名；Render 源仓库校验同时兼容旧名重定向。**Cloudflare 的 928886540.workers.dev 子域、Worker/服务/存储 ID、邮箱地址没有随 GitHub 改名，不要全局替换数字。**
+
 - **维护与发布分支：`codex/free-token-home-20261024`。** `main` 与线上网站不同，不能直接从 main 发布。
 - 网站源码：`sites/leonmingod-star-night/`。`sites/free-token-home/` 是历史实现。
-- 本轮写入优化提交：`43d8627`，发布固定：`f0116bc`；模型统计基础：网站 `8d91300` / CPA `6b7dc9b`。验收记录见 `verification/v56-*.json` 与 `v55-*.json`。
+- 本轮本地 Key 入口：`00636f7`；xAI 额度：`8147926`，固定发布：`3f7c460`；CPA 管理真实 IP/启动前凭据保护：`97fbbcd`。验收见 `verification/v57-*.json`、`v58-*.json`、`management-recovery-*.json`。
 - 当前云端工作树：`/workspace/cf-notification-fix-site`，本地分支 `codex/pool-dashboard-v54-20261030`，修改已推到维护分支。此前 Windows CC Switch 工作树属于 v53；后续以 GitHub 为准。
 - `/workspace/cloudflare_temp_email`、`/workspace/leonmingod-home` 和原 Windows `D:\apiWorkSpace\leonmingod-home` 不能仅凭目录名视为最新代码。
 
 | 项目 | 当前状态 |
 | --- | --- |
-| 网站功能版本 | v56，保持 v55 功能并减少统计缓存写入 |
+| 网站功能版本 | v58，保留 v57 本地 Key 入口，补原生 xAI 套餐/周额度 |
 | 主 Worker | `leonmingod-home` |
-| 主 Worker 活动版本 | `a767d9be-e5e3-4701-b117-77206ad6390c`，100% 流量 |
-| 直接回滚版本 | v55：`2b31bdc4-5d08-4716-8589-411b49f0017c`；格式兼容，恢复旧写入方式 |
+| 主 Worker 活动版本 | `169531c7-97bf-43d7-b8fd-f0fed62c3153`，100% 流量 |
+| 直接回滚版本 | v57：`3453ed6c-697c-4174-9a16-14cd4c377e9b`；保留本地 Key 入口，移除 xAI 额度补充 |
 | 入口 Worker | `leonmingod-free-token` |
 | 入口活动版本 | `51a33be8-6ca4-4b4f-886f-613bfea996b0` |
 | 图片版本 | 首页 **v7**、令牌入口 **v5**，各有电脑与手机独立构图 |
-| 游戏规则版本 | v8，实时协议 live-v1；与网站 v55、图片 v7 是不同编号 |
+| 游戏规则版本 | v8，实时协议 live-v1；与网站 v58、图片 v7 是不同编号 |
 | 网站领取状态 | open；点击令牌进入原动画与选择页 |
 | 未完成 PR | 本次核对为 0；旧 PR #6 已关闭，PR #7 已合并到维护分支 |
 
@@ -41,6 +43,33 @@
 `www.leonmingod.com` 也已验收。浏览器本地保存的邮箱、落款、Key 和领取流程按 origin 隔离，不能假定主域名与 www 自动共享 localStorage。
 
 ## 2. 现在的产品流程
+
+### xAI 套餐/余额与本地 Key 入口（v57/v58）
+
+选择页 `/free-token/choose/` 的说明下方、游戏胜利画面和通关邮箱弹窗中，都已添加
+“查看本浏览器保存的 API Key”。与叫义父页面共用 `lmg-claim-v1` / `readSavedKey()`，
+有有效的 `sk-lm-` 本地记录才显示；支持查看、复制地址/Key/两者及 CC Switch 导入。
+仅查看不会发 API、邮件、Turnstile 或生成请求，也不会发新 Key / 消耗通关资格。
+无记录或清除记录会隐藏入口；跨标签 storage / pageshow 更新可见性。新组件为
+`public/free-token/saved-key-v1.mjs` / `.css`。游戏引擎、奖励核验和难度未变。
+
+xAI 额度与当前 CPA 原生管理页面同源，由服务端 `requests/api-call` 代理四个固定 GET：
+`https://cli-chat-proxy.grok.com/v1/billing?format=credits`、`/v1/billing`、
+`/v1/user?include=subscription`、`/v1/settings`。没有复制其生成 ping 的 fallback；
+只读套餐和用量，不调用 `chat/completions`。使用原生面板的固定 xAI CLI 请求头与
+`$TOKEN$`，凭据索引和令牌不进入浏览器。套餐优先 settings 的显示名称，避免 user
+中 `SuperGrokPro` 内部标签覆盖实际 `SuperGrok Heavy`。
+
+周额度以 `creditUsagePercent` 计算剩余，按 `currentPeriod.end` 显示重置时间。
+按量付费开关、预付余额、GrokBuild/Cursor/GrokBot 共享配额明细均经过白名单提取。
+未知/无总额度不伪造 100%；邮箱持续服务端脱敏。全站状态 60 秒；每凭证最多 5 分钟
+一次额度组查询，四个只读请求算同一刷新组，重复/并发访客合并。自动只查启用凭证，
+停用凭证保持停用，可显式手动查询其额度。不是每个访客各查一次，也不自动生成模型
+请求来试额度。只读接口继续走现有白名单。
+
+实际原生合同验收：Heavy，周剩余 88%，北京时间 11/04 21:58 重置，GrokBuild/
+Cursor/GrokBot 已用 5%/4%/3%；数字会随真实使用变化。57 项网站测试通过，本地
+320/393/1440 和公网同尺寸验证无整页横向溢出、字段真实、共享限频及脱敏。
 
 ### CF 写入预算与分片增量持久化（v56）
 
@@ -206,10 +235,27 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 - Workspace：My Workspace，`tea-d779tahr0fns73e1h3lg`，用户已确认可使用。
 - Service：`srv-d9c4kkvavr4c73ab3sfg`，服务名 `cpa`，Singapore，free 计划，Docker。
 - 实际绑定仓库：**`https://github.com/LeonMinGod/cpa`，分支 `main`**，不是公开的 CLIProxyAPI 仓库。
-- 当前 live deploy：`dep-dbht8a9srm7s73dt3a30`。
-- 当前提交：`6b7dc9b34f1da0171ce8004dc1ba031e27cd1d21`。
+- 当前 live deploy：`dep-dbiabbdg1s2s73eelarg`。
+- 当前提交：`97fbbcd7a2f7bd5b214212104a227097f296517e`。
 - 启动命令：`./CLIProxyAPI --config /etc/secrets/config.yaml`；Secret File 为 `/etc/secrets/config.yaml`。
-- 健康检查：`/healthz`。自动部署目前为 yes，trigger 为 commit。
+- 健康检查：`/healthz`。自动部署目前为 **no/off**；用户要求更新不要影响现有 Token 调用，当前只走下方保护发布。
+
+### 管理后台 IP 误封与恢复
+
+旧登录保护每 IP 失败 5 次封 30 分钟，检查封禁先于密钥验证。线上 trusted-proxies=[]，
+旧管理端只用 Gin.ClientIP，导致把 Render 内部入口当成访客，共享入口一起锁定。
+诊断中用户公网 IP 在外层 API 风控没有活动封禁，维护接口却同样返回 native 403；
+自然到期后恢复 200。日志平台当时 503、应用文件日志未开，无法归因到某个具体操作者
+输错密码，不能把它说成用户一定输错。
+
+CPA 97fbbcd 的管理端使用现有 abuseguard.RealIP 校验过的 Render/CF 代理链；匹配
+失败才回退 Gin 配置，不信任任意 XFF/CF-Connecting-IP。原生 5 次/30 分钟政策保留，
+只作用管理登录，不作用正常模型调用；没有给共享代理节点设置永久白名单。
+新增鉴权 `GET /v8/management/security/login-attempts?ip=...` 与
+`DELETE /v8/management/security/login-attempts`（JSON {ip}）查询/清理单个记录。
+工作流模式 `management-inspect` / `management-unban` / `management-verify-current`
+配合 ip 输入；这些与外层 `guard-status` / `guard-unban` 是两套机制，不能搞混。
+验收确认管理端识别的是公网客户端，目标 inactive；未修改 API 自动封禁规则。
 
 ### 个人 Key 与静态 Key
 
@@ -226,7 +272,28 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 
 ### CPA 部署必须保护 OAuth 登录
 
-Render 重新部署有丢失运行时 OAuth 文件的风险。使用维护分支的 `leonmingod-security.yaml`：**在推送或合并 CPA main 前**先 `guard-hold` 暂停自动部署；`guard-deploy` 会在触发部署前备份当时的登录/配置，再推送代码，用 `guard-deploy` 指定完整 CPA commit，部署后恢复并核验。
+Render 重新部署有丢失运行时 OAuth 文件的风险。**不得再采用上线后才上传 OAuth 的普通发布。**
+用户明确要求不影响已有 Token 调用。自动部署已暂停，保留 no/off，避免 push 绕过保护。
+
+1. 在推送/合并 CPA main 前执行 `guard-hold`（只暂停自动部署，不关闭风控）。
+2. 源码测试/编译通过后推送，执行 `management-safe-deploy`，传完整 expected_commit。
+3. 脚本读取最新登录状态，备份为加密 artifact；将完整凭据及 disabled 标志保存到 Render
+   私有 Secret File `cpa-oauth-bootstrap.json`，设置新 env `CPA_OAUTH_BOOTSTRAP_FILE`。
+   原 `config.yaml`、其他 env、所有静态 Key、CF 密钥/KV 和外层风控策略均保留。
+4. 新版 cmd 在监听 HTTP 前恢复缺失文件，保留已存在的更新文件；服务在 auth store
+   加载后逐一核对快照文件均在池中，未完整加载就不通过就绪检查。凭据权限为 600。
+5. Render 正常就绪后才切流量；脚本验证原 OAuth 数量/启停状态与全部静态 Key，持续
+   探测模型列表。保持自动部署 no。下次部署前必须更新最新快照，不可盲用旧 artifact。
+
+本轮 13 份 OAuth / 4 把静态 Key 保留，管理 IP 定点清理后检查 inactive。
+**实际限制如实记录：** 本次安全发布 run 41069688318 最终失败，因为 60 次切换探测
+有 1 次失败；旧监控未保存该次详细原因，不能断言是网络还是服务切换，也不能声称
+零中断。部署本身已 live、凭据齐全、发布后四把静态 Key 均通过；随后只读复核 run
+41071018022 为 20/20 HTTP 200。没有为刷绿再次部署或关闭风控，后续监控已增加
+时间、状态/错误类型与明细保存。正常模型列表检查不等于完整推理/长流零中断保证。
+
+快照能保护部署前的登录状态，不能替代持续的持久化存储；将来需要更强的重启恢复，
+应设计刷新后 OAuth 的持久化同步，不能默默依赖永久旧快照。
 
 登录文件数量以部署前实时快照为准，不能把早期 10/12/13 份当作永久基线，更不能用旧快照覆盖新账号。现有环境变量、Secret File 的其他配置、Karl Key 与其他静态 Key 都要保留。
 
@@ -298,7 +365,7 @@ gh workflow run leonmingod-star-night.yaml \
 
 7. 确认 run 真正 success 与活动版本一致；核对主域名/www 的页面、版本化脚本、图片和必要 API。记录版本、回滚点、验证范围，避免把模拟领取写成真实邮件端到端验收。
 
-当前 `release.json.baseline_parent` 仍是发布前 `2b31bdc4-5d08-4716-8589-411b49f0017c`，这是 v56 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
+当前 `release.json.baseline_parent` 仍是发布前 `3453ed6c-697c-4174-9a16-14cd4c377e9b`，这是 v58 发布清单，不是下次直接重跑的保护值。下次必须重新读取活动版本；不能删除断言强行发布。
 
 回滚优先把主 Worker 切回已知版本，保留当前存储和凭据。若同时修改过转发，则按原流程先恢复入口、再恢复主站。回滚会同时恢复旧代码/图片/流程；不要为单独改一张图回滚整个系统。任何 Secret 更新也可能生成新的 Worker 版本，后续发布要重新读取。
 
@@ -322,7 +389,9 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 | `guard-allow` / `guard-unallow` | IP 白名单添加/移除，配合 `ip` 参数 |
 | `guard-unban` | 立即解封；`reset_history=true` 才同时清掉重复触发历史 |
 | `guard-disable` / `guard-enable` | 观察/执行模式切换 |
-| `guard-hold` / `guard-deploy` | 保护 OAuth 登录的 CPA 发布 |
+| `guard-hold` / `management-safe-deploy` | 暂停自动发布、OAuth 在就绪前加载；替代常规 guard-deploy |
+| `management-inspect` / `management-unban` / `management-verify-current` | 原生管理登录锁的定点诊断/清理/只读验收 |
+| `pool-xai-audit` | 固定 xAI 只读额度合同检查，不生成模型请求 |
 
 封禁情况属于实时状态，本文不复制一份很快过时的 IP 名单。日志和普通交接只保留不可逆 IP 指纹，不记录原始凭据或请求体。
 
@@ -340,6 +409,18 @@ Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Clou
 独立静态 Key 可参考中文添加工具的 `publish=false`、`use_custom_key=true`、`key_prefix`、`suffix_digits`。实际执行前先 dry_run、检查当前分支实现及配置快照，遵循完整登录备份、保留其他 Key 的保护流程。不要执行旧版本保护值或一键清空整个 api-keys。
 
 ## 10. 验证证据与后续事项
+
+v58 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41072746984) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41073674810) ·
+[原生 xAI 只读核对](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41071829805)。
+57 项网站测试通过；公网三尺寸使用真实接口核对 Heavy、额度与脱敏，主域名/www 的
+8 个新增版本化资源逐字节一致。证据 `verification/v58-*.json`。
+
+v57 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41071012306) ·
+[Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41071501187)。
+本地 Key 入口三尺寸浏览器验证，使用虚构本地记录，没有真实发信或领取新 Key。
+CPA 管理 IP 与保护发布证据为 `verification/management-recovery-20261030.json`；
+保留失败探测记录，详细限制见上方部署说明。
 
 v56 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979061456) ·
 [Publish](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/40979321483)。
@@ -387,7 +468,7 @@ v53 [Stage](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/409
 
 ```text
 请接手 LeonMinGod 项目，先读维护分支 codex/free-token-home-20261024 根目录的 LEONMINGOD_HANDOFF_CN.md，再读 sites/leonmingod-star-night/WEBSITE_UPDATE_CN.md，并核对线上状态。
-网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 LeonMinGod/cpa。当前网站 v56，统计缓存采用变化分片写入；默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
+网站源码在 sites/leonmingod-star-night/，网站由 Cloudflare 托管；CPA 在 Render 私库 LeonMinGod/cpa。当前网站 v58，选择与胜利页可查看本地 Key，xAI 套餐/周额度/共享用量已接原生只读源；统计缓存采用变化分片写入；默认显示真实单模型调用次数并将 GPT/Codex 与 gpt-6.1-sol 优先排序；首页图片 v7、令牌图 v5、游戏规则 v8，各自编号不要混淆。流光默认开启；保留 CC Switch 实时模型导入、按厂商分组的模型/凭证双视图、服务端脱敏邮箱、真实额度及统一刷新限频。
 保留邮箱专属 sk-lm- Key、落款、本地记忆、独立验证码页、120 秒重发和两小时真人凭证；不要恢复共享 Key 发放、“换个邮箱领取”、排行榜或暂停。
 先确认实际需求，再直接修改和验证；授权范围内的例行修复不必重复请求许可。发布用维护分支的手动 stage/publish，先读取 CF 实时版本，保护所有绑定、Key 和 OAuth 登录。
 用简体中文沟通，简洁直接。不要新增无用 PR 或恢复失效的自动审查机器人。
