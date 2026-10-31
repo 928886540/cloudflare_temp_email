@@ -403,7 +403,36 @@ gh workflow run leonmingod-star-night.yaml \
 
 ## 8. 风控与异常 IP 运维
 
-Cloudflare `cpa-abuse-guard` 当前活动版本：`05fc1f57-a27b-4fbf-9836-5259321d4eca`；地址 <https://cpa-abuse-guard.928886540.workers.dev>。
+### 2026-10-31 每日 DO 写入耗尽事故与减写补丁
+
+当天免费限额 100000 rows_written 已超出；官方 GraphQL 实测先为主站/游戏 4808、
+风控 94013，稍后为主站/游戏 4817、风控 97587，合计 102404。10:00 UTC 的风控
+写入暴增，最后非零分钟约 10:59，之后被额度拦截。**主要来源是风控/Key 校验，不能
+把它归咎于号池页面。** 官网首页/Render healthz 200 不能证明个人 Key 鉴权正常。
+
+减写源码 f068990，16 项测试通过。11:03:59 UTC 主站不动，只把风控从
+`05fc1f57-a27b-4fbf-9836-5259321d4eca` 切到 `6600a783-146f-40db-a963-10311045a884`，
+4 个绑定/原 STATE namespace、KEYS、密钥与配置保留；没有重启 Render 或替换 Key。
+改动：未知/撤销 Key 直接从权威 KV 拒绝；未消费额度的拒绝不重写 quota；无状态变化
+的检查不重写 peer；只读/无害观察不持久化 replay；异常证据/管理员变更/真实额度消费
+继续持久化并去重。重放过期清理从每请求全表扫描改为每分钟限批清理；小时清理保留。
+无害 replay 使用 DO 实例内有界 60 秒缓存，跨实例不承诺诊断计数精确去重；gatewayDenied/
+exempt 的 suppressed 诊断计数不逐请求落库。原封禁阈值与 Key/邮箱限额未修改。
+
+**补丁晚于免费限额封锁，不是已经恢复服务。** 现网后续 rowsWritten=0 反映封锁，
+不能写成优化后的测量节省率。审计 run 41195500037 停在 `/admin` HTTP 500，后续静态 models/个人 Key 检查尚未执行，未把它刷成成功；新模式
+`guard-write-audit` 做一次静态 models 和一次已有个人记录的签名授权验证，不发推理、
+不新建 Key、不做在线封禁试验。当前额度未恢复时审计失败是预期风险，恢复后再运行。
+证据 `sites/api-abuse-guard/verification/write-quota-incident-20261031.json`。
+
+重置北京时间 **2026-11-01 08:00**（UTC 00:00）。代码优化不会退回已消耗额度。
+Workers Paid 官方月最低 USD 5、超量另计；用户尚未确认开通，未产生这项付费变更。
+Cloudflare OAuth 插件不含 Billing 权限，读取 subscriptions 就返回 403，需要用户到
+Workers 套餐页手动开通或单独连接账单权限。不要关闭个人 Key 鉴权、默默解除请求限额、
+删除 DO/KV、换 namespace、重启 CPA 或继续把缓存/健康检查 200 宣称为调用恢复。
+
+
+Cloudflare `cpa-abuse-guard` 当前活动版本：`6600a783-146f-40db-a963-10311045a884`；地址 <https://cpa-abuse-guard.928886540.workers.dev>。
 
 `KEYS` 绑定同一个邮箱 Key KV；`STATE` 为 `AbuseState`，DO 命名空间 `73670c63f6e64753b5402345406cd140`，另有 `SERVICE_SECRET`、`ADMIN_SECRET`。`POST /v1/authorize` 是 HMAC 服务间接口，不是浏览器可裸调用的公共管理入口。
 
