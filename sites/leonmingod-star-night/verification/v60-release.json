@@ -56,5 +56,21 @@
       ],
       "assets_config": null
     }
+  },
+  "publish_run": 41204511276,
+  "publish": {
+    "mode": "publish",
+    "version_id": "366eeb9c-ce76-4ba5-a695-11fc702a9724",
+    "previous_version": "401ac7d3-59af-4c00-81fa-cc6a7b6d020b",
+    "entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "previous_entrance_version": "51a33be8-6ca4-4b4f-886f-613bfea996b0",
+    "forwarder_source_unchanged": true,
+    "shared_key_not_exposed": true,
+    "website_open": true,
+    "issuance_state_preserved": true,
+    "game_namespace_preserved": true,
+    "source_pages_verified": 7,
+    "pool_api_verified": false,
+    "pool_preexisting_outage": true
   }
 }
