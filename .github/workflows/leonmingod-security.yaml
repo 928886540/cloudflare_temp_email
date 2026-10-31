@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [inspect, setup, verify, verify-pass, audit-api, audit-cpa, pool-setup, pool-audit, pool-xai-audit, pool-enable-stats, management-inspect, management-unban, management-verify-current, management-safe-deploy, guard-hold, guard-deploy, guard-status, guard-enable, guard-disable, guard-allow, guard-unallow, guard-unban]
+        options: [inspect, setup, verify, verify-pass, audit-api, audit-cpa, pool-setup, pool-audit, pool-xai-audit, pool-enable-stats, grok2api-suspend, management-inspect, management-unban, management-verify-current, management-safe-deploy, guard-hold, guard-deploy, guard-status, guard-enable, guard-disable, guard-allow, guard-unallow, guard-unban]
         default: inspect
       expected_commit:
         description: Full CPA commit SHA for guard-deploy
@@ -41,6 +41,8 @@ jobs:
       CPA_RESET_HISTORY: ${{ inputs.reset_history }}
     steps:
       - uses: actions/checkout@v6
+      - if: inputs.mode == 'grok2api-suspend'
+        run: python .github/scripts/suspend_unused_grok2api.py
       - if: inputs.mode == 'inspect' || inputs.mode == 'setup' || inputs.mode == 'verify-pass'
         run: python .github/scripts/leonmingod_security.py
       - if: inputs.mode == 'pool-xai-audit'
