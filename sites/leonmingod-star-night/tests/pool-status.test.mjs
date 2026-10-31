@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { summarizePool, accountState, handlePoolStatus, PoolStatusCoordinator, accountId, maskAccountEmail } from '../src/pool-status.js';
 import { passiveQuota, parseQuota, quotaProbe } from '../src/pool-quota.js';
 import { Miniflare } from 'miniflare';
+import { loadPoolCache } from '../src/pool-storage.js';
 
 const now=Date.parse('2026-10-29T12:00:00Z'),later=new Date(now+60000).toISOString();
 const files=[
@@ -62,8 +63,9 @@ test('twenty concurrent reads coalesce globally; retries cannot bypass snapshot 
  await Promise.all(Array.from({length:100},()=>h.send({kind:'snapshot'})));
  assert.equal(h.writes(),beforeCached,'Cached snapshot and quota reads must not write storage');
  assert.equal(h.calls.length,6);
- h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,8);
- h.advance(300000);await h.send({kind:'quota',id});assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,2);
+ h.advance(61000);await h.send({kind:'snapshot'});assert.equal(h.calls.length,6);
+ h.advance(239001);await h.send({kind:'snapshot'});assert.equal(h.calls.filter(x=>x.url.endsWith('/credentials')).length,2);
+ h.advance(300000);await h.send({kind:'quota',id});assert.equal(h.calls.filter(x=>x.url.endsWith('/requests/api-call')).length,3);
 });
 
 test('bad management auth backs off for fifteen minutes and cannot be retried through the quota endpoint',async()=>{
@@ -75,10 +77,10 @@ test('bad management auth backs off for fifteen minutes and cannot be retried th
 
 test('background model collection is coalesced, persists without visitors and leaves credential/quota traffic idle',async()=>{
  const h=harness();await h.send({kind:'snapshot'});assert.equal(await h.ctx.storage.get('pool-status-kind'),'pool');
- const before=h.calls.length;h.advance(61000);
+ const before=h.calls.length;h.advance(300001);
  await Promise.all([h.coordinator.alarm(),h.coordinator.modelMetrics(),h.coordinator.modelMetrics()]);
  assert.equal(h.calls.length,before+1);assert(h.calls.at(-1).url.endsWith('/observability/usage/models'));
- const replacement=new PoolStatusCoordinator(h.ctx,h.env,{fetcher:()=>{throw new Error('HEAD must not fetch');},clock:()=>now+62000});
+ const replacement=new PoolStatusCoordinator(h.ctx,h.env,{fetcher:()=>{throw new Error('HEAD must not fetch');},clock:()=>now+300002});
  const result=await replacement.fetch(new Request('https://internal/pool-status',{method:'POST',body:JSON.stringify({kind:'snapshot',peek:true})}));
  assert.equal(result.status,200);assert.equal((await result.json()).model_metrics_available,true);
 });
@@ -88,6 +90,47 @@ test('failed quota preserves the old value and disabled credentials do not produ
  const id=await accountId(files[0],h.env.FREE_TOKEN_OPS_SECRET),response=await h.send({kind:'quota',id}),body=await response.json();
  assert.equal(body.quota.windows[0].remaining,28);assert.equal(body.quota.error,'upstream_busy');
  const probes=h.calls.filter(x=>x.url.endsWith('/requests/api-call'));assert.equal(probes.length,2);assert(probes.every(x=>JSON.parse(x.options.body).auth_index==='private-index'));
+});
+
+test('five-minute live refreshes retain only fifteen-minute checkpoints and persist refresh gates across reloads',async()=>{
+ const h=harness();await h.send({kind:'snapshot'});
+ const first=(await loadPoolCache(h.ctx.storage)).snapshot.updated_at;
+ for(let i=0;i<2;i++){
+  h.advance(300001);const live=await (await h.send({kind:'snapshot'})).json();assert.notEqual(live.updated_at,first);
+  assert.equal((await loadPoolCache(h.ctx.storage)).snapshot.updated_at,first);
+ }
+ h.advance(300001);await h.send({kind:'snapshot'});
+ assert.notEqual((await loadPoolCache(h.ctx.storage)).snapshot.updated_at,first);
+ const control=await h.ctx.storage.get('pool-status-control-v1');assert(control.writes<10000);
+ const before=h.calls.length;
+ const replacement=new PoolStatusCoordinator(h.ctx,h.env,{fetcher:()=>{throw new Error('persisted cooldown must prevent new upstream calls');},clock:()=>now+900004});
+ const response=await replacement.fetch(new Request('https://internal/pool-status',{method:'POST',body:JSON.stringify({kind:'snapshot'})}));
+ assert.equal(response.status,200);assert.equal(h.calls.length,before);
+});
+
+test('guard conservation pauses optional checkpoint/history alarms without stopping a visible read',async()=>{
+ const h=harness();h.env.KV={get:async()=>JSON.stringify({level:'conserve',expires:now+86400000})};
+ const body=await (await h.send({kind:'snapshot'})).json();assert.equal(body.totals.total,3);
+ assert.equal(await loadPoolCache(h.ctx.storage),undefined);
+ const before=h.calls.length;h.advance(300001);await h.coordinator.alarm();assert.equal(h.calls.length,before);
+ assert.equal(await h.ctx.storage.get('alarm'),Date.parse('2026-10-30T00:00:00Z'));
+});
+
+test('daily monitor cache budget survives reload and prevents further snapshot/control writes',async()=>{
+ const h=harness();await h.send({kind:'snapshot'});
+ const control=await h.ctx.storage.get('pool-status-control-v1');control.writes=10000;
+ await h.ctx.storage.put('pool-status-control-v1',control);
+ const replacement=new PoolStatusCoordinator(h.ctx,h.env,{fetcher:async()=>{throw new Error('network unavailable');},clock:()=>now+900001});
+ await replacement.ready;const before=h.writes();await replacement.modelMetrics();
+ assert.equal(h.writes(),before);
+ assert.equal((await h.ctx.storage.get('pool-status-control-v1')).writes,10000);
+});
+
+test('a pre-deploy counter snapshot is merged once without resetting or double-counting model totals',async()=>{
+ const h=harness(),backup={captured_at:'2026-10-29T11:59:00Z',body:{schema:1,scope:'upstream_executions',instance_id:'22222222-2222-4222-8222-222222222222',started_at:'2026-10-29T10:00:00Z',enabled:true,models:[{id:'gpt-test',provider:'codex',success:7,failed:1,recent:[]}]}};
+ h.env.KV={get:async key=>key==='ops:cpa-model-usage-before-deploy:v1'?JSON.stringify(backup):null};
+ const first=await (await h.send({kind:'snapshot'})).json();assert.equal(first.models.find(x=>x.id==='gpt-test').usage[0].total,8);
+ h.advance(300001);const second=await (await h.send({kind:'snapshot'})).json();assert.equal(second.models.find(x=>x.id==='gpt-test').usage[0].total,8);
 });
 
 test('read-only public routes reject mutations and malformed IDs before touching upstream or claim limits',async()=>{

@@ -4,7 +4,8 @@ import { loadPoolCache, savePoolCache } from './pool-storage.js';
 import { compareModels, compareAccounts, compareProviders } from '../public/model-status/order-v1.mjs';
 
 const ORIGIN='https://cpa-dhke.onrender.com';
-export const REFRESH_MS=60_000, QUOTA_MS=300_000, STALE_MS=600_000;
+export const REFRESH_MS=300_000, QUOTA_MS=300_000, CHECKPOINT_MS=900_000, STALE_MS=1_800_000;
+const CONTROL='pool-status-control-v1', BUDGET_KEY='ops:do-write-budget:v1', DAILY_CACHE_WRITES=10_000;
 const PROVIDERS=new Set(['codex','antigravity','gemini','gemini-cli','claude','anthropic','aistudio','vertex','openai','qwen','iflow','kiro','copilot','xai','grok']);
 const number=value=>Number.isFinite(Number(value))&&Number(value)>=0?Number(value):0;
 const timestamp=value=>{const n=Date.parse(value||'');return Number.isFinite(n)&&n>0?n:0;};
@@ -83,15 +84,44 @@ const publicError=error=>[401,403].includes(error?.status)?'authorization_unavai
 export class PoolStatusCoordinator{
   constructor(ctx,env,{fetcher=(url,options)=>fetch(url,options),clock=()=>Date.now()}={}){
     this.ctx=ctx;this.env=env;this.fetcher=fetcher;this.clock=clock;this.pending=null;this.quotaPending=new Map();this.files=[];this.filesAt=0;
-    this.ready=Promise.all([loadPoolCache(ctx.storage,parts=>{this.persistedParts=parts;}),ctx.storage.get('pool-status-kind')]).then(([value,kind])=>{
+    this.ready=Promise.all([loadPoolCache(ctx.storage,parts=>{this.persistedParts=parts;}),ctx.storage.get('pool-status-kind'),ctx.storage.get(CONTROL)]).then(([value,kind,control])=>{
       this.cache=value||{snapshot:null,next:0,failures:0,inventories:{},quotas:{},history:{}};
+      this.control=control||{};this.lastCheckpoint=control?.checkpointAt||0;
+      if(control?.gates){Object.assign(this.cache,control.gates);delete this.cache.quotaNext;
+        for(const [id,next] of Object.entries(control.gates.quotaNext||{}))this.cache.quotas[id]={next,value:this.cache.quotas[id]?.value||{windows:[],supported:true}};}
       this.isPool=kind==='pool';
     });
   }
-  persist(){
-    const json=JSON.stringify(this.cache);
+  async budgetState(){
+    const now=this.clock();
+    if(now<(this.budgetNext||0))return this.lowWriteMode;
+    if(this.budgetPending)return this.budgetPending;
+    this.budgetNext=now+REFRESH_MS;
+    this.budgetPending=(async()=>{
+      let value=null;
+      try{if(this.env.KV){const raw=await this.env.KV.get(BUDGET_KEY);value=typeof raw==='string'?JSON.parse(raw):raw;}}catch{}
+      this.lowWriteMode=Boolean(value&&value.expires>now&&['conserve','critical'].includes(value.level));
+      return this.lowWriteMode;
+    })().finally(()=>{this.budgetPending=null;});
+    return this.budgetPending;
+  }
+  persist({checkpoint=false}={}){
+    const now=this.clock(),json=checkpoint&&this.cache.snapshot?JSON.stringify(this.cache):null;
+    const gates={next:this.cache.next||0,metricsNext:this.cache.metricsNext||0,managementBlockedUntil:this.cache.managementBlockedUntil||0,
+      quotaNext:Object.fromEntries(Object.entries(this.cache.quotas).map(([id,row])=>[id,row.next]))};
     this.persistQueue=(this.persistQueue||Promise.resolve()).catch(()=>{}).then(async()=>{
-      this.persistedParts=await savePoolCache(this.ctx.storage,json,this.persistedParts);
+      const day=new Date(now).toISOString().slice(0,10),spent=this.control.day===day?this.control.writes||0:0;
+      let full=Boolean(json&&!this.lowWriteMode&&(!this.lastCheckpoint||now-this.lastCheckpoint>=CHECKPOINT_MS));
+      const upper=full?Math.ceil(json.length/24000)+(this.persistedParts?.length||0)+1:0;
+      if(spent+upper+1>DAILY_CACHE_WRITES)full=false;
+      if(!full&&this.control.day===day&&JSON.stringify(this.control.gates)===JSON.stringify(gates))return;
+      if(spent+1>DAILY_CACHE_WRITES)return;
+      const control={gates,day,writes:spent+(full?upper:0)+1,checkpointAt:full?now:this.lastCheckpoint};
+      if(full){let parts;
+        await this.ctx.storage.transaction(async tx=>{await tx.put(CONTROL,control);parts=await savePoolCache({transaction:callback=>callback(tx)},json,this.persistedParts);});
+        this.persistedParts=parts;this.lastCheckpoint=now;
+      }else await this.ctx.storage.put(CONTROL,control);
+      this.control=control;
     });
     return this.persistQueue;
   }
@@ -145,6 +175,14 @@ export class PoolStatusCoordinator{
     this.metricsPending=(async()=>{
       this.cache.metricsNext=now+REFRESH_MS;await this.persist();
       try{
+        if(this.env.KV){try{
+          const raw=await this.env.KV.get('ops:cpa-model-usage-before-deploy:v1');
+          const backup=typeof raw==='string'?JSON.parse(raw):raw;
+          if(backup?.captured_at&&this.cache.importedUsageBackup!==backup.captured_at){
+            this.cache.modelUsage=mergeModelUsage(this.cache.modelUsage,backup.body,now);
+            this.cache.importedUsageBackup=backup.captured_at;
+          }
+        }catch{}}
         const usage=await management('observability/usage/models',this.env,this.fetcher,AbortSignal.timeout(12_000));
         this.cache.modelUsage=mergeModelUsage(this.cache.modelUsage,usage,now);
         if(this.cache.snapshot)attachModelUsage(this.cache.snapshot,this.cache.modelUsage,now);
@@ -152,19 +190,22 @@ export class PoolStatusCoordinator{
         this.cache.metricsNext=now+([401,403].includes(error.status)?900_000:REFRESH_MS);
         if(error.managementAuth)this.cache.managementBlockedUntil=now+900_000;
       }
-      await this.persist();
+      await this.persist({checkpoint:true});
     })().finally(()=>{this.metricsPending=null;});
     return this.metricsPending;
   }
   async schedule(){
     if(this.scheduled)return;
     if(!this.isPool){await this.ctx.storage.put('pool-status-kind','pool');this.isPool=true;}
-    await this.ctx.storage.setAlarm(Math.max(this.clock()+REFRESH_MS,this.cache.metricsNext||0,this.cache.managementBlockedUntil||0));
+    const now=this.clock(),paused=await this.budgetState();
+    const target=paused?Date.parse(new Date(now).toISOString().slice(0,10)+'T00:00:00Z')+86400000:Math.max(now+REFRESH_MS,this.cache.metricsNext||0,this.cache.managementBlockedUntil||0);
+    const existing=await this.ctx.storage.getAlarm?.();
+    if(!existing||existing<=now||existing>target)await this.ctx.storage.setAlarm(target);
     this.scheduled=true;
   }
   async alarm(){
     await this.ready;
-    try{await this.modelMetrics();}finally{this.scheduled=false;await this.schedule();}
+    try{if(!await this.budgetState())await this.modelMetrics();}finally{this.scheduled=false;await this.schedule();}
   }
   async collect(){
     const now=this.clock();this.cache.next=now+REFRESH_MS;await this.persist();
@@ -202,7 +243,7 @@ export class PoolStatusCoordinator{
       }
       const valid=new Set(ids);for(const id of Object.keys(this.cache.quotas))if(!valid.has(id))delete this.cache.quotas[id];
       const validModels=new Set(snapshot.models.map(x=>x.id));for(const id of Object.keys(this.cache.history))if(!validModels.has(id))delete this.cache.history[id];
-      this.cache.snapshot=snapshot;this.cache.failures=0;this.cache.next=this.clock()+REFRESH_MS;await this.persist();
+      this.cache.snapshot=snapshot;this.cache.failures=0;this.cache.next=now+REFRESH_MS;await this.persist({checkpoint:true});
     }catch(error){
       this.cache.failures++;this.cache.next=this.clock()+([401,403].includes(error.status)?900_000:Math.min(900_000,REFRESH_MS*2**Math.min(this.cache.failures-1,4)));
       if(error.managementAuth)this.cache.managementBlockedUntil=this.clock()+900_000;
@@ -212,6 +253,7 @@ export class PoolStatusCoordinator{
   reply(status,body){return Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Pool-Abuse-Exempt':'read-only-status'}});}
   async fetch(request){
     await this.ready;const {kind,id,peek}=await request.json();
+    if(!peek)await this.budgetState();
     if(!peek)await this.schedule();
     if(kind==='quota'){
       if(!/^[a-f0-9]{8}$/.test(id||''))return this.reply(400,{error:'账号编号不正确。'});
@@ -229,7 +271,7 @@ export class PoolStatusCoordinator{
     }else if(this.pending)await this.pending;
     const snapshot=this.cache.snapshot,now=this.clock();
     if(!snapshot||now-timestamp(snapshot.updated_at)>STALE_MS)return this.reply(503,{error:'号池暂时无法连接，请稍后再试。',retry_after:Math.max(1,Math.ceil((this.cache.next-now)/1000))});
-    return this.reply(200,{...snapshot,stale:now-timestamp(snapshot.updated_at)>REFRESH_MS,refresh_after:Math.max(1,Math.ceil((this.cache.next-now)/1000)),quota_cooldown_seconds:QUOTA_MS/1000});
+    return this.reply(200,{...snapshot,stale:now-timestamp(snapshot.updated_at)>REFRESH_MS,refresh_after:Math.max(1,Math.ceil((this.cache.next-now)/1000)),quota_cooldown_seconds:QUOTA_MS/1000,checkpoint_interval_seconds:CHECKPOINT_MS/1000});
   }
 }
 
@@ -244,5 +286,5 @@ export async function handlePoolStatus(request,env){
     const stub=env.GAME_RUNS.get(env.GAME_RUNS.idFromName('pool-status-cache-v2'));
     const response=await stub.fetch('https://pool.internal/pool-status',{method:'POST',body:JSON.stringify({kind,id,peek:request.method==='HEAD'})});
     return new Response(request.method==='HEAD'?null:response.body,{status:response.status,headers:{...headers,'Content-Type':'application/json; charset=utf-8'}});
-  }catch{return reply(503,{error:'号池暂时无法连接，请稍后再试。',retry_after:60});}
+  }catch{return reply(503,{error:'号池暂时无法连接，请稍后再试。',retry_after:300});}
 }

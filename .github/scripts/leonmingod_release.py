@@ -1,5 +1,6 @@
 """Stage/publish only the recovered current website; retain the live asset set and bindings."""
 import hashlib
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -33,6 +34,19 @@ assert len(kv) == 1 and kv[0].get('namespace_id') == '1b02d139375045f7a7d5ce2d99
 def current_status():
     return json.loads(api.request(api.ORIGIN + '/api/free-token/status', headers={'Cache-Control':'no-cache'})[2])
 
+# A documented daily-quota incident may already make this read endpoint 503.
+# Permit only that pre-existing status, before its explicit UTC reset deadline.
+try:
+    api.request(api.ORIGIN + '/api/pool-status')
+    pool_before_http = 200
+except RuntimeError as error:
+    if not str(error).endswith('HTTP 503'):
+        raise
+    pool_before_http = 503
+pool_outage_until = release.get('known_pool_outage_until')
+pool_outage_allowed = bool(pool_outage_until and pool_before_http == 503 and
+    datetime.now(timezone.utc) < datetime.fromisoformat(pool_outage_until.replace('Z', '+00:00')))
+
 status_before = current_status()
 assert status_before.get('open') is has_reward_binding, 'Public availability differs from the live reward binding'
 
@@ -62,7 +76,13 @@ def released_board_and_hero():
         raise AssertionError('Retired illustration still served: ' + path)
 
 def released_pool_read():
-    snapshot=json.loads(api.request(api.ORIGIN+'/api/pool-status')[2])
+    try:
+        snapshot=json.loads(api.request(api.ORIGIN+'/api/pool-status')[2])
+    except RuntimeError as error:
+        if pool_outage_allowed and str(error).endswith('HTTP 503'):
+            print('POOL_PREEXISTING_QUOTA_OUTAGE_UNTIL=' + pool_outage_until, flush=True)
+            return False
+        raise
     assert snapshot.get('schema') == 1 and isinstance(snapshot.get('accounts'),list)
     assert isinstance(snapshot.get('models'),list) and snapshot.get('stats_scope') == 'account'
     forbidden={'email','auth_index','path','status_message','id_token','access_token','refresh_token','apiKey','api_key'}
@@ -75,6 +95,7 @@ def released_pool_read():
         elif isinstance(value,list):
             for v in value: inspect(v)
     inspect(snapshot)
+    return True
 mode = os.environ.get('WEBSITE_MODE', 'stage')
 
 def activate_forwarder():
@@ -174,7 +195,7 @@ elif mode == 'publish':
                         raise AssertionError('Published page differs: '+path)
                 released_claim_has_no_shared_key()
                 released_board_and_hero()
-                released_pool_read()
+                pool_verified = released_pool_read()
                 status = json.loads(api.request(api.ORIGIN + '/api/free-token/status')[2])
                 assert status['open'] is has_reward_binding, 'Token click availability differs from issuance state'
                 after=api.cf(worker+'/settings')['bindings']
@@ -185,7 +206,7 @@ elif mode == 'publish':
             except (AssertionError,RuntimeError):
                 if attempt == 11:raise
                 time.sleep(5)
-        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'shared_key_not_exposed':True,'website_open':has_reward_binding,'issuance_state_preserved':True,'game_namespace_preserved':True,'source_pages_verified':7}
+        result={'mode':'publish','version_id':version_id,'previous_version':parent,'entrance_version':entrance_after,'previous_entrance_version':entrance,'forwarder_source_unchanged':True,'shared_key_not_exposed':True,'website_open':has_reward_binding,'issuance_state_preserved':True,'game_namespace_preserved':True,'source_pages_verified':7,'pool_api_verified':pool_verified,'pool_preexisting_outage':not pool_verified}
     except Exception:
         if api.active('leonmingod-free-token') != entrance:
             api.cf('leonmingod-free-token/deployments','POST',{'strategy':'percentage','versions':[{'version_id':entrance,'percentage':100}],'annotations':{'workers/message':'Restore original forwarder after failed website publication'}})

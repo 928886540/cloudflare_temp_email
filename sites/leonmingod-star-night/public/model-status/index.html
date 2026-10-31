@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f8f9"><meta name="description" content="按厂商查看 LeonMinGod 模型调用次数、成功率、性能和账号真实额度。"><title>号池与模型状态 · LeonMinGod</title><link rel="icon" type="image/svg+xml" href="/assets/logo-v2.svg"><link rel="stylesheet" href="/model-status/status-v4.css"><script type="module" src="/model-status/status-v5.mjs"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f8f9"><meta name="description" content="按厂商查看 LeonMinGod 模型调用次数、成功率、性能和账号真实额度。"><title>号池与模型状态 · LeonMinGod</title><link rel="icon" type="image/svg+xml" href="/assets/logo-v2.svg"><link rel="stylesheet" href="/model-status/status-v4.css"><script type="module" src="/model-status/status-v6.mjs"></script>
 </head>
 <body>
 <header class="top"><a class="brand" href="/"><img src="/assets/logo-v2.svg" width="32" height="32" alt=""><span>LeonMinGod<small>灵境号池</small></span></a><nav><button id="theme" class="icon-button" type="button" aria-label="切换深浅色">◐</button><a class="back" href="/free-token/">返回令牌入口 ↗</a></nav></header>
 <main>
-<section class="heading"><div><p class="eyebrow">POOL OBSERVATORY</p><h1>号池与模型状态</h1><p class="subtitle">按厂商查看模型调用、运行表现和账号额度。</p></div><div class="refresh-wrap"><span id="refresh-countdown">每 60 秒更新</span><button id="refresh" type="button"><span aria-hidden="true">↻</span> 刷新状态</button></div></section>
+<section class="heading"><div><p class="eyebrow">POOL OBSERVATORY</p><h1>号池与模型状态</h1><p class="subtitle">按厂商查看模型调用、运行表现和账号额度。</p></div><div class="refresh-wrap"><span id="refresh-countdown">每 5 分钟更新</span><button id="refresh" type="button"><span aria-hidden="true">↻</span> 刷新状态</button></div></section>
 <p id="status-note" class="status-note" role="status" aria-live="polite">正在连接号池…</p>
 <nav id="provider-tabs" class="provider-tabs" aria-label="厂商筛选"></nav>
 <section class="metrics" aria-label="当前厂商概览"><article><span>账号数量</span><strong id="total">—</strong><small id="account-note">当前厂商</small></article><article><span>可用账号</span><strong id="ready">—</strong><small id="ready-note">正在读取</small></article><article><span>请求成功率</span><strong id="success-rate">—</strong><small id="success-note">账号累计统计</small></article><article><span>模型数量</span><strong id="model-count">—</strong><small id="model-coverage">正在读取</small></article></section>
@@ -17,6 +17,6 @@
 <section id="models-view" role="tabpanel" aria-labelledby="models-tab"><div id="models-cards" class="cards"></div><p id="models-empty" class="empty" hidden>没有符合筛选条件的模型。</p></section>
 <div class="panel-foot"><span id="result-count">—</span><span>凭证邮箱已脱敏</span></div>
 </section>
-<p id="method-note" class="method-note">状态每分钟共享更新；账号额度最多每 5 分钟查一次。切换标签只筛选已有数据，页面隐藏时暂停更新。</p>
+<p id="method-note" class="method-note">状态与账号额度每 5 分钟共享更新。切换标签只筛选已有数据，页面隐藏时暂停更新。</p>
 </main><div id="toast" class="toast" role="status" aria-live="polite" hidden></div><noscript><p class="empty">请开启 JavaScript 查看号池。</p></noscript>
 </body></html>

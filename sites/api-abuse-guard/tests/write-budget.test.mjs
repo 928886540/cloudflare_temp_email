@@ -91,3 +91,25 @@ test('successful key/email accounting and replay remain durable; denials and clo
     assert(db.writes() > before, 'A genuinely consumed allowance must persist');
   } finally { db.close(); }
 });
+
+test('budget conservation stops diagnostic writes while malicious evidence still produces the original ban', async () => {
+  const db = database(), day = new Date().toISOString().slice(0, 10);
+  const call = async body => (await db.state.fetch(new Request('https://internal/rpc', {
+    method: 'POST', body: JSON.stringify({ ...body, nonce: randomBytes(16).toString('hex') }),
+  }))).json();
+  try {
+    db.sql.exec('INSERT INTO guard_write_budget VALUES (?,?)', day, 72000);
+    assert.equal(db.state.budget.level(), 'conserve');
+    let before = db.writes();
+    for (let i = 0; i < 100; i++) await call({ action: 'observe', ip: '8.8.8.8', status: 503 });
+    assert.equal(db.writes() - before, 0, 'Diagnostic server failures must not consume the protected budget');
+    for (let i = 0; i < 20; i++) await call({ action: 'observe', ip: '8.8.8.8', status: 404, unknownApiPath: true });
+    const row = db.sql.exec('SELECT state FROM peers WHERE ip=?', '8.8.8.8')[0];
+    assert.equal(JSON.parse(row.state).bans.length, 1);
+    assert(db.writes() > before, 'Security evidence must remain durable in conservation mode');
+    const replacement = new AbuseState({ storage: {
+      sql: db.sql, transactionSync: fn => fn(), getAlarm: async () => 1, setAlarm: async () => {},
+    } }, {});
+    assert.equal(replacement.budget.level(), 'conserve', 'Budget must survive object eviction');
+  } finally { db.close(); }
+});

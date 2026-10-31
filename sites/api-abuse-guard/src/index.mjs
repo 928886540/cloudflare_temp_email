@@ -1,6 +1,7 @@
 import { isIP } from 'node:net';
 import { POLICY, initialState, check, observe, prune, metrics } from './policy.mjs';
 import { applyAuthorize, classifyRecord, encodeDecision, limitsFromEnv, parseAuthorizeBody, planFlush, readQuota, responseHeader } from './authorize.mjs';
+import { WriteBudget, BUDGET_KEY } from './write-budget.mjs';
 const encoder=new TextEncoder();
 const json=(status,data)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export function canonicalIP(value){
@@ -81,7 +82,7 @@ export default {
 
 export class AbuseState {
   constructor(ctx,env){
-    this.ctx=ctx;this.env=env;this.sql=ctx.storage.sql;
+    this.ctx=ctx;this.env=env;this.budget=new WriteBudget(ctx.storage.sql);this.sql={exec:(...args)=>this.budget.exec(...args)};
     this.volatileReplay=new Map();this.lastReplayCleanup=Date.now();
     this.sql.exec('CREATE TABLE IF NOT EXISTS peers (ip TEXT PRIMARY KEY,state TEXT NOT NULL,updated INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY,ip TEXT NOT NULL,entry TEXT NOT NULL,created INTEGER NOT NULL)');
@@ -123,12 +124,17 @@ export class AbuseState {
         const row=[...this.sql.exec('SELECT state FROM peers WHERE ip=?',body.ip)][0];
         const state=row?JSON.parse(row.state):initialState(),original=JSON.stringify(state);
         const before=JSON.stringify(state.active),exempt=config.allowlist.includes(body.ip);
-        const event={...body,exempt};
-        const decision=body.action==='observe'?observe(state,event,now):check(state,now,event);
+        const event={...body,exempt},status=Number(body.status);
+        const routine=body.action==='observe'&&(body.gatewayDenied||exempt||status<400);
+        const diagnostic=body.action==='observe'&&status>=500;
+        const sharedBefore=state.sharedUntil;
+        const decision=body.action==='observe'&&!routine?observe(state,event,now):check(state,now,event);
+        // Coalesce NAT protection refreshes, never shortening the promised day.
+        if(event.trusted)state.sharedUntil=sharedBefore>now+POLICY.repeatWindow?sharedBefore:now+POLICY.repeatWindow+300000;
         // Probes with no state transition and gateway-generated denials do not
         // need to rewrite a peer. Genuine observations/evidence remain durable.
         const encoded=JSON.stringify(state);
-        if(!(body.action==='observe'&&(body.gatewayDenied||exempt))&&encoded!==original)
+        if(!routine&&(!diagnostic||this.budget.diagnosticAllowed())&&encoded!==original)
           this.sql.exec('INSERT OR REPLACE INTO peers VALUES (?,?,?)',body.ip,encoded,now);
         if(state.active&&JSON.stringify(state.active)!==before){
           const id=body.ip+':'+state.active.id;
@@ -146,6 +152,7 @@ export class AbuseState {
     while(this.volatileReplay.size>2048||this.volatileReplay.values().next().value?.until<=now)
       this.volatileReplay.delete(this.volatileReplay.keys().next().value);
     this.cleanupReplay(now);
+    await this.publishBudget();
     if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
     return json(200,result);
   }
@@ -154,21 +161,36 @@ export class AbuseState {
     this.ctx.storage.transactionSync(()=>{result=applyAuthorize(this.sql,payload);});
     const now=Number(payload.now)||Date.now();
     this.cleanupReplay(now);
+    await this.publishBudget();
     if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
     return json(200,result);
   }
   cleanupReplay(now){
     // Scanning and deleting the replay table per request amplified both reads
     // and writes during retry storms. Expiry is checked on every lookup.
-    if(now-this.lastReplayCleanup<60000)return;
+    if(now-this.lastReplayCleanup<60000||!this.budget.diagnosticAllowed())return;
     this.sql.exec('DELETE FROM replay WHERE nonce IN (SELECT nonce FROM replay WHERE created<? LIMIT 128)',now-60000);
     this.lastReplayCleanup=now;
   }
+  async publishBudget(){
+    if(!this.env?.KEYS)return;
+    const signal=this.budget.signal(),key=signal.day+':'+signal.level;
+    if(key===this.lastBudgetSignal)return;
+    this.lastBudgetSignal=key;
+    try{
+      await this.env.KEYS.put(BUDGET_KEY,JSON.stringify(signal));
+      if(signal.level!=='normal')console.log(JSON.stringify({event:'do_write_budget',...signal}));
+    }catch{console.log(JSON.stringify({event:'do_budget_signal_failed'}));}
+  }
   async alarm(){
-    const now=Date.now();this.sql.exec('DELETE FROM peers WHERE updated<?',now-POLICY.retention);
-    this.sql.exec('DELETE FROM audit WHERE created<?',now-POLICY.retention);
-    this.sql.exec('DELETE FROM replay WHERE created<?',now-60000);
-    try{await this.flushStats(now);}catch{console.log(JSON.stringify({event:'cpa_stats_flush_failed'}));}
+    const now=Date.now();
+    if(this.budget.diagnosticAllowed()){
+      this.sql.exec('DELETE FROM peers WHERE ip IN (SELECT ip FROM peers WHERE updated<? LIMIT 128)',now-POLICY.retention);
+      this.sql.exec('DELETE FROM audit WHERE id IN (SELECT id FROM audit WHERE created<? LIMIT 128)',now-POLICY.retention);
+      this.sql.exec('DELETE FROM replay WHERE nonce IN (SELECT nonce FROM replay WHERE created<? LIMIT 128)',now-60000);
+      try{await this.flushStats(now);}catch{console.log(JSON.stringify({event:'cpa_stats_flush_failed'}));}
+    }
+    await this.publishBudget();
     // Expiry is also checked on every request, independently of alarm scheduling.
     await this.ctx.storage.setAlarm(now+3600000);
   }

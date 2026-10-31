@@ -24,6 +24,12 @@ def main():
     snapshot = {'schema': 1, 'files': [{'name': file['name'], 'content': json.loads(credentials[file['name']]),
         'disabled': bool(file.get('disabled'))} for file in state['files']]}
     assert len(snapshot['files']) == len(credentials) and credentials
+    # One KV backup per protected deploy preserves the old process high-water
+    # counters until the monitoring DO can resume. No per-request KV writes.
+    usage = json.loads(api.management_request(state['management'], 'observability/usage/models'))
+    assert usage.get('schema') == 1 and usage.get('scope') == 'upstream_executions'
+    guard.cf_account('storage/kv/namespaces/1b02d139375045f7a7d5ce2d994abd2c/values/ops%3Acpa-model-usage-before-deploy%3Av1',
+        'PUT', {'captured_at': datetime.now(timezone.utc).isoformat(), 'body': usage})
     name = 'cpa-oauth-bootstrap.json'
     content = json.dumps(snapshot, separators=(',', ':'))
     api.render('/services/' + api.SERVICE + '/secret-files/' + name, 'PUT', {'content': content})
@@ -37,7 +43,8 @@ def main():
 
     def monitor():
         while not stopped.is_set():
-            for index, key in enumerate(state['keys']):
+            index = len(samples) % len(state['keys'])
+            for key in [state['keys'][index]]:
                 if stopped.is_set():
                     break
                 try:
@@ -47,7 +54,7 @@ def main():
                     # API helper errors contain only path/status, never keys or bodies.
                     samples.append({'key_index': index, 'http': 'failed', 'at': datetime.now(timezone.utc).isoformat(),
                         'error_type': type(error).__name__, 'reason': str(error)[:180] if isinstance(error, RuntimeError) else type(error).__name__})
-            stopped.wait(3)
+            stopped.wait(10)
 
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
@@ -76,7 +83,7 @@ def main():
         stopped.set()
         thread.join(timeout=60)
         report = {'samples': len(samples), 'failures': sum(row['http'] != 200 for row in samples),
-            'keys_checked': len(state['keys'])}
+            'keys_checked': len({row['key_index'] for row in samples})}
         Path('cpa-abuse-rollout').mkdir(exist_ok=True)
         Path('cpa-abuse-rollout/model-traffic-verification.json').write_text(json.dumps(report, indent=2))
         Path('cpa-abuse-rollout/model-traffic-samples.json').write_text(json.dumps(samples, indent=2))

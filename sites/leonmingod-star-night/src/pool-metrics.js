@@ -49,7 +49,7 @@ export function attachModelUsage(snapshot,state,now=Date.now()){
   const rows=modelUsageRows(state,now),byModel=new Map();
   for(const row of rows){if(!byModel.has(row.id))byModel.set(row.id,[]);byModel.get(row.id).push(row);}
   snapshot.model_metrics_available=Boolean(state?.enabled);snapshot.model_stats_since=state?.started_at||null;
-  snapshot.model_metrics_updated_at=state?.updated_at||null;snapshot.model_metrics_stale=Boolean(state&&now-at(state.updated_at)>120_000);
+  snapshot.model_metrics_updated_at=state?.updated_at||null;snapshot.model_metrics_stale=Boolean(state&&now-at(state.updated_at)>600_000);
   snapshot.model_stats_scope='upstream_executions';
   for(const model of snapshot.models)model.usage=byModel.get(model.id)||[];
   return snapshot;
