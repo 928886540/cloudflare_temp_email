@@ -95,5 +95,6 @@
     "model-status/status-v5.mjs",
     "model-status/status-v6.mjs"
   ],
-  "known_pool_outage_until": "2026-11-01T00:00:00Z"
+  "known_pool_outage_until": "2026-11-01T00:00:00Z",
+  "staged_version": "366eeb9c-ce76-4ba5-a695-11fc702a9724"
 }
