@@ -44,7 +44,7 @@
 
 ## 2. 现在的产品流程
 
-### 2026-10-31 夜间个人 Key 应急恢复（发布后以验证记录为准）
+### 2026-10-31 夜间个人 Key 应急恢复（已发布）
 
 10 月 31 日的减写部署没有解除当天已经耗尽的 DO 配额，个人 Key 仍在进入模型前
 失败。此次增加仅供本事故使用的开关 `ops:auth-recovery:v1`，必须同时匹配 schema=1、
@@ -60,8 +60,12 @@ scope=`do-write-quota-20261031`、mode=`registered_keys_memory_limits` 和固定
 作为长期生产鉴权设计。临时模式不产生逐请求 KV/DO 写入，过期后完全不读应急 KV 开关。
 
 本次仅发布风控 Worker，不重启 Render，不改用户 Key、OAuth、网站和已有 IP 规则。
-22 项风控测试通过。线上验证使用 15 分钟自动过期的临时 canary Key，不借用用户 Key；
-完成后主动删除记录与本地测试凭据。验证记录另见 api-abuse-guard/verification。
+22 项风控测试通过。风控版本 `8adadc8e-05d3-442a-bf60-7c4f5531edc1` 已承接 100% 流量。
+临时 canary 的 /v1/models 从 503 恢复为 200，返回 22 模型；未知 Key 返回 401。
+Grok-4.7 实际流式请求 HTTP200、44 个 SSE 片段并收到 DONE，13.38 秒正常结束。
+不能据此宣称所有 Grok 上游问题或主站 DO 游戏/监控接口也已修复。线上验证使用
+15 分钟自动过期的临时 canary Key，不借用用户 Key；完成后主动删除记录与本地凭据。
+证据：`sites/api-abuse-guard/verification/auth-recovery-20261031.json`。
 需要提前回滚时删除应急 KV 开关即可（留意 KV 约 60 秒的缓存），或回滚风控版本到
 `1f389ed5-c6da-454c-9e59-86bc64a1c76f`；这两种做法在额度仍耗尽时都会恢复个人鉴权 503。
 
@@ -513,13 +517,13 @@ Workers 套餐页手动开通或单独连接账单权限。不要关闭个人 Ke
 删除 DO/KV、换 namespace、重启 CPA 或继续把缓存/健康检查 200 宣称为调用恢复。
 
 
-Cloudflare `cpa-abuse-guard` 当前活动版本：`1f389ed5-c6da-454c-9e59-86bc64a1c76f`；地址 <https://cpa-abuse-guard.928886540.workers.dev>。
+Cloudflare `cpa-abuse-guard` 当前活动版本：`8adadc8e-05d3-442a-bf60-7c4f5531edc1`；前一版为 `1f389ed5-c6da-454c-9e59-86bc64a1c76f`。地址 <https://cpa-abuse-guard.928886540.workers.dev>。
 
 `KEYS` 绑定同一个邮箱 Key KV；`STATE` 为 `AbuseState`，DO 命名空间 `73670c63f6e64753b5402345406cd140`，另有 `SERVICE_SECRET`、`ADMIN_SECRET`。`POST /v1/authorize` 是 HMAC 服务间接口，不是浏览器可裸调用的公共管理入口。
 
 仓库策略：5 分钟 20 次明确异常封 1 小时；10 分钟 40 次封 24 小时；24 小时 30 次低频探测封 24 小时；24 小时第三次独立封禁升级 7 天。全部自动到期，记录保留 30 天。401/403/404/405/429/5xx 分别记录，5xx 不作为封禁证据，单次 404/429 不封；合法健康检查、管理与回调免计数。共享公网出口优先按合法 Key 隔离，避免整 IP 误伤。
 
-**区分两个故障策略**：异常 IP 控制面故障可以保持业务可用；个人 Key 远程授权故障则拒绝授权。`guard-disable` 只停止 IP 封禁，不关闭个人 Key 授权。
+**区分两个故障策略**：异常 IP 控制面故障可以保持业务可用；个人 Key 远程授权故障默认拒绝授权。唯一临时例外为第 2 节本次事故的显式 KV 开关与代码硬截止；注册表验证/HMAC 仍强制，不等于关闭鉴权。`guard-disable` 只停止 IP 封禁，不关闭个人 Key 授权。
 
 Render 直连 API 已由后端中间件接入风控；仅修改自有域名 Cloudflare WAF 不能保护 `onrender.com` 直连。定时任务每 10 分钟请求健康检查，但免费服务休眠、上游额度和应用故障仍要分别判断。
 
