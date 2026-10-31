@@ -97,18 +97,19 @@ export function authorizeQuota({ keyRow, emailRow, hasEmail, limits, now }) {
   const key = consume(keyRow, now, limits.keyPerMinute, limits.keyPerDay);
   const keyStored = stored(key.row);
   if (!key.ok) {
-    return { keyRow: keyStored, emailRow: null, public: { allow: false, reason: 'rate_limited', retry_after: key.retryAfter } };
+    return { consumed: false, keyRow: keyStored, emailRow: null, public: { allow: false, reason: 'rate_limited', retry_after: key.retryAfter } };
   }
   let emailStored = emailRow;
   if (hasEmail) {
     const email = consume(emailRow, now, limits.emailPerMinute, limits.emailPerDay);
     emailStored = stored(email.row);
     if (!email.ok) {
-      return { keyRow: keyStored, emailRow: emailStored, public: { allow: false, reason: 'rate_limited', retry_after: email.retryAfter } };
+      return { consumed: true, keyRow: keyStored, emailRow: emailStored, public: { allow: false, reason: 'rate_limited', retry_after: email.retryAfter } };
     }
   }
   keyStored.allowed += 1;
   return {
+    consumed: true,
     keyRow: keyStored,
     emailRow: emailStored,
     public: { allow: true, reason: 'ok', remaining: key.remaining },
@@ -124,30 +125,46 @@ export function writeQuota(sql, kind, id, row) {
     kind, id, row.minute_start, row.minute_count, row.day_start, row.day_count, row.allowed || 0, row.flushed || 0);
 }
 
+function quotaChanged(previous, next) {
+  return !previous || ['minute_start', 'minute_count', 'day_start', 'day_count', 'allowed', 'flushed']
+    .some(field => (previous[field] || 0) !== (next[field] || 0));
+}
+
 export function applyAuthorize(sql, payload) {
   const now = Number(payload.now) || Date.now();
   const replayKey = `auth:${payload.nonce}`;
   const previous = [...sql.exec('SELECT response FROM replay WHERE nonce=? AND created>?', replayKey, now - 60000)][0];
   if (previous) return JSON.parse(previous.response);
-  let result;
+  let result, changed = false;
   if (!payload.active) {
     result = { allow: false, reason: payload.reason === 'revoked' ? 'revoked' : 'unknown_key', retry_after: 0 };
   } else {
     const limits = payload.limits || limitsFromEnv({});
+    const keyRow = readQuota(sql, 'key', payload.hash);
+    const emailRow = payload.email ? readQuota(sql, 'email', payload.email) : null;
     const decision = authorizeQuota({
-      keyRow: readQuota(sql, 'key', payload.hash),
-      emailRow: payload.email ? readQuota(sql, 'email', payload.email) : null,
+      keyRow,
+      emailRow,
       hasEmail: Boolean(payload.email),
       limits,
       now,
     });
-    writeQuota(sql, 'key', payload.hash, decision.keyRow);
-    if (payload.email && decision.emailRow) writeQuota(sql, 'email', payload.email, decision.emailRow);
+    if (decision.consumed && quotaChanged(keyRow, decision.keyRow)) {
+      writeQuota(sql, 'key', payload.hash, decision.keyRow);
+      changed = true;
+    }
+    if (decision.consumed && payload.email && decision.emailRow && quotaChanged(emailRow, decision.emailRow)) {
+      writeQuota(sql, 'email', payload.email, decision.emailRow);
+      changed = true;
+    }
     result = decision.public;
   }
-  sql.exec('INSERT INTO replay VALUES (?,?,?)', replayKey, JSON.stringify(result), now);
-  sql.exec('DELETE FROM replay WHERE created<?', now - 60000);
-  if (![...sql.exec('SELECT next FROM key_flush WHERE id=1')][0]) sql.exec('INSERT INTO key_flush (id,next,top_dirty) VALUES (1,?,0)', now);
+  // Only state-changing decisions need durable deduplication. Repeated denials
+  // must not spend write quota or change the accounting they are protecting.
+  if (changed) {
+    sql.exec('INSERT INTO replay VALUES (?,?,?)', replayKey, JSON.stringify(result), now);
+    if (![...sql.exec('SELECT next FROM key_flush WHERE id=1')][0]) sql.exec('INSERT INTO key_flush (id,next,top_dirty) VALUES (1,?,0)', now);
+  }
   return result;
 }
 

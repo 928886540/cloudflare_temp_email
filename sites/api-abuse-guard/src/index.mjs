@@ -41,13 +41,19 @@ async function authorizeRoute(request,env){
   }catch{return json(503,{error:'Key store unavailable'});}
   if(record&&(typeof record!=='object'||Array.isArray(record)))return json(503,{error:'Key store unavailable'});
   const classified=classifyRecord(record);
+  const signed=async decision=>{
+    const payload=encodeDecision(decision);
+    return new Response(payload,{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-CPA-Guard':await responseHeader(env.SERVICE_SECRET,nonce,'/v1/authorize',200,payload)}});
+  };
+  // Unknown/revoked keys are denied from the authoritative registry without
+  // asking SQLite to persist an otherwise stateless rejection.
+  if(!classified.active)return signed({allow:false,reason:classified.reason,retry_after:0});
   let response;
   try{
     response=await env.STATE.get(env.STATE.idFromName('cpa-v1')).fetch('https://state.internal/authorize',{method:'POST',body:JSON.stringify({nonce,hash:parsed.hash,email:classified.email,active:classified.active,reason:classified.reason,limits:limitsFromEnv(env),now:Date.now()})});
   }catch{return json(503,{error:'Key store unavailable'});}
   if(!response.ok)return json(503,{error:'Key store unavailable'});
-  const payload=encodeDecision(await response.json());
-  return new Response(payload,{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-CPA-Guard':await responseHeader(env.SERVICE_SECRET,nonce,'/v1/authorize',200,payload)}});
+  return signed(await response.json());
 }
 export default {
   async fetch(request,env){
@@ -76,6 +82,7 @@ export default {
 export class AbuseState {
   constructor(ctx,env){
     this.ctx=ctx;this.env=env;this.sql=ctx.storage.sql;
+    this.volatileReplay=new Map();this.lastReplayCleanup=Date.now();
     this.sql.exec('CREATE TABLE IF NOT EXISTS peers (ip TEXT PRIMARY KEY,state TEXT NOT NULL,updated INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY,ip TEXT NOT NULL,entry TEXT NOT NULL,created INTEGER NOT NULL)');
     this.sql.exec('CREATE TABLE IF NOT EXISTS replay (nonce TEXT PRIMARY KEY,response TEXT NOT NULL,created INTEGER NOT NULL)');
@@ -89,6 +96,8 @@ export class AbuseState {
     if(new URL(request.url).pathname==='/authorize')return this.authorize(await request.json());
     const body=await request.json(),now=Date.now(),admin=new URL(request.url).pathname==='/admin';
     const replayKey=(admin?'admin:':'rpc:')+body.nonce;
+    const cached=this.volatileReplay.get(replayKey);
+    if(cached&&cached.until>now)return json(200,cached.result);
     const previous=[...this.sql.exec('SELECT response FROM replay WHERE nonce=? AND created>?',replayKey,now-60000)][0];
     if(previous)return json(200,JSON.parse(previous.response));
     const config=this.config();let result;
@@ -112,11 +121,15 @@ export class AbuseState {
         }else result={error:'Unknown operation'};
       }else{
         const row=[...this.sql.exec('SELECT state FROM peers WHERE ip=?',body.ip)][0];
-        const state=row?JSON.parse(row.state):initialState();
+        const state=row?JSON.parse(row.state):initialState(),original=JSON.stringify(state);
         const before=JSON.stringify(state.active),exempt=config.allowlist.includes(body.ip);
         const event={...body,exempt};
         const decision=body.action==='observe'?observe(state,event,now):check(state,now,event);
-        this.sql.exec('INSERT OR REPLACE INTO peers VALUES (?,?,?)',body.ip,JSON.stringify(state),now);
+        // Probes with no state transition and gateway-generated denials do not
+        // need to rewrite a peer. Genuine observations/evidence remain durable.
+        const encoded=JSON.stringify(state);
+        if(!(body.action==='observe'&&(body.gatewayDenied||exempt))&&encoded!==original)
+          this.sql.exec('INSERT OR REPLACE INTO peers VALUES (?,?,?)',body.ip,encoded,now);
         if(state.active&&JSON.stringify(state.active)!==before){
           const id=body.ip+':'+state.active.id;
           this.sql.exec('INSERT OR REPLACE INTO audit VALUES (?,?,?,?)',id,body.ip,JSON.stringify(state.active),now);
@@ -124,9 +137,15 @@ export class AbuseState {
         }
         result={...decision,enforced:config.enabled,action:config.enabled?decision.action:'allow',observedAction:decision.action,policyVersion:1};
       }
-      this.sql.exec('INSERT INTO replay VALUES (?,?,?)',replayKey,JSON.stringify(result),now);
-      this.sql.exec('DELETE FROM replay WHERE created<?',now-60000);
+      const durableReplay=admin?body.action!=='status':body.action==='observe'&&!body.gatewayDenied&&!config.allowlist.includes(body.ip)&&Number(body.status)>=400&&Number(body.status)<500;
+      if(durableReplay)this.sql.exec('INSERT INTO replay VALUES (?,?,?)',replayKey,JSON.stringify(result),now);
     });
+    // Only harmless observations/reads use the bounded ephemeral replay cache;
+    // authorization consumption and abnormal evidence keep durable replay rows.
+    this.volatileReplay.set(replayKey,{until:now+60000,result});
+    while(this.volatileReplay.size>2048||this.volatileReplay.values().next().value?.until<=now)
+      this.volatileReplay.delete(this.volatileReplay.keys().next().value);
+    this.cleanupReplay(now);
     if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
     return json(200,result);
   }
@@ -134,8 +153,16 @@ export class AbuseState {
     let result;
     this.ctx.storage.transactionSync(()=>{result=applyAuthorize(this.sql,payload);});
     const now=Number(payload.now)||Date.now();
+    this.cleanupReplay(now);
     if(!await this.ctx.storage.getAlarm())await this.ctx.storage.setAlarm(now+3600000);
     return json(200,result);
+  }
+  cleanupReplay(now){
+    // Scanning and deleting the replay table per request amplified both reads
+    // and writes during retry storms. Expiry is checked on every lookup.
+    if(now-this.lastReplayCleanup<60000)return;
+    this.sql.exec('DELETE FROM replay WHERE nonce IN (SELECT nonce FROM replay WHERE created<? LIMIT 128)',now-60000);
+    this.lastReplayCleanup=now;
   }
   async alarm(){
     const now=Date.now();this.sql.exec('DELETE FROM peers WHERE updated<?',now-POLICY.retention);

@@ -1,0 +1,93 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { DatabaseSync } from 'node:sqlite';
+import { createHmac, randomBytes } from 'node:crypto';
+import worker, { AbuseState } from '../src/index.mjs';
+import { applyAuthorize, limitsFromEnv } from '../src/authorize.mjs';
+
+function database() {
+  const db = new DatabaseSync(':memory:');
+  let writes = 0;
+  const sql = { exec(query, ...params) {
+    const statement = db.prepare(query);
+    if (/^\s*SELECT/i.test(query)) return statement.all(...params);
+    const result = statement.run(...params); writes += Number(result.changes); return [];
+  }};
+  const ctx = { storage: { sql, transactionSync: fn => {
+    db.exec('BEGIN');
+    try { const value = fn(); db.exec('COMMIT'); return value; }
+    catch (error) { db.exec('ROLLBACK'); throw error; }
+  }, getAlarm: async () => Date.now() + 3600000, setAlarm: async () => { writes++; } }};
+  const state = new AbuseState(ctx, {});
+  return { sql, state, writes: () => writes, close: () => db.close() };
+}
+
+test('unknown/revoked keys deny without SQLite; active keys never bypass failed quota storage', async () => {
+  let calls = 0, record = null;
+  const secret = 'test-secret', env = { SERVICE_SECRET: secret, KEYS: { get: async () => record }, STATE: {
+    idFromName: name => name, get: () => ({ fetch: async () => { calls++; throw new Error('storage unavailable'); } }),
+  }};
+  const request = () => {
+    const body = JSON.stringify({ key_sha256: 'a'.repeat(64), path: '/v1/models' });
+    const stamp = String(Date.now()), nonce = randomBytes(16).toString('hex');
+    const mac = createHmac('sha256', secret).update(`${stamp}\n${nonce}\nPOST\n/v1/authorize\n${body}`).digest('hex');
+    return new Request('https://guard/v1/authorize', { method: 'POST', body, headers: { 'X-CPA-Guard': `${stamp}:${nonce}:${mac}` } });
+  };
+  let response = await worker.fetch(request(), env);
+  assert.equal((await response.json()).reason, 'unknown_key'); assert.equal(calls, 0);
+  record = JSON.stringify({ status: 'revoked' });
+  response = await worker.fetch(request(), env);
+  assert.equal((await response.json()).reason, 'revoked'); assert.equal(calls, 0);
+  record = JSON.stringify({ status: 'active' });
+  response = await worker.fetch(request(), env);
+  assert.equal(response.status, 503); assert.equal(calls, 1);
+});
+
+test('read-only probes and repeated gateway-denied retries write zero rows while bans remain durable', async () => {
+  const db = database();
+  const call = async (body, admin = false) => (await db.state.fetch(new Request('https://internal/' + (admin ? 'admin' : 'rpc'), {
+    method: 'POST', body: JSON.stringify({ ...body, nonce: randomBytes(16).toString('hex') }),
+  }))).json();
+  try {
+    await call({ action: 'enable' }, true);
+    let before = db.writes();
+    for (let i = 0; i < 100; i++) assert.equal((await call({ action: 'check', ip: '8.8.8.8' })).action, 'allow');
+    for (let i = 0; i < 20; i++) await call({ action: 'status' }, true);
+    assert.equal(db.writes() - before, 0);
+    for (let i = 0; i < 20; i++) await call({ action: 'observe', ip: '8.8.8.8', status: 404, unknownApiPath: true, pathHash: 'scan' });
+    assert.equal((await call({ action: 'check', ip: '8.8.8.8' })).action, 'block');
+    before = db.writes();
+    for (let i = 0; i < 100; i++) {
+      assert.equal((await call({ action: 'check', ip: '8.8.8.8' })).action, 'block');
+      await call({ action: 'observe', ip: '8.8.8.8', status: 403, gatewayDenied: true });
+    }
+    assert.equal(db.writes() - before, 0);
+    const status = await call({ action: 'status' }, true);
+    assert.equal(status.peers[0].counters['404'], 20);
+    assert.equal(status.peers[0].bans.length, 1);
+  } finally { db.close(); }
+});
+
+test('successful key/email accounting and replay remain durable; denials and clock rollovers do not write', () => {
+  const db = database(), now = Date.now();
+  const limits = { ...limitsFromEnv(), keyPerMinute: 1, keyPerDay: 1 };
+  const base = { hash: 'a'.repeat(64), email: 'test@example.invalid', active: true, limits, now };
+  try {
+    const request = { ...base, nonce: randomBytes(16).toString('hex') };
+    assert.equal(applyAuthorize(db.sql, request).allow, true);
+    let before = db.writes();
+    assert.equal(applyAuthorize(db.sql, request).allow, true);
+    assert.equal(db.writes() - before, 0, 'Replay must not double-consume key/email quotas');
+    for (let i = 0; i < 100; i++) {
+      const decision = applyAuthorize(db.sql, { ...base, now: now + i * 1000, nonce: randomBytes(16).toString('hex') });
+      assert.equal(decision.allow, false);
+    }
+    assert.equal(db.writes() - before, 0, 'Denials must not persist even when the minute rolls over');
+    assert.equal(db.sql.exec("SELECT day_count,allowed FROM quotas WHERE kind='key'")[0].day_count, 1);
+    assert.equal(db.sql.exec("SELECT day_count FROM quotas WHERE kind='email'")[0].day_count, 1);
+    assert.equal(applyAuthorize(db.sql, { ...base, active: false, reason: 'revoked', nonce: randomBytes(16).toString('hex') }).reason, 'revoked');
+    assert.equal(db.writes() - before, 0);
+    assert.equal(applyAuthorize(db.sql, { ...base, now: now + 86400001, nonce: randomBytes(16).toString('hex') }).allow, true);
+    assert(db.writes() > before, 'A genuinely consumed allowance must persist');
+  } finally { db.close(); }
+});
