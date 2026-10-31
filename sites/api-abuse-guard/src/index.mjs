@@ -2,7 +2,9 @@ import { isIP } from 'node:net';
 import { POLICY, initialState, check, observe, prune, metrics } from './policy.mjs';
 import { applyAuthorize, classifyRecord, encodeDecision, limitsFromEnv, parseAuthorizeBody, planFlush, readQuota, responseHeader } from './authorize.mjs';
 import { WriteBudget, BUDGET_KEY } from './write-budget.mjs';
+import { RECOVERY_KEY, RECOVERY_END, recoveryEnabled, RecoveryLimiter } from './recovery.mjs';
 const encoder=new TextEncoder();
+const recoveryLimiter=new RecoveryLimiter();
 const json=(status,data)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export function canonicalIP(value){
   if(typeof value!=='string'||!isIP(value))return null;
@@ -24,7 +26,7 @@ async function authorized(request,env,body,admin){
   const bytes=new Uint8Array(parts[3].match(/../g).map(v=>parseInt(v,16)));
   return await crypto.subtle.verify('HMAC',key,bytes,encoder.encode(message))?parts[2]:null;
 }
-async function authorizeRoute(request,env){
+export async function authorizeRoute(request,env,{now=Date.now(),limiter=recoveryLimiter}={}){
   if(request.method!=='POST')return json(404,{error:'Not found'});
   const text=await request.text();
   if(text.length>4096)return json(413,{error:'Request too large'});
@@ -49,6 +51,17 @@ async function authorizeRoute(request,env){
   // Unknown/revoked keys are denied from the authoritative registry without
   // asking SQLite to persist an otherwise stateless rejection.
   if(!classified.active)return signed({allow:false,reason:classified.reason,retry_after:0});
+  // Only an explicitly enabled, time-bounded incident switch can bypass DO
+  // writes. An arbitrary DO outage never enables registry-only authorization.
+  if(now<RECOVERY_END){
+    let recovery;
+    try{const raw=await env.KEYS.get(RECOVERY_KEY);recovery=raw?JSON.parse(raw):null;}
+    catch{return json(503,{error:'Key store unavailable'});}
+    if(recoveryEnabled(recovery,now)){
+      const decision=limiter.decide({hash:parsed.hash,email:classified.email,nonce,limits:limitsFromEnv(env),now});
+      return decision?signed(decision):json(503,{error:'Key store unavailable'});
+    }
+  }
   let response;
   try{
     response=await env.STATE.get(env.STATE.idFromName('cpa-v1')).fetch('https://state.internal/authorize',{method:'POST',body:JSON.stringify({nonce,hash:parsed.hash,email:classified.email,active:classified.active,reason:classified.reason,limits:limitsFromEnv(env),now:Date.now()})});
