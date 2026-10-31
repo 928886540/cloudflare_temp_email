@@ -254,6 +254,24 @@ Resend 发信代码在 Worker 的 `src/claim-email.js`，通过 `RESEND_API_KEY`
 - 启动命令：`./CLIProxyAPI --config /etc/secrets/config.yaml`；Secret File 为 `/etc/secrets/config.yaml`。
 - 健康检查：`/healthz`。自动部署目前为 **no/off**；用户要求更新不要影响现有 Token 调用，当前只走下方保护发布。
 
+### 免费实例时长与已停用的旧服务（2026-10-31）
+
+Render 每工作区每自然月共享 750 个免费实例小时，按服务运行时长累计，不是连接数或
+请求数。用户邮件当时用量为 696/750，不能把该数当作实时账单。单台连续运行 31 天
+为 744 小时；多台同时运行分别计时，休眠/暂停期间不消耗免费实例小时。
+
+用户明确授权暂停旧 `grok2api`，服务 `srv-d779u3mdqaus73blfk2g`，地址
+`https://grok2api-07gc.onrender.com`，状态已核对 `suspended`，未删除服务。
+CPA `srv-d9c4kkvavr4c73ab3sfg` 保持免费套餐、未暂停，部署与配置均未改变，前后
+`/healthz` 均 200；没有升级付费或修改现有 Key。以后不要为了“恢复所有服务”自动
+启动这个旧 grok2api。需要恢复时在它的 Dashboard Resume，恢复前先核对免费余量。
+
+暂停入口是维护分支手动工作流 `leonmingod-security.yaml` 的 `grok2api-suspend` 模式，
+脚本只允许该固定服务，并验证 CPA 配置/部署没有改变；不是通用任意服务暂停接口。
+[执行记录](https://github.com/LeonMinGod/cloudflare_temp_email/actions/runs/41152117748)，
+安全结果 `verification/grok2api-suspend-20261031.json`。
+官方规则 <https://render.com/docs/free#free-instance-hours>。
+
 ### 管理后台 IP 误封与恢复
 
 旧登录保护每 IP 失败 5 次封 30 分钟，检查封禁先于密钥验证。线上 trusted-proxies=[]，
