@@ -136,7 +136,7 @@ jobs:
           path: cpa-abuse-rollout/
           if-no-files-found: ignore
           retention-days: 30
-      - if: ${{ startsWith(inputs.mode, 'guard-') && inputs.mode != 'guard-hold' && inputs.mode != 'guard-deploy' }}
+      - if: contains(fromJSON('["guard-status","guard-enable","guard-disable","guard-allow","guard-unallow","guard-unban"]'), inputs.mode)
         run: |
           export CPA_GUARD_MODE="${SECURITY_MODE#guard-}"
           python .github/scripts/cpa_abuse_guard.py

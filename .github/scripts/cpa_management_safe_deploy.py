@@ -28,11 +28,17 @@ def main():
     # counters until the monitoring DO can resume. No per-request KV writes.
     usage = json.loads(api.management_request(state['management'], 'observability/usage/models'))
     assert usage.get('schema') == 1 and usage.get('scope') == 'upstream_executions'
-    status, _, saved = api.request('https://api.cloudflare.com/client/v4/accounts/' + guard.required('CLOUDFLARE_ACCOUNT_ID') +
-        '/storage/kv/namespaces/1b02d139375045f7a7d5ce2d994abd2c/values/ops%3Acpa-model-usage-before-deploy%3Av1',
-        'PUT', json.dumps({'captured_at': datetime.now(timezone.utc).isoformat(), 'body': usage}).encode(),
-        {'Authorization': 'Bearer ' + guard.required('CLOUDFLARE_API_TOKEN'), 'Content-Type': 'application/octet-stream'})
-    assert status == 200 and json.loads(saved)['success'], 'Model counter backup was not retained'
+    allowed = ['id', 'provider', 'success', 'failed']
+    fields = ['at', 'success', 'failed', 'ttft_ms', 'ttft_samples', 'output_tokens', 'output_ms']
+    safe_usage = {key: usage[key] for key in ['schema', 'scope', 'instance_id', 'started_at', 'enabled']}
+    safe_usage['models'] = [{**{key: row[key] for key in allowed},
+        'recent': [{key: bucket[key] for key in fields} for bucket in row.get('recent', [])]}
+        for row in usage['models']]
+    # The existing GitHub token can deploy Workers but lacks this KV operation.
+    # Keep a public-safe artifact so the connected CF API can complete the copy.
+    Path('cpa-abuse-rollout/model-usage-before-deploy.json').write_text(json.dumps({
+        'captured_at': datetime.now(timezone.utc).isoformat(), 'body': safe_usage}))
+    print('CPA_MODEL_COUNTER_BACKUP=artifact-awaiting-connected-CF-copy', flush=True)
     name = 'cpa-oauth-bootstrap.json'
     content = json.dumps(snapshot, separators=(',', ':'))
     api.render('/services/' + api.SERVICE + '/secret-files/' + name, 'PUT', {'content': content})
